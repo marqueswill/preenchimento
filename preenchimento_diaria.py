@@ -1,13 +1,11 @@
-from math import ceil
-import sys
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
 from selenium.common.exceptions import TimeoutException
 
 import pandas as pd
-import time
-import os
+
+import sys, time, os
 from datetime import datetime
 
 ANO_ATUAL = datetime.now().year
