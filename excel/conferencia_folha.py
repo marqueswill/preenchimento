@@ -101,5 +101,5 @@ class GerarConferencia:
 
 # dataframe = pd.read_excel(caminho_planilha, sheet_name="VALORES_RGPS")
 
-gerador = GerarConferencia(test=True)
+gerador = GerarConferencia(test=False)
 gerador.gerar_conferencia_rgps()

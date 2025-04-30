@@ -38,7 +38,7 @@ class PreenchimentoRGPSBeneficios(PreenchimentoRGPSBase):
 
 
 try:
-    driver = PreenchimentoRGPSBeneficios(test=True)
+    driver = PreenchimentoRGPSBeneficios(test=False)
     driver.executar()
 except Exception as e:
     print(e)

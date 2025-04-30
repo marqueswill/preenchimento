@@ -32,7 +32,7 @@ class PreenchimentoRGPSSubstituicoes(PreenchimentoRGPSBase):
 
 
 try:
-    driver = PreenchimentoRGPSSubstituicoes(test=True)
+    driver = PreenchimentoRGPSSubstituicoes(test=False)
     driver.executar()
 
 except Exception as e:

@@ -2,6 +2,7 @@ import sys
 
 from drivers.rgps.rgps_base import PreenchimentoRGPSBase
 
+
 class PreenchimentoRGPSPrincipal(PreenchimentoRGPSBase):
     def __init__(self, test=False):
         self.nome_template = "PRINCIPAL"
@@ -97,7 +98,7 @@ class PreenchimentoRGPSPrincipal(PreenchimentoRGPSBase):
 
 
 try:
-    driver = PreenchimentoRGPSPrincipal(test=True)
+    driver = PreenchimentoRGPSPrincipal(test=False)
     driver.executar()
 except Exception as e:
     print(e)

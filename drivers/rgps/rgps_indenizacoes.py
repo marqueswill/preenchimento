@@ -13,7 +13,6 @@ class PreenchimentoRGPSIndenizacoes(PreenchimentoRGPSBase):
         dados_conferencia_rgps = self.gerar_conferencia()
         proventos_rgps = self.gerar_proventos(dados_conferencia_rgps)
 
-        # Fazendo o LEFT JOIN (merge) com base nas colunas correspondentes
         folha_rgps = folha_rgps.merge(
             proventos_rgps[["CDG_NAT_DESPESA", "SALDO"]].rename(
                 columns={"SALDO": "VALOR"}
@@ -41,15 +40,14 @@ class PreenchimentoRGPSIndenizacoes(PreenchimentoRGPSBase):
             & (folha_rgps["CLASS. CONT"] == "211110101"),
             "VALOR",
         ] = folha_rgps.loc[folha_rgps["CLASS. ORC"] == "33909304", "VALOR"].values[0]
-        
+
         folha_rgps = folha_rgps.sort_values(by="INSCRIÇÃO")
 
         return folha_rgps
 
 
-
 try:
-    driver = PreenchimentoRGPSIndenizacoes(test=True)
+    driver = PreenchimentoRGPSIndenizacoes(test=False)
     driver.executar()
 except Exception as e:
     print(e)

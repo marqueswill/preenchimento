@@ -13,7 +13,6 @@ class PreenchimentoRGPSDeaBeneficios(PreenchimentoRGPSBase):
         dados_conferencia_rgps = self.gerar_conferencia()
         proventos_rgps = self.gerar_proventos(dados_conferencia_rgps)
 
-        # Fazendo o LEFT JOIN (merge) com base nas colunas correspondentes
         folha_rgps = folha_rgps.merge(
             proventos_rgps[["CDG_NAT_DESPESA", "SALDO"]].rename(
                 columns={"SALDO": "VALOR"}
@@ -33,7 +32,7 @@ class PreenchimentoRGPSDeaBeneficios(PreenchimentoRGPSBase):
 
 
 try:
-    driver = PreenchimentoRGPSDeaBeneficios(test=True)
+    driver = PreenchimentoRGPSDeaBeneficios(test=False)
     driver.executar()
 except Exception as e:
     print(e)
