@@ -1,2 +1,15 @@
-pip install selenium
-pip install pandas
+### Dependências
+
+`pip install selenium`
+`pip install pandas`
+`pip install pyinstaller`
+
+### Gerando executável
+
+Acesse a pasta pelo terminal e execute:
+`python -m PyInstaller --onefile --noconsole arquivo_exemplo.py`
+
+
+### TODO
+- [] Integrar webdriver com Power Automate online para executar o fluxo que gera os dados da planilha
+- [] Tratamento de erros
