@@ -1,7 +1,6 @@
 import sys
 
-from rgps.rgps_base import PreenchimentoRGPSBase
-
+from drivers.rgps.rgps_base import PreenchimentoRGPSBase
 
 class PreenchimentoRGPSPrincipal(PreenchimentoRGPSBase):
     def __init__(self, test=False):

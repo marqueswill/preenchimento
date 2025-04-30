@@ -148,8 +148,9 @@ class PreenchimentoRGPSBase(SiggoDriver):
             return ""
 
         # caminho_planilha = f"\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_{ANO_ATUAL}\\{MESES[MES_ATUAL]}\\DEMOFIN_TABELA.xlsx"
-        caminho_planilha = "General - SECON\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_2025\\03-MARÇO\\DEMOFIN_TABELA.xlsx"
+        caminho_planilha = f"General - SECON\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_{ANO_ATUAL}\\{MESES[MES_ATUAL]}\\DEMOFIN_TABELA.xlsx"
         caminho_completo = self.caminho_raiz + caminho_planilha
+
         plan_folha = pd.read_excel(caminho_completo, sheet_name="DEMOFIN - T", header=1)
 
         plan_folha["CDG_NAT_DESPESA"] = plan_folha["CDG_NAT_DESPESA"].str.replace(
@@ -236,5 +237,3 @@ class PreenchimentoRGPSBase(SiggoDriver):
     def executar(self):
         folha_rgps = self.gerar_folha_rgps()
         self.preencher_nota_de_lancamento(folha_rgps)
-
-
