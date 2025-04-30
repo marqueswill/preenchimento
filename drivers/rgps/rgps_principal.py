@@ -91,12 +91,13 @@ class PreenchimentoRGPSPrincipal(PreenchimentoRGPSBase):
         )
 
         folha_rgps = folha_rgps[folha_rgps["VALOR"] > 0]
+        folha_rgps = folha_rgps.sort_values(by="INSCRIÇÃO")
 
         return folha_rgps
 
 
 try:
-    driver = PreenchimentoRGPSPrincipal(test=False)
+    driver = PreenchimentoRGPSPrincipal(test=True)
     driver.executar()
 except Exception as e:
     print(e)
