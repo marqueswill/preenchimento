@@ -2,8 +2,8 @@
 
 `pip install selenium`
 `pip install pandas`
+`pip install openpyxl`
 `pip install pyinstaller`
-
 ### Gerando executável
 
 Acesse a pasta pelo terminal e execute:

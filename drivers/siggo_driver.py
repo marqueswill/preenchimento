@@ -33,7 +33,7 @@ MESES = {
 class SiggoDriver:
     def __init__(self, test=False):
         username = os.getlogin().strip()
-        self.caminho_raiz = f"C:\\Users\\{username}\\OneDrive - Tribunal de Contas do Distrito Federal\\"
+        self.caminho_raiz = f"C:\\Users\\{username}\\Tribunal de Contas do Distrito Federal\\"
 
         # Configurar Pandas para exibir todas as colunas e linhas
         pd.set_option("display.max_rows", None)  # Exibir todas as linhas

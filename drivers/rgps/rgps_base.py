@@ -39,7 +39,7 @@ class PreenchimentoRGPSBase(SiggoDriver):
 
     def carregar_template_nl(self):
         caminho_completo = (
-            self.caminho_raiz + f"General - SECON\\CÓDIGOS\\TEMPLATES_NL_RGPS.xlsx"
+            self.caminho_raiz + f"SECON - General\\CÓDIGOS\\TEMPLATES_NL_RGPS.xlsx"
         )
 
         dataframe = pd.read_excel(
@@ -70,7 +70,7 @@ class PreenchimentoRGPSBase(SiggoDriver):
 
     def preparar_preechimento_cabecalho(self):
         caminho_completo = (
-            self.caminho_raiz + f"General - SECON\\CÓDIGOS\\TEMPLATES_NL_RGPS.xlsx"
+            self.caminho_raiz + f"SECON - General\\CÓDIGOS\\TEMPLATES_NL_RGPS.xlsx"
         )
 
         df = pd.read_excel(
@@ -147,8 +147,8 @@ class PreenchimentoRGPSBase(SiggoDriver):
                 return "Adiantamento_ferias"
             return ""
 
-        caminho_planilha = f"General - SECON\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_{ANO_ATUAL}\\{MESES[MES_ATUAL]}\\DEMOFIN_TABELA.xlsx"
-        #caminho_planilha = f"General - SECON\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_2025\\03-MARÇO\\DEMOFIN_TABELA.xlsx"
+        caminho_planilha = f"SECON - General\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_{ANO_ATUAL}\\{MESES[MES_ATUAL]}\\DEMOFIN_TABELA.xlsx"
+        #caminho_planilha = f"SECON - General\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_2025\\03-MARÇO\\DEMOFIN_TABELA.xlsx"
 
         caminho_completo = self.caminho_raiz + caminho_planilha
 
