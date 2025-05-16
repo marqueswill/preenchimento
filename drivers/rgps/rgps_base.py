@@ -238,6 +238,8 @@ class PreenchimentoRGPSBase(SiggoDriver):
 
     def executar(self):
         folha_rgps = self.gerar_folha_rgps()
+        folha_rgps = folha_rgps[folha_rgps["VALOR"] > 0]
+        folha_rgps = folha_rgps.sort_values(by="INSCRIÇÃO")
         self.preencher_nota_de_lancamento(folha_rgps)
 
 
@@ -329,9 +331,6 @@ class PreenchimentoRGPSPrincipal(PreenchimentoRGPSBase):
             soma_311 - subtrai_218
         )
 
-        folha_rgps = folha_rgps[folha_rgps["VALOR"] > 0]
-        folha_rgps = folha_rgps.sort_values(by="INSCRIÇÃO")
-
         return folha_rgps
 
 
@@ -359,7 +358,6 @@ class PreenchimentoRGPSSubstituicoes(PreenchimentoRGPSBase):
             folha_rgps.loc[folha_rgps["CLASS. ORC"] == "31901602", "VALOR"].values[0]
         )
 
-        folha_rgps = folha_rgps.sort_values(by="INSCRIÇÃO")
         return folha_rgps
 
 
@@ -403,8 +401,6 @@ class PreenchimentoRGPSIndenizacoesRestituicoes(PreenchimentoRGPSBase):
             "VALOR",
         ] = folha_rgps.loc[folha_rgps["CLASS. ORC"] == "33909304", "VALOR"].values[0]
 
-        folha_rgps = folha_rgps.sort_values(by="INSCRIÇÃO")
-
         return folha_rgps
 
 
@@ -431,7 +427,6 @@ class PreenchimentoRGPSDeaBeneficios(PreenchimentoRGPSBase):
         folha_rgps.loc[folha_rgps["CLASS. CONT"] == "211115101", "VALOR"] = (
             folha_rgps.loc[folha_rgps["CLASS. ORC"] == "33909208", "VALOR"].values[0]
         )
-        folha_rgps = folha_rgps.sort_values(by="INSCRIÇÃO")
 
         return folha_rgps
 
@@ -466,7 +461,6 @@ class PreenchimentoRGPSBeneficios(PreenchimentoRGPSBase):
         folha_rgps.loc[folha_rgps["CLASS. ORC"] == "33904600", "VALOR"] = (
             folha_rgps.loc[folha_rgps["CLASS. ORC"] == "33904602", "VALOR"].values[0]
         )
-        folha_rgps = folha_rgps.sort_values(by="INSCRIÇÃO")
 
         return folha_rgps
 
@@ -494,6 +488,5 @@ class PreenchimentoRGPSIndenizacoesPessoal(PreenchimentoRGPSBase):
         folha_rgps.loc[folha_rgps["CLASS. ORC"] == "31909400", "VALOR"] = (
             folha_rgps.loc[folha_rgps["CLASS. ORC"] == "31909401", "VALOR"].values[0]
         )
-        folha_rgps = folha_rgps.sort_values(by="INSCRIÇÃO")
 
         return folha_rgps
