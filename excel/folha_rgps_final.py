@@ -10,80 +10,107 @@ Original file is located at
 import pandas as pd
 import numpy as np
 
-plan_folha = pd.read_excel('DEMOFIN_TABELA.xlsx', sheet_name='DEMOFIN - T', header=1)
+plan_folha = pd.read_excel("DEMOFIN_TABELA.xlsx", sheet_name="DEMOFIN - T", header=1)
 
-plan_folha['CDG_NAT_DESPESA'] = plan_folha['CDG_NAT_DESPESA'].str.replace('.', '')
+plan_folha["CDG_NAT_DESPESA"] = plan_folha["CDG_NAT_DESPESA"].str.replace(".", "")
 
 filtro_fundo = plan_folha["CDG_FUNDO"] == 1
-plan_rgps = plan_folha.loc[filtro_fundo, ['CDG_PROVDESC','NME_NAT_DESPESA','CDG_NAT_DESPESA','VALOR_AUXILIAR']]
+plan_rgps = plan_folha.loc[
+    filtro_fundo,
+    ["CDG_PROVDESC", "NME_NAT_DESPESA", "CDG_NAT_DESPESA", "VALOR_AUXILIAR"],
+]
 plan_rgps
+
 
 def cria_coluna_rubrica(row):
-    cdg_nat_despesa = str(row['CDG_NAT_DESPESA'])
-    valor = row['VALOR_AUXILIAR']
+    cdg_nat_despesa = str(row["CDG_NAT_DESPESA"])
+    valor = row["VALOR_AUXILIAR"]
 
-    if cdg_nat_despesa.startswith('3'):
+    if cdg_nat_despesa.startswith("3"):
         if valor > 0:
-            return 'PROVENTO'
+            return "PROVENTO"
         else:
-            return 'DESCONTO'
-    elif cdg_nat_despesa.startswith('2'):
+            return "DESCONTO"
+    elif cdg_nat_despesa.startswith("2"):
         if valor < 0:
-            return 'DESCONTO'
+            return "DESCONTO"
         else:
-            return 'PROVENTO'
+            return "PROVENTO"
     else:
-        return ''  # Ou algum outro valor padrão, se necessário
+        return ""  # Ou algum outro valor padrão, se necessário
 
-plan_rgps['RUBRICA'] = plan_rgps.apply(cria_coluna_rubrica, axis=1)
+
+plan_rgps["RUBRICA"] = plan_rgps.apply(cria_coluna_rubrica, axis=1)
 plan_rgps
 
-plan_rgps['VALOR_AUXILIAR'] = plan_rgps['VALOR_AUXILIAR'].abs()
+plan_rgps["VALOR_AUXILIAR"] = plan_rgps["VALOR_AUXILIAR"].abs()
 plan_rgps
 
 plan_rgps = pd.pivot_table(
     plan_rgps,
-    values='VALOR_AUXILIAR',
-    index=['CDG_PROVDESC','NME_NAT_DESPESA','CDG_NAT_DESPESA'],
-    columns='RUBRICA',
-    aggfunc='sum'
-  )
+    values="VALOR_AUXILIAR",
+    index=["CDG_PROVDESC", "NME_NAT_DESPESA", "CDG_NAT_DESPESA"],
+    columns="RUBRICA",
+    aggfunc="sum",
+)
 plan_rgps
 
-conferencia_rgps = plan_rgps.groupby(['CDG_PROVDESC','NME_NAT_DESPESA', 'CDG_NAT_DESPESA'])[['PROVENTO','DESCONTO']].agg(lambda x: np.sum(np.abs(x))).reset_index()
+conferencia_rgps = (
+    plan_rgps.groupby(["CDG_PROVDESC", "NME_NAT_DESPESA", "CDG_NAT_DESPESA"])[
+        ["PROVENTO", "DESCONTO"]
+    ]
+    .agg(lambda x: np.sum(np.abs(x)))
+    .reset_index()
+)
 conferencia_rgps
+
 
 # Função para criar a coluna "AJUSTE"
 def categorizar_rubrica(rubrica):
-    if rubrica in [11962,21962,32191,42191,52191,61962]:
-        return 'Adiantamento_ferias'
-    return ''
+    if rubrica in [11962, 21962, 32191, 42191, 52191, 61962]:
+        return "ADIANTAMENTO FÉRIAS"
+    return ""
+
 
 # Aplica a função pra criar a coluna "AJUSTE"
-conferencia_rgps['AJUSTE'] = conferencia_rgps['CDG_PROVDESC'].apply(categorizar_rubrica)
-conferencia_rgps.sort_values(by=['CDG_NAT_DESPESA'])
+conferencia_rgps["AJUSTE"] = conferencia_rgps["CDG_PROVDESC"].apply(categorizar_rubrica)
+conferencia_rgps.sort_values(by=["CDG_NAT_DESPESA"])
 
-conferencia_rgps_final = conferencia_rgps.groupby(['NME_NAT_DESPESA', 'CDG_NAT_DESPESA'])[['PROVENTO','DESCONTO']].agg(lambda x: np.sum(np.abs(x))).reset_index()
+conferencia_rgps_final = (
+    conferencia_rgps.groupby(["NME_NAT_DESPESA", "CDG_NAT_DESPESA"])[
+        ["PROVENTO", "DESCONTO"]
+    ]
+    .agg(lambda x: np.sum(np.abs(x)))
+    .reset_index()
+)
 conferencia_rgps_final
 
 """### **1. PROVENTOS**
 
 """
 
-prov_rgps =conferencia_rgps_final.loc[conferencia_rgps_final['CDG_NAT_DESPESA'].str.startswith('3')]
+prov_rgps = conferencia_rgps_final.loc[
+    conferencia_rgps_final["CDG_NAT_DESPESA"].str.startswith("3")
+]
 
-coluna_saldo_proventos = prov_rgps['PROVENTO'] - prov_rgps['DESCONTO']
-prov_rgps_final = prov_rgps.loc[:, ['NME_NAT_DESPESA','CDG_NAT_DESPESA','PROVENTO','DESCONTO']].assign(SALDO = coluna_saldo_proventos)
-prov_rgps_final.sort_values(by=['CDG_NAT_DESPESA'])
+coluna_saldo_proventos = prov_rgps["PROVENTO"] - prov_rgps["DESCONTO"]
+prov_rgps_final = prov_rgps.loc[
+    :, ["NME_NAT_DESPESA", "CDG_NAT_DESPESA", "PROVENTO", "DESCONTO"]
+].assign(SALDO=coluna_saldo_proventos)
+prov_rgps_final.sort_values(by=["CDG_NAT_DESPESA"])
 
 """### **2. DESCONTOS**
 
 """
 
-desc_rgps = conferencia_rgps_final.loc[~conferencia_rgps_final['CDG_NAT_DESPESA'].str.startswith('3')]
+desc_rgps = conferencia_rgps_final.loc[
+    ~conferencia_rgps_final["CDG_NAT_DESPESA"].str.startswith("3")
+]
 desc_rgps
 
-coluna_saldo_descontos= desc_rgps['DESCONTO'] - desc_rgps['PROVENTO']
+coluna_saldo_descontos = desc_rgps["DESCONTO"] - desc_rgps["PROVENTO"]
 coluna_saldo_descontos
-desc_rgps = desc_rgps.loc[:, ['NME_NAT_DESPESA','CDG_NAT_DESPESA','DESCONTO','PROVENTO']].assign(SALDO = coluna_saldo_descontos)
-desc_rgps.sort_values(by=['CDG_NAT_DESPESA'])
+desc_rgps = desc_rgps.loc[
+    :, ["NME_NAT_DESPESA", "CDG_NAT_DESPESA", "DESCONTO", "PROVENTO"]
+].assign(SALDO=coluna_saldo_descontos)
+desc_rgps.sort_values(by=["CDG_NAT_DESPESA"])

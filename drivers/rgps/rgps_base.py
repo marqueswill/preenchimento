@@ -35,7 +35,8 @@ class PreenchimentoRGPSBase(SiggoDriver):
     nome_template: str
 
     def __init__(self, test=False):
-        super().__init__(test)
+
+        super().__init__(test=test)
 
     def carregar_template_nl(self):
         caminho_completo = (
@@ -144,11 +145,11 @@ class PreenchimentoRGPSBase(SiggoDriver):
 
         def categorizar_rubrica(rubrica):
             if rubrica in [11962, 21962, 32191, 42191, 52191, 61962]:
-                return "Adiantamento_ferias"
+                return "ADIANTAMENTO FÉRIAS"
             return ""
 
         caminho_planilha = f"SECON - General\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_{ANO_ATUAL}\\{MESES[MES_ATUAL]}\\DEMOFIN_TABELA.xlsx"
-        #caminho_planilha = f"SECON - General\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_2025\\03-MARÇO\\DEMOFIN_TABELA.xlsx"
+        # caminho_planilha = f"SECON - General\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_2025\\03-MARÇO\\DEMOFIN_TABELA.xlsx"
 
         caminho_completo = self.caminho_raiz + caminho_planilha
 
@@ -238,3 +239,261 @@ class PreenchimentoRGPSBase(SiggoDriver):
     def executar(self):
         folha_rgps = self.gerar_folha_rgps()
         self.preencher_nota_de_lancamento(folha_rgps)
+
+
+class PreenchimentoRGPSPrincipal(PreenchimentoRGPSBase):
+    def __init__(self, test=False):
+        self.nome_template = "PRINCIPAL"
+        super().__init__(test)
+
+    def gerar_folha_rgps(self):
+        folha_rgps = self.carregar_template_nl()
+        dados_conferencia_rgps = self.gerar_conferencia()
+
+        proventos_rgps = self.gerar_proventos(dados_conferencia_rgps)
+        descontos_rgps = self.gerar_descontos(dados_conferencia_rgps)
+
+        folha_rgps = folha_rgps.merge(
+            proventos_rgps[["CDG_NAT_DESPESA", "SALDO"]].rename(
+                columns={"SALDO": "SALDO_PROVENTO"}
+            ),
+            left_on="CLASS. ORC",
+            right_on="CDG_NAT_DESPESA",
+            how="left",
+        )
+        folha_rgps.drop(columns=["CDG_NAT_DESPESA"], inplace=True)
+
+        folha_rgps = folha_rgps.merge(
+            descontos_rgps[["CDG_NAT_DESPESA", "SALDO"]].rename(
+                columns={"SALDO": "SALDO_DESCONTO"}
+            ),
+            left_on="CLASS. CONT",
+            right_on="CDG_NAT_DESPESA",
+            how="left",
+        )
+        folha_rgps.drop(columns=["CDG_NAT_DESPESA"], inplace=True)
+
+        # Combina os valores, dando prioridade a PROVENTO, senão usa DESCONTO
+        folha_rgps["VALOR"] = folha_rgps["SALDO_PROVENTO"].combine_first(
+            folha_rgps["SALDO_DESCONTO"]
+        )
+
+        # Remove colunas auxiliares
+        folha_rgps.drop(columns=["SALDO_PROVENTO", "SALDO_DESCONTO"], inplace=True)
+
+        # CDG_NAT_DESPESA
+        classificacao_somar = {
+            "31901167": [
+                "31901167",
+                "31901101",  # 20
+                "31901102",  # 8
+                "31901104",  # 1
+            ],
+            "211110102": [
+                "31901122",
+            ],
+            "211110103": [
+                "31901131",
+                "31901132",
+            ],
+        }
+
+        for cod, somas in classificacao_somar.items():
+            if cod[0] == "3":
+                rgps_key_column = "CLASS. ORC"
+
+            else:
+                rgps_key_column = "CLASS. CONT"
+
+            total = proventos_rgps.loc[
+                proventos_rgps["CDG_NAT_DESPESA"].isin(somas),
+                "SALDO",
+            ].sum()
+
+            folha_rgps.loc[folha_rgps[rgps_key_column] == cod, "VALOR"] = total
+
+        soma_311 = folha_rgps.loc[
+            folha_rgps["CLASS. ORC"].isin(
+                ["31901107", "31901134", "31901141", "31901156", "31901157", "31901167"]
+            ),
+            "VALOR",
+        ].sum()
+        subtrai_218 = descontos_rgps.loc[
+            descontos_rgps["CDG_NAT_DESPESA"].isin(
+                ["218810110", "218810199", "218820104", "218830102"]
+            ),
+            "SALDO",
+        ].sum()
+
+        folha_rgps.loc[folha_rgps["CLASS. CONT"] == "211110101", "VALOR"] = (
+            soma_311 - subtrai_218
+        )
+
+        folha_rgps = folha_rgps[folha_rgps["VALOR"] > 0]
+        folha_rgps = folha_rgps.sort_values(by="INSCRIÇÃO")
+
+        return folha_rgps
+
+
+class PreenchimentoRGPSSubstituicoes(PreenchimentoRGPSBase):
+    def __init__(self, test=False):
+        self.nome_template = "SUBSTITUICOES"
+        super().__init__(test)
+
+    def gerar_folha_rgps(self):
+        folha_rgps = self.carregar_template_nl()
+        dados_conferencia_rgps = self.gerar_conferencia()
+        proventos_rgps = self.gerar_proventos(dados_conferencia_rgps)
+
+        folha_rgps = folha_rgps.merge(
+            proventos_rgps[["CDG_NAT_DESPESA", "SALDO"]].rename(
+                columns={"SALDO": "VALOR"}
+            ),
+            left_on="CLASS. ORC",
+            right_on="CDG_NAT_DESPESA",
+            how="left",
+        )
+        folha_rgps.drop(columns=["CDG_NAT_DESPESA"], inplace=True)
+
+        folha_rgps.loc[folha_rgps["CLASS. ORC"] == "31901600", "VALOR"] = (
+            folha_rgps.loc[folha_rgps["CLASS. ORC"] == "31901602", "VALOR"].values[0]
+        )
+
+        folha_rgps = folha_rgps.sort_values(by="INSCRIÇÃO")
+        return folha_rgps
+
+
+class PreenchimentoRGPSIndenizacoesRestituicoes(PreenchimentoRGPSBase):
+    def __init__(self, test=False):
+        self.nome_template = (
+            "INDENIZAÇÕES_RESTITUIÇÕES"  # TODO: rename to 'INDENIZAÇÕES_RESTITUIÇÕES'
+        )
+        super().__init__(test)
+
+    def gerar_folha_rgps(self):
+        folha_rgps = self.carregar_template_nl()
+        dados_conferencia_rgps = self.gerar_conferencia()
+        proventos_rgps = self.gerar_proventos(dados_conferencia_rgps)
+
+        folha_rgps = folha_rgps.merge(
+            proventos_rgps[["CDG_NAT_DESPESA", "SALDO"]].rename(
+                columns={"SALDO": "VALOR"}
+            ),
+            left_on="CLASS. ORC",
+            right_on="CDG_NAT_DESPESA",
+            how="left",
+        )
+        folha_rgps.drop(columns=["CDG_NAT_DESPESA"], inplace=True)
+
+        folha_rgps.loc[
+            (folha_rgps["INSCRIÇÃO"] == "2025NE00135")
+            & (folha_rgps["CLASS. CONT"] == "211110101"),
+            "VALOR",
+        ] = folha_rgps.loc[folha_rgps["CLASS. ORC"] == "33909317", "VALOR"].values[0]
+
+        folha_rgps.loc[
+            (folha_rgps["INSCRIÇÃO"] == "2025NE00136")
+            & (folha_rgps["CLASS. CONT"] == "211110101"),
+            "VALOR",
+        ] = folha_rgps.loc[folha_rgps["CLASS. ORC"] == "33909315", "VALOR"].values[0]
+
+        folha_rgps.loc[
+            (folha_rgps["INSCRIÇÃO"] == "2025NE00137")
+            & (folha_rgps["CLASS. CONT"] == "211110101"),
+            "VALOR",
+        ] = folha_rgps.loc[folha_rgps["CLASS. ORC"] == "33909304", "VALOR"].values[0]
+
+        folha_rgps = folha_rgps.sort_values(by="INSCRIÇÃO")
+
+        return folha_rgps
+
+
+class PreenchimentoRGPSDeaBeneficios(PreenchimentoRGPSBase):
+    def __init__(self, test=False):
+        self.nome_template = "DEA-BENEFÍCIOS"
+        super().__init__(test)
+
+    def gerar_folha_rgps(self):
+        folha_rgps = self.carregar_template_nl()
+        dados_conferencia_rgps = self.gerar_conferencia()
+        proventos_rgps = self.gerar_proventos(dados_conferencia_rgps)
+
+        folha_rgps = folha_rgps.merge(
+            proventos_rgps[["CDG_NAT_DESPESA", "SALDO"]].rename(
+                columns={"SALDO": "VALOR"}
+            ),
+            left_on="CLASS. ORC",
+            right_on="CDG_NAT_DESPESA",
+            how="left",
+        )
+        folha_rgps.drop(columns=["CDG_NAT_DESPESA"], inplace=True)
+
+        folha_rgps.loc[folha_rgps["CLASS. CONT"] == "211115101", "VALOR"] = (
+            folha_rgps.loc[folha_rgps["CLASS. ORC"] == "33909208", "VALOR"].values[0]
+        )
+        folha_rgps = folha_rgps.sort_values(by="INSCRIÇÃO")
+
+        return folha_rgps
+
+
+class PreenchimentoRGPSBeneficios(PreenchimentoRGPSBase):
+    def __init__(self, test=False):
+
+        self.nome_template = "BENEFICIOS"
+        super().__init__(test=test)
+
+    def gerar_folha_rgps(self):
+        folha_rgps = self.carregar_template_nl()
+        dados_conferencia_rgps = self.gerar_conferencia()
+        proventos_rgps = self.gerar_proventos(dados_conferencia_rgps)
+
+        # Fazendo o LEFT JOIN (merge) com base nas colunas correspondentes
+        folha_rgps = folha_rgps.merge(
+            proventos_rgps[["CDG_NAT_DESPESA", "SALDO"]].rename(
+                columns={"SALDO": "VALOR"}
+            ),
+            left_on="CLASS. ORC",
+            right_on="CDG_NAT_DESPESA",
+            how="left",
+        )
+        folha_rgps.drop(columns=["CDG_NAT_DESPESA"], inplace=True)
+
+        folha_rgps.loc[folha_rgps["CLASS. ORC"] == "33900800", "VALOR"] = (
+            folha_rgps.loc[folha_rgps["CLASS. ORC"] == "33900855", "VALOR"].values[0]
+            + folha_rgps.loc[folha_rgps["CLASS. ORC"] == "33900811", "VALOR"].values[0]
+        )
+
+        folha_rgps.loc[folha_rgps["CLASS. ORC"] == "33904600", "VALOR"] = (
+            folha_rgps.loc[folha_rgps["CLASS. ORC"] == "33904602", "VALOR"].values[0]
+        )
+        folha_rgps = folha_rgps.sort_values(by="INSCRIÇÃO")
+
+        return folha_rgps
+
+
+class PreenchimentoRGPSIndenizacoesPessoal(PreenchimentoRGPSBase):
+    def __init__(self, test=False):
+        self.nome_template = "INDENIZAÇÕES_PESSOAL"
+        super().__init__(test=test)
+
+    def gerar_folha_rgps(self):
+        folha_rgps = self.carregar_template_nl()
+        dados_conferencia_rgps = self.gerar_conferencia()
+        proventos_rgps = self.gerar_proventos(dados_conferencia_rgps)
+
+        folha_rgps = folha_rgps.merge(
+            proventos_rgps[["CDG_NAT_DESPESA", "SALDO"]].rename(
+                columns={"SALDO": "VALOR"}
+            ),
+            left_on="CLASS. ORC",
+            right_on="CDG_NAT_DESPESA",
+            how="left",
+        )
+        folha_rgps.drop(columns=["CDG_NAT_DESPESA"], inplace=True)
+
+        folha_rgps.loc[folha_rgps["CLASS. ORC"] == "31909400", "VALOR"] = (
+            folha_rgps.loc[folha_rgps["CLASS. ORC"] == "31909401", "VALOR"].values[0]
+        )
+        folha_rgps = folha_rgps.sort_values(by="INSCRIÇÃO")
+
+        return folha_rgps
