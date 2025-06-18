@@ -13,6 +13,3 @@ Acesse a pasta pelo terminal e execute:
 Ou execute o comando na pasta raiz:
 `./build_rgps.bat`
 
-### TODO
-- [] Integrar webdriver com Power Automate online para executar o fluxo que gera os dados da planilha
-- [] Tratamento de erros
