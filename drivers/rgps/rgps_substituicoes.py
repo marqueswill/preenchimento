@@ -4,7 +4,7 @@ from drivers.rgps.rgps_base import PreenchimentoRGPSSubstituicoes
 
 
 try:
-    driver = PreenchimentoRGPSSubstituicoes(test=False)
+    driver = PreenchimentoRGPSSubstituicoes(test=True)
     driver.executar()
 
 except Exception as e:
