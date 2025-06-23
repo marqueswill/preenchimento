@@ -1,9 +1,9 @@
 import sys
 
-from drivers.rgps.rgps_base import PreenchimentoRGPSPrincipal
+from drivers.rgps.rgps_base import RGPSFolha
 
 try:
-    driver = PreenchimentoRGPSPrincipal(test=True)
+    driver = RGPSFolha("PRINCIPAL")
     driver.executar()
 except Exception as e:
     print(e)

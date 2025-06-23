@@ -23,7 +23,7 @@ class SiggoDriver:
         username = os.getlogin().strip()
 
         caminho_completo = (
-            f"C:\\Users\\{username}\\OneDrive - Tribunal de Contas do Distrito Federal\\General - SECON\\"
+            f"C:\\Users\\{username}\\Tribunal de Contas do Distrito Federal\\General - SECON\\"
             + self.caminho_planilha
         )
 

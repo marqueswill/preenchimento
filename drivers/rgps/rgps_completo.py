@@ -1,10 +1,10 @@
 import sys
 
-from drivers.rgps.rgps_base import PreenchimentoRGPSCompleto
+from drivers.rgps.rgps_base import RGPSCompleto
 
 
 try:
-    driver = PreenchimentoRGPSCompleto(test=False)
+    driver = RGPSCompleto(test=True)
     driver.executar()
 except Exception as e:
     print(e)

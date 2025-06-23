@@ -31,9 +31,7 @@ MESES = {
 
 
 class SiggoDriver:
-    def __init__(self, test=False):
-        username = os.getlogin().strip()
-        self.caminho_raiz = f"C:\\Users\\{username}\\OneDrive - Tribunal de Contas do Distrito Federal\\"
+    def __init__(self):
 
         # Configurar Pandas para exibir todas as colunas e linhas
         pd.set_option("display.max_rows", None)  # Exibir todas as linhas
@@ -42,15 +40,6 @@ class SiggoDriver:
             "display.max_colwidth", None
         )  # Exibir conteúdo completo das células
 
-        if not test:
-            self.setup_driver()
-            self.esperar_login()
-
-    def carregar_planilha(self, caminho_planilha):
-        caminho_completo = self.caminho_raiz + caminho_planilha
-        dataframe = pd.read_excel(caminho_completo)
-
-        return dataframe
 
     def setup_driver(self):
         options = webdriver.ChromeOptions()
@@ -132,13 +121,6 @@ class SiggoDriver:
             Select(self.driver.find_element(By.XPATH, campo)).select_by_visible_text(
                 opcao
             )
-
-    def separar_por_pagina(self, dataframe: DataFrame, tamanho_pagina=24):
-        return [
-            dataframe.iloc[i : i + tamanho_pagina]
-            for i in range(0, len(dataframe), tamanho_pagina)
-        ]
-
 
 
     # Método controle de páginas

@@ -1,4 +1,4 @@
-from typing import List
+from typing import Dict, List
 import numpy as np
 from pandas import DataFrame
 from selenium.webdriver.common.by import By
@@ -11,8 +11,8 @@ import os
 import locale
 from datetime import datetime
 
-
 from drivers.siggo_driver import SiggoDriver
+
 
 locale.setlocale(locale.LC_TIME, "pt_BR.utf8")
 
@@ -35,12 +35,26 @@ MESES = {
 }
 
 
-class PreenchimentoRGPSBase(SiggoDriver):
+class RGPSBase():
     nome_template: str
 
-    def __init__(self, test=False):
+    def __init__(self, run=True, test=False):
+        username = os.getlogin().strip()
+        self.caminho_raiz = f"C:\\Users\\{username}\\Tribunal de Contas do Distrito Federal\\"
 
-        super().__init__(test=test)
+        self.test = test
+        self.run = run
+        self.siggo_driver = None
+
+        if run:
+            self.siggo_driver = SiggoDriver()
+            self.siggo_driver.setup_driver()
+            self.siggo_driver.esperar_login()
+
+    def carregar_planilha(self, caminho_planilha):
+        caminho_completo = self.caminho_raiz + caminho_planilha
+        dataframe = pd.read_excel(caminho_completo)
+        return dataframe
 
     def carregar_template_nl(self):
         caminho_completo = (
@@ -56,29 +70,38 @@ class PreenchimentoRGPSBase(SiggoDriver):
 
         return dataframe
 
-    def preencher_nota_de_lancamento(self, dados: DataFrame | List[DataFrame]):
-        if isinstance(dados, list):
-            dataframes = dados
-        else:
-            dataframes = [dados]
+    def separar_por_pagina(self, dataframe: DataFrame, tamanho_pagina=24):
+        return [
+            dataframe.iloc[i: i + tamanho_pagina]
+            for i in range(0, len(dataframe), tamanho_pagina)
+        ]
 
-        for df in dataframes:
+    def preencher_nota_de_lancamento(self, dados: DataFrame | Dict[str, DataFrame]):
+        if isinstance(dados, dict):
+            dataframes = dados 
+        else:
+            dataframes = {self.nome_template: dados}  # padroniza
+
+        for dado in dataframes.items():
+            self.nome_template = dado[0]
+            df = dado[1]
+            
             dados_por_pagina = self.separar_por_pagina(df)
             for dados_lancamentos in dados_por_pagina:
-                self.nova_aba()
-                self.acessar_link(
+                self.siggo_driver.nova_aba()
+                self.siggo_driver.acessar_link(
                     f"https://siggo.fazenda.df.gov.br/{ANO_ATUAL}/afc/nota-de-lancamento"
                 )
 
                 campos_cabecalho = self.preparar_preechimento_cabecalho()
-                self.selecionar_opcoes(campos_cabecalho["opcoes"])
-                self.preencher_campos(campos_cabecalho["campos"])
+                self.siggo_driver.selecionar_opcoes(campos_cabecalho["opcoes"])
+                self.siggo_driver.preencher_campos(campos_cabecalho["campos"])
 
                 campos_lancamentos = self.preparar_preenchimento_nl(
                     dados_lancamentos)
-                self.preencher_campos(campos_lancamentos)
+                self.siggo_driver.preencher_campos(campos_lancamentos)
 
-        self.fechar_primeira_aba()
+        self.siggo_driver.fechar_primeira_aba()
 
     def preparar_preechimento_cabecalho(self):
         caminho_completo = (
@@ -111,13 +134,13 @@ class PreenchimentoRGPSBase(SiggoDriver):
 
     def preparar_preenchimento_nl(self, dados):
         delete_button = '//*[@id="ui-fieldset-0-content"]/div/div/div[1]/div/table/tbody/tr/td[7]/button'
-        self.driver.find_element(By.XPATH, delete_button).click()
+        self.siggo_driver.driver.find_element(By.XPATH, delete_button).click()
 
         linhas = dados.shape[0]
         campos = {}
 
         for i in range(linhas):
-            self.driver.find_element(
+            self.siggo_driver.driver.find_element(
                 By.XPATH, '//*[@id="incluirCampoLancamentos"]'
             ).click()
 
@@ -248,6 +271,7 @@ class PreenchimentoRGPSBase(SiggoDriver):
 
     def gerar_folha_rgps(self):
         folha_rgps = self.carregar_template_nl()
+        # print(folha_rgps)
 
         dados_conferencia_rgps = self.gerar_conferencia()
         proventos_rgps = self.gerar_proventos(dados_conferencia_rgps)
@@ -270,8 +294,8 @@ class PreenchimentoRGPSBase(SiggoDriver):
 
         def soma_codigos(codigos: str, dicionario: dict):
             lista_codigos = list(map(str.strip, codigos.split(",")))
-            lista_codigos = [c[1:] if c.startswith(
-                "33") else c for c in lista_codigos]
+            lista_codigos = [c[1:] if c.startswith("33") and len(
+                c) == 9 else c for c in lista_codigos]
             resultado = sum(float(dicionario.get(str(c), 0.0))
                             for c in lista_codigos)
 
@@ -303,76 +327,46 @@ class PreenchimentoRGPSBase(SiggoDriver):
 
     def executar(self):
         folha_rgps = self.gerar_folha_rgps()
-        print(folha_rgps)
-        self.preencher_nota_de_lancamento(folha_rgps)
+
+        if self.test:
+            print(folha_rgps)
+
+        if self.run:
+            self.preencher_nota_de_lancamento(folha_rgps)
 
 
-class PreenchimentoRGPSCompleto(PreenchimentoRGPSBase):
-    def __init__(self, test=False):
-        self.nome_template = "COMPLETO"
-        super().__init__(test)
+class RGPSFolha(RGPSBase):
+    def __init__(self, nome_template, run=True, test=False):
+        self.nome_template = nome_template
+        super().__init__(run, test)
+
+
+class RGPSCompleto(RGPSBase):
+    def __init__(self, run=True, test=False):
+        self.nome_template = None
+        self.run = run
+        self.test = test
+        super().__init__(run, test)
 
     def executar(self):
-        folha_rgps_princial = PreenchimentoRGPSPrincipal(
-            test=self.test).gerar_folha_rgps()
-        folha_rgps_substituicoes = PreenchimentoRGPSSubstituicoes(
-            test=self.test).gerar_folha_rgps()
-        folha_rgps_indenizacoes = PreenchimentoRGPSIndenizacoesRestituicoes(
-            test=self.test).gerar_folha_rgps()
-        folha_rgps_dea_beneficios = PreenchimentoRGPSDeaBeneficios(
-            test=self.test).gerar_folha_rgps()
-        folha_rgps_beneficios = PreenchimentoRGPSBeneficios(
-            test=self.test).gerar_folha_rgps()
-        folha_rgps_indenizacoes_pessoal = PreenchimentoRGPSIndenizacoesPessoal(
-            test=self.test).gerar_folha_rgps()
-
-        # Combina todas as folhas em um único DataFrame
-        folha_rgps = [
-            folha_rgps_princial,
-            folha_rgps_substituicoes,
-            folha_rgps_indenizacoes,
-            folha_rgps_dea_beneficios,
-            folha_rgps_beneficios,
-            folha_rgps_indenizacoes_pessoal
+        # Lista com os nomes dos templates
+        nomes_templates = [
+            "PRINCIPAL",
+            "SUBSTITUICOES",
+            "BENEFICIOS",
+            "DEA_BENEFÍCIOS",
+            "INDENIZACOES_RESTITUICOES",
+            "INDENIZACOES_PESSOAL",
         ]
 
-        self.preencher_nota_de_lancamento(folha_rgps)
+        # Cria um dicionário associando o nome do template à folha gerada
+        folhas = [RGPSFolha(nome, run=False) for nome in nomes_templates]
+        folhas_rgps = {folha.nome_template: folha.gerar_folha_rgps() for folha in folhas}
 
+        if self.test:
+            for i, folha in enumerate(folhas_rgps.items()):
+                print(folha[0])
+                print(folha[1].head())
 
-class PreenchimentoRGPSPrincipal(PreenchimentoRGPSBase):
-    def __init__(self, test=False):
-        self.nome_template = "PRINCIPAL"
-        super().__init__(test)
-
-
-class PreenchimentoRGPSSubstituicoes(PreenchimentoRGPSBase):
-    def __init__(self, test=False):
-        self.nome_template = "SUBSTITUICOES"
-        super().__init__(test)
-
-
-class PreenchimentoRGPSIndenizacoesRestituicoes(PreenchimentoRGPSBase):
-    def __init__(self, test=False):
-        self.nome_template = (
-            "INDENIZAÇÕES_RESTITUIÇÕES"
-        )
-        super().__init__(test)
-
-
-class PreenchimentoRGPSDeaBeneficios(PreenchimentoRGPSBase):
-    def __init__(self, test=False):
-        self.nome_template = "DEA-BENEFÍCIOS"
-        super().__init__(test)
-
-
-class PreenchimentoRGPSBeneficios(PreenchimentoRGPSBase):
-    def __init__(self, test=False):
-
-        self.nome_template = "BENEFICIOS"
-        super().__init__(test=test)
-
-
-class PreenchimentoRGPSIndenizacoesPessoal(PreenchimentoRGPSBase):
-    def __init__(self, test=False):
-        self.nome_template = "INDENIZAÇÕES_PESSOAL"
-        super().__init__(test=test)
+        if self.run:
+            self.preencher_nota_de_lancamento(folhas_rgps)

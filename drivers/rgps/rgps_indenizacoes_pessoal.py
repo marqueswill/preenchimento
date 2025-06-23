@@ -1,10 +1,9 @@
 import sys
 
-from drivers.rgps.rgps_base import PreenchimentoRGPSIndenizacoesPessoal
-
+from drivers.rgps.rgps_base import RGPSFolha
 
 try:
-    driver = PreenchimentoRGPSIndenizacoesPessoal(test=False)
+    driver = RGPSFolha("INDENIZACOES_PESSOAL")
     driver.executar()
 except Exception as e:
     print(e)

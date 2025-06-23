@@ -28,7 +28,7 @@
 
 #     def gerar_conferencia_rgps(self):
 #         plan_folha = pd.read_excel(
-#             f"C:\\Users\\{self.username}\\OneDrive - Tribunal de Contas do Distrito Federal\\General - SECON\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_{ANO_ATUAL}\\{MESES[MES_ATUAL]}\\DEMOFIN_TABELA.xlsx",
+#             f"C:\\Users\\{self.username}\\Tribunal de Contas do Distrito Federal\\General - SECON\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_{ANO_ATUAL}\\{MESES[MES_ATUAL]}\\DEMOFIN_TABELA.xlsx",
 #             sheet_name="DEMOFIN - T",
 #             header=1,
 #         )
@@ -63,9 +63,9 @@
 #         ].sum()
 
 #         if self.test:
-#             caminho_planilha = f"C:\\Users\\{self.username}\\OneDrive - Tribunal de Contas do Distrito Federal\\General - SECON\\CÓDIGOS\\PLANILHA_FOLHA_NORMAL_RGPS_MARCO_2025_NOVA.xlsx"
+#             caminho_planilha = f"C:\\Users\\{self.username}\\Tribunal de Contas do Distrito Federal\\General - SECON\\CÓDIGOS\\PLANILHA_FOLHA_NORMAL_RGPS_MARCO_2025_NOVA.xlsx"
 #         else:
-#             caminho_planilha = f"C:\\Users\\{self.username}\\OneDrive - Tribunal de Contas do Distrito Federal\\General - SECON\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_{ANO_ATUAL}\\{MESES[MES_ATUAL]}\\PLANILHA_FOLHA_NORMAL_RGPS_{MESES[MES_ATUAL].split('-')[1].replace('Ç','C')}_{ANO_ATUAL}.xlsx"
+#             caminho_planilha = f"C:\\Users\\{self.username}\\Tribunal de Contas do Distrito Federal\\General - SECON\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_{ANO_ATUAL}\\{MESES[MES_ATUAL]}\\PLANILHA_FOLHA_NORMAL_RGPS_{MESES[MES_ATUAL].split('-')[1].replace('Ç','C')}_{ANO_ATUAL}.xlsx"
 
 #         # Carregar a planilha
 #         wb = load_workbook(caminho_planilha)

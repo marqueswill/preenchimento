@@ -39,7 +39,7 @@ MESES = {
 class GerarConferencia:
     def __init__(self):
         username = os.getlogin().strip()
-        self.caminho_raiz = f"C:\\Users\\{username}\\OneDrive - Tribunal de Contas do Distrito Federal\\"
+        self.caminho_raiz = f"C:\\Users\\{username}\\Tribunal de Contas do Distrito Federal\\"
         self.nome_template = "CONFERÊNCIA"
 
     def exportar_para_planilha(

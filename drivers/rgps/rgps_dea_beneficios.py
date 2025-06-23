@@ -1,10 +1,9 @@
 import sys
 
-from drivers.rgps.rgps_base import PreenchimentoRGPSDeaBeneficios
-
+from drivers.rgps.rgps_base import RGPSFolha
 
 try:
-    driver = PreenchimentoRGPSDeaBeneficios(test=False)
+    driver = RGPSFolha("DEA_BENEFICIOS")
     driver.executar()
 except Exception as e:
     print(e)
