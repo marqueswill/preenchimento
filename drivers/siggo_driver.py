@@ -31,6 +31,9 @@ MESES = {
 
 
 class SiggoDriver:
+    """_summary_
+    Driver para automação e interação com o SIGGO  
+    """
     def __init__(self):
 
         # Configurar Pandas para exibir todas as colunas e linhas

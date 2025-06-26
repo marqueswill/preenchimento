@@ -1,0 +1,268 @@
+import numpy as np
+from pandas import DataFrame
+
+import pandas as pd
+
+import os
+import locale
+from datetime import datetime
+
+
+locale.setlocale(locale.LC_TIME, "pt_BR.utf8")
+
+
+ANO_ATUAL = datetime.now().year
+MES_ATUAL = datetime.now().month
+MESES = {
+    1: "01-JANEIRO",
+    2: "02-FEVEREIRO",
+    3: "03-MARÇO",
+    4: "04-ABRIL",
+    5: "05-MAIO",
+    6: "06-JUNHO",
+    7: "07-JULHO",
+    8: "08-AGOSTO",
+    9: "09-SETEMBRO",
+    10: "10-OUTUBRO",
+    11: "11-NOVEMBRO",
+    12: "12-DEZEMBRO",
+}
+
+
+class FolhaPagamento():
+    """_summary_
+    Classe base para gerar folhas de pagamento no SIGGO.
+    Utiliza o driver PreenchimentoNL para preencher os dados na plataforma.
+    """
+
+    nome_template: str
+    cod_fundo: int
+
+    def __init__(self, nome_fundo: str, nome_template: str, test=False):
+        """_summary_
+        Inicializa a classe FolhaPagamento.
+        Args:
+            nome_fundo (str): _description_ - deve ser um dos seguintes: "rgps", "financeiro", "capitalizado", "inativo", "pensão".
+            nome_template (str): _description_ - deve ser igual a um dos nomes de template disponíveis no arquivo de templates.
+            test (bool, optional): _description_. Defaults to False. - se True, imprime os dados no console para teste.
+        Raises:
+        """
+
+        username = os.getlogin().strip()
+        self.caminho_raiz = f"C:\\Users\\{username}\\OneDrive - Tribunal de Contas do Distrito Federal\\"
+
+        cod_fundos = {"rgps": 1, "financeiro": 2,
+                      "capitalizado": 3, "inativo": 4, "pensão": 5}
+
+        self.cod_fundo = cod_fundos[nome_fundo.lower()]
+        self.nome_fundo = nome_fundo.lower()
+        self.nome_template = nome_template
+        self.test = test
+        # self.run = run
+        # self.preenchedor = PreenchimentoNL(
+        #     nome_fundo, nome_template, run, test)
+
+    def carregar_planilha(self, caminho_planilha):
+        caminho_completo = self.caminho_raiz + caminho_planilha
+        dataframe = pd.read_excel(caminho_completo)
+        return dataframe
+
+    def carregar_template_nl(self):
+        caminho_completo = (
+            self.caminho_raiz +
+            f"SECON - General\\CÓDIGOS\\TEMPLATES_NL_{self.nome_fundo.upper()}.xlsx"
+        )
+
+        dataframe = pd.read_excel(
+            caminho_completo,
+            header=6,
+            sheet_name=self.nome_template,
+            usecols="A:H",
+        ).astype(str)
+
+        dataframe["CLASS. ORC"] = dataframe["CLASS. ORC"].apply(
+            lambda x: x[1:] if len(x) == 9 else x
+        )
+
+        return dataframe
+
+    def gerar_conferencia(self):
+        # Faz distinção entre proventos e descontos
+        def cria_coluna_rubrica(row):
+            cdg_nat_despesa = str(row["CDG_NAT_DESPESA"])
+            valor = row["VALOR_AUXILIAR"]
+
+            if cdg_nat_despesa.startswith("3"):
+                if valor > 0:
+                    return "PROVENTO"
+                else:
+                    return "DESCONTO"
+            elif cdg_nat_despesa.startswith("2") or cdg_nat_despesa.startswith("4"):
+                if valor < 0:
+                    return "DESCONTO"
+                else:
+                    return "PROVENTO"
+            else:
+                return ""  # Ou algum outro valor padrão, se necessário
+
+        # Identifica a rubrica de adiantamento de férias
+        def categorizar_rubrica(rubrica):
+            if rubrica in [11962, 21962, 32191, 42191, 52191, 61962]:
+                return "ADIANTAMENTO FÉRIAS"
+            return ""
+
+        # Carrega a tabela DEMOFIN - T para o mês e ano atuais
+        caminho_planilha = f"SECON - General\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_{ANO_ATUAL}\\{MESES[MES_ATUAL]}\\DEMOFIN_TABELA.xlsx"
+        caminho_completo = self.caminho_raiz + caminho_planilha
+        tabela_demofin = pd.read_excel(
+            caminho_completo, sheet_name="DEMOFIN - T", header=1)
+        tabela_demofin["CDG_NAT_DESPESA"] = tabela_demofin["CDG_NAT_DESPESA"].str.replace(
+            ".", ""
+        )
+
+        # Filtra a tabela para o fundo específico
+        filtro_fundo = tabela_demofin["CDG_FUNDO"] == self.cod_fundo
+        plan_folha = tabela_demofin.loc[
+            filtro_fundo,
+            ["CDG_PROVDESC", "NME_NAT_DESPESA",
+                "CDG_NAT_DESPESA", "VALOR_AUXILIAR"],
+        ]
+
+        # Identifica os proventos e descontos
+        plan_folha["RUBRICA"] = plan_folha.apply(cria_coluna_rubrica, axis=1)
+
+        # Apenas valores absolutos (lógica de saldo)
+        plan_folha["VALOR_AUXILIAR"] = plan_folha["VALOR_AUXILIAR"].abs()
+
+        # Agrupa os dados por CDG_PROVDESC, NME_NAT_DESPESA e CDG_NAT_DESPESA
+        plan_folha = pd.pivot_table(
+            plan_folha,
+            values="VALOR_AUXILIAR",
+            index=["CDG_PROVDESC", "NME_NAT_DESPESA", "CDG_NAT_DESPESA"],
+            columns="RUBRICA",
+            aggfunc="sum",
+        )
+
+        conferencia_folha = (
+            plan_folha.groupby(["CDG_PROVDESC", "NME_NAT_DESPESA", "CDG_NAT_DESPESA"])[
+                ["PROVENTO", "DESCONTO"]
+            ]
+            .agg(lambda x: np.sum(np.abs(x)))
+            .reset_index()
+        )
+
+        # Aplica a função pra criar a coluna "AJUSTE"
+        conferencia_folha["AJUSTE"] = conferencia_folha["CDG_PROVDESC"].apply(
+            categorizar_rubrica
+        )
+
+        conferencia_folha.sort_values(by=["CDG_NAT_DESPESA"])
+
+        conferencia_folha_final = (
+            conferencia_folha.groupby(["NME_NAT_DESPESA", "CDG_NAT_DESPESA"])[
+                ["PROVENTO", "DESCONTO"]
+            ]
+            .agg(lambda x: np.sum(np.abs(x)))
+            .reset_index()
+        )
+
+        return conferencia_folha_final
+
+    def gerar_proventos(self, conferencia_rgps_final: DataFrame):
+        prov_folha = conferencia_rgps_final.loc[
+            conferencia_rgps_final["CDG_NAT_DESPESA"].str.startswith("3")
+        ]
+
+        coluna_saldo_proventos = prov_folha["PROVENTO"] - \
+            prov_folha["DESCONTO"]
+        prov_folha = prov_folha.loc[
+            :, ["NME_NAT_DESPESA", "CDG_NAT_DESPESA", "PROVENTO", "DESCONTO"]
+        ].assign(SALDO=coluna_saldo_proventos)
+
+        prov_folha["CDG_NAT_DESPESA"] = prov_folha[
+            "CDG_NAT_DESPESA"
+        ].str.slice(1)
+
+        prov_folha.sort_values(by=["CDG_NAT_DESPESA"])
+
+        return prov_folha
+
+    def gerar_descontos(self, conferencia_rgps_final: DataFrame):
+        desc_folha = conferencia_rgps_final.loc[
+            ~conferencia_rgps_final["CDG_NAT_DESPESA"].str.startswith("3")
+        ]
+
+        coluna_saldo_descontos = desc_folha["DESCONTO"] - \
+            desc_folha["PROVENTO"]
+        coluna_saldo_descontos
+        desc_folha = desc_folha.loc[
+            :, ["NME_NAT_DESPESA", "CDG_NAT_DESPESA", "DESCONTO", "PROVENTO"]
+        ].assign(SALDO=coluna_saldo_descontos)
+        desc_folha.sort_values(by=["CDG_NAT_DESPESA"])
+        return desc_folha
+
+    def gerar_saldos(self):
+        dados_conferencia = self.gerar_conferencia()
+        proventos_financeiro = self.gerar_proventos(dados_conferencia)
+        descontos_financeiro = self.gerar_descontos(dados_conferencia)
+
+        # Cria dicionários para acesso rápido aos saldos por código
+        proventos_dict = dict(
+            zip(proventos_financeiro["CDG_NAT_DESPESA"], proventos_financeiro["SALDO"]))
+        descontos_dict = dict(
+            zip(descontos_financeiro["CDG_NAT_DESPESA"], descontos_financeiro["SALDO"]))
+
+        return {
+            **proventos_dict,
+            **descontos_dict,
+        }
+
+    def gerar_folha(self):
+        # Função para somar os saldos de uma lista de códigos
+        def soma_codigos(codigos: str, dicionario: dict):
+            lista_codigos = list(map(str.strip, codigos.split(",")))
+            lista_codigos = [c[1:] if c.startswith("33") and len(
+                c) == 9 else c for c in lista_codigos]
+            resultado = sum(float(dicionario.get(str(c), 0.0))
+                            for c in lista_codigos)
+
+            return resultado
+        folha_pagamento = self.carregar_template_nl()
+        folha_pagamento["VALOR"] = 0.0
+
+        if self.test:
+            print(folha_pagamento)
+
+        saldos_dict = self.gerar_saldos()
+
+        if self.test:
+            print("\nSaldos:")
+            print(saldos_dict)
+            print("\n\n")
+
+        # Calcula o valor para cada linha
+        for idx, row in folha_pagamento.iterrows():
+            somar = row.get("SOMAR", [])
+            subtrair = row.get("SUBTRAIR", [])
+
+            valor_somar = soma_codigos(somar, saldos_dict)
+            valor_subtrair = soma_codigos(subtrair, saldos_dict)
+            valor = valor_somar - valor_subtrair
+            folha_pagamento.at[idx, "VALOR"] = valor
+
+            if self.test:
+                print(f"\nProcessando linha {idx}:")
+                print(f"SOMAR          : {somar}")
+                print(f"SUBTRAIR       : {subtrair}")
+                print(
+                    f"VALOR calculado: {valor_somar:.2f} - {valor_subtrair:.2f}  = {valor:.2f}")
+                print()
+
+        folha_pagamento.drop(columns=["SOMAR", "SUBTRAIR"], inplace=True)
+        folha_pagamento = folha_pagamento.sort_values(by="INSCRIÇÃO")
+        folha_pagamento = folha_pagamento[folha_pagamento["VALOR"] > 0]
+
+        if self.test:
+            print(folha_pagamento)
+
+        return folha_pagamento

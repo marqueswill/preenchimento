@@ -40,7 +40,7 @@ class RGPSBase():
 
     def __init__(self, run=True, test=False):
         username = os.getlogin().strip()
-        self.caminho_raiz = f"C:\\Users\\{username}\\Tribunal de Contas do Distrito Federal\\"
+        self.caminho_raiz = f"C:\\Users\\{username}\\OneDrive - Tribunal de Contas do Distrito Federal\\"
 
         self.test = test
         self.run = run
