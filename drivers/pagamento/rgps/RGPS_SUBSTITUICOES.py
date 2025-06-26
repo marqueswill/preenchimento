@@ -1,9 +1,9 @@
 import sys
 
-from drivers.rgps.rgps_base import RGPSFolha
+from drivers.pagamento.folha_pagamento_base import FolhaPagamentoBase
 
 try:
-    driver = RGPSFolha("SUBSTITUICOES")
+    driver = FolhaPagamentoBase("rgps", "SUBSTITUICOES", test=True)
     driver.executar()
 except Exception as e:
     print(e)
