@@ -12,7 +12,10 @@ locale.setlocale(locale.LC_TIME, "pt_BR.utf8")
 
 
 ANO_ATUAL = datetime.now().year
-MES_ATUAL = datetime.now().month
+# MES_ATUAL = datetime.now().month
+MES_ATUAL = 6
+
+
 MESES = {
     1: "01-JANEIRO",
     2: "02-FEVEREIRO",
@@ -32,7 +35,6 @@ MESES = {
 class FolhaPagamento():
     """_summary_
     Classe base para gerar folhas de pagamento no SIGGO.
-    Utiliza o driver PreenchimentoNL para preencher os dados na plataforma.
     """
 
     nome_template: str
@@ -77,7 +79,7 @@ class FolhaPagamento():
             caminho_completo,
             header=6,
             sheet_name=self.nome_template,
-            usecols="A:H",
+            usecols="A:I",
         ).astype(str)
 
         dataframe["CLASS. ORC"] = dataframe["CLASS. ORC"].apply(
@@ -111,40 +113,62 @@ class FolhaPagamento():
                 return "ADIANTAMENTO FÉRIAS"
             return ""
 
+        def cria_coluna_tipo(row):
+            cdg_nat_despesa = str(row["CDG_NAT_DESPESA"])
+            nome_despesa = str(row["NME_PROVDESC"])
+
+            tipo = "ATIVO"
+            if cdg_nat_despesa == "331909401" and "COMPENSATÓRIA" in nome_despesa:
+                tipo = "COMPENSATÓRIA"
+
+            if cdg_nat_despesa == "333900811":
+                if "INATIVO" in nome_despesa:
+                    tipo = "INATIVO"
+                elif "PENSIONISTA" in nome_despesa:
+                    tipo = "PENSIONISTA"
+
+            return tipo
+
         # Carrega a tabela DEMOFIN - T para o mês e ano atuais
         caminho_planilha = f"SECON - General\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_{ANO_ATUAL}\\{MESES[MES_ATUAL]}\\DEMOFIN_TABELA.xlsx"
         caminho_completo = self.caminho_raiz + caminho_planilha
         tabela_demofin = pd.read_excel(
             caminho_completo, sheet_name="DEMOFIN - T", header=1)
+
+        # Remove "." dos códigos
         tabela_demofin["CDG_NAT_DESPESA"] = tabela_demofin["CDG_NAT_DESPESA"].str.replace(
             ".", ""
         )
 
         # Filtra a tabela para o fundo específico
         filtro_fundo = tabela_demofin["CDG_FUNDO"] == self.cod_fundo
+
+        # Seleciona colunas de interesse
         plan_folha = tabela_demofin.loc[
             filtro_fundo,
             ["CDG_PROVDESC", "NME_NAT_DESPESA",
-                "CDG_NAT_DESPESA", "VALOR_AUXILIAR"],
+                "CDG_NAT_DESPESA", "VALOR_AUXILIAR", "NME_PROVDESC"],
         ]
 
-        # Identifica os proventos e descontos
+        # Identifica os proventos e descontos e os tipos de cada (compensatoria, inativo, ativo, pensionista...)
         plan_folha["RUBRICA"] = plan_folha.apply(cria_coluna_rubrica, axis=1)
+        plan_folha["TIPO_DESPESA"] = plan_folha.apply(cria_coluna_tipo, axis=1)
 
         # Apenas valores absolutos (lógica de saldo)
         plan_folha["VALOR_AUXILIAR"] = plan_folha["VALOR_AUXILIAR"].abs()
 
-        # Agrupa os dados por CDG_PROVDESC, NME_NAT_DESPESA e CDG_NAT_DESPESA
+        # Agrupa os dados por CDG_PROVDESC, NME_NAT_DESPESA, CDG_NAT_DESPESA e TIPO_DESPESA
         plan_folha = pd.pivot_table(
             plan_folha,
             values="VALOR_AUXILIAR",
-            index=["CDG_PROVDESC", "NME_NAT_DESPESA", "CDG_NAT_DESPESA"],
+            index=["CDG_PROVDESC", "NME_NAT_DESPESA",
+                   "CDG_NAT_DESPESA", "TIPO_DESPESA"],
             columns="RUBRICA",
             aggfunc="sum",
         )
 
         conferencia_folha = (
-            plan_folha.groupby(["CDG_PROVDESC", "NME_NAT_DESPESA", "CDG_NAT_DESPESA"])[
+            plan_folha.groupby(["CDG_PROVDESC", "NME_NAT_DESPESA", "CDG_NAT_DESPESA", "TIPO_DESPESA"])[
                 ["PROVENTO", "DESCONTO"]
             ]
             .agg(lambda x: np.sum(np.abs(x)))
@@ -159,7 +183,7 @@ class FolhaPagamento():
         conferencia_folha.sort_values(by=["CDG_NAT_DESPESA"])
 
         conferencia_folha_final = (
-            conferencia_folha.groupby(["NME_NAT_DESPESA", "CDG_NAT_DESPESA"])[
+            conferencia_folha.groupby(["NME_NAT_DESPESA", "CDG_NAT_DESPESA", "TIPO_DESPESA"])[
                 ["PROVENTO", "DESCONTO"]
             ]
             .agg(lambda x: np.sum(np.abs(x)))
@@ -176,7 +200,7 @@ class FolhaPagamento():
         coluna_saldo_proventos = prov_folha["PROVENTO"] - \
             prov_folha["DESCONTO"]
         prov_folha = prov_folha.loc[
-            :, ["NME_NAT_DESPESA", "CDG_NAT_DESPESA", "PROVENTO", "DESCONTO"]
+            :, ["NME_NAT_DESPESA", "CDG_NAT_DESPESA", "PROVENTO", "DESCONTO", "TIPO_DESPESA"]
         ].assign(SALDO=coluna_saldo_proventos)
 
         prov_folha["CDG_NAT_DESPESA"] = prov_folha[
@@ -192,30 +216,43 @@ class FolhaPagamento():
             ~conferencia_rgps_final["CDG_NAT_DESPESA"].str.startswith("3")
         ]
 
+        print(desc_folha)
         coluna_saldo_descontos = desc_folha["DESCONTO"] - \
             desc_folha["PROVENTO"]
-        coluna_saldo_descontos
+
         desc_folha = desc_folha.loc[
-            :, ["NME_NAT_DESPESA", "CDG_NAT_DESPESA", "DESCONTO", "PROVENTO"]
+            :, ["NME_NAT_DESPESA", "CDG_NAT_DESPESA", "DESCONTO", "PROVENTO", "TIPO_DESPESA"]
         ].assign(SALDO=coluna_saldo_descontos)
+
         desc_folha.sort_values(by=["CDG_NAT_DESPESA"])
+
         return desc_folha
 
     def gerar_saldos(self):
         dados_conferencia = self.gerar_conferencia()
-        proventos_financeiro = self.gerar_proventos(dados_conferencia)
-        descontos_financeiro = self.gerar_descontos(dados_conferencia)
+        dados_proventos = self.gerar_proventos(dados_conferencia)
+        dados_descontos = self.gerar_descontos(dados_conferencia)
 
-        # Cria dicionários para acesso rápido aos saldos por código
-        proventos_dict = dict(
-            zip(proventos_financeiro["CDG_NAT_DESPESA"], proventos_financeiro["SALDO"]))
-        descontos_dict = dict(
-            zip(descontos_financeiro["CDG_NAT_DESPESA"], descontos_financeiro["SALDO"]))
+        # Transforma a tabela com os dados de proventos em uma lista
+        proventos_list = list(
+            zip(dados_proventos["TIPO_DESPESA"], dados_proventos["CDG_NAT_DESPESA"], dados_proventos["SALDO"]))
 
-        return {
-            **proventos_dict,
-            **descontos_dict,
-        }
+        # Transforma a tabela com os dados de descontos em uma lista
+        descontos_list = list(
+            zip(dados_descontos["TIPO_DESPESA"], dados_descontos["CDG_NAT_DESPESA"], dados_descontos["SALDO"]))
+
+        # Faz um dicionário com todos os saldos (proventos e descontos) segmentados pelo tipo do saldo
+        saldos_dict = {"ATIVO": {}, "INATIVO": {},
+                       "COMPENSATÓRIA": {}, "PENSIONISTA": {}}
+        for line in proventos_list + descontos_list:
+            saldos_dict[line[0]][line[1]] = line[2]
+
+        if self.test:
+            print(dados_conferencia)
+            # print(dados_proventos)
+            # print(dados_descontos)
+
+        return saldos_dict
 
     def gerar_folha(self):
         # Função para somar os saldos de uma lista de códigos
@@ -227,6 +264,7 @@ class FolhaPagamento():
                             for c in lista_codigos)
 
             return resultado
+
         folha_pagamento = self.carregar_template_nl()
         folha_pagamento["VALOR"] = 0.0
 
@@ -244,25 +282,34 @@ class FolhaPagamento():
         for idx, row in folha_pagamento.iterrows():
             somar = row.get("SOMAR", [])
             subtrair = row.get("SUBTRAIR", [])
-
-            valor_somar = soma_codigos(somar, saldos_dict)
-            valor_subtrair = soma_codigos(subtrair, saldos_dict)
-            valor = valor_somar - valor_subtrair
-            folha_pagamento.at[idx, "VALOR"] = valor
+            tipo = row.get("TIPO", "")
+            if tipo == "nan" or tipo == "":
+                tipo = "ATIVO"
 
             if self.test:
                 print(f"\nProcessando linha {idx}:")
+                print(f"TIPO           : {tipo}")
                 print(f"SOMAR          : {somar}")
                 print(f"SUBTRAIR       : {subtrair}")
-                print(
-                    f"VALOR calculado: {valor_somar:.2f} - {valor_subtrair:.2f}  = {valor:.2f}")
-                print()
 
-        folha_pagamento.drop(columns=["SOMAR", "SUBTRAIR"], inplace=True)
+            if tipo != "MANUAL":
+                valor_somar = soma_codigos(somar, saldos_dict[tipo])
+                valor_subtrair = soma_codigos(subtrair, saldos_dict[tipo])
+                valor = valor_somar - valor_subtrair
+                folha_pagamento.at[idx, "VALOR"] = valor
+                if self.test:
+                    print(
+                        f"VALOR calculado: {valor_somar:.2f} - {valor_subtrair:.2f}  = {valor:.2f}")
+            else:
+                folha_pagamento.at[idx, "VALOR"] = 0.000001
+                if self.test:
+                    print(
+                        f"VALOR DEVE SER PREENCHIDO MANUALMENTE")
+                    print()
+
+        folha_pagamento.drop(
+            columns=["SOMAR", "SUBTRAIR", "TIPO"], inplace=True)
         folha_pagamento = folha_pagamento.sort_values(by="INSCRIÇÃO")
         folha_pagamento = folha_pagamento[folha_pagamento["VALOR"] > 0]
-
-        if self.test:
-            print(folha_pagamento)
 
         return folha_pagamento

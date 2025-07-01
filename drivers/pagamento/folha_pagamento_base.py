@@ -15,7 +15,9 @@ locale.setlocale(locale.LC_TIME, "pt_BR.utf8")
 
 
 ANO_ATUAL = datetime.now().year
-MES_ATUAL = datetime.now().month
+#MES_ATUAL = datetime.now().month
+MES_ATUAL = 6
+
 MESES = {
     1: "01-JANEIRO",
     2: "02-FEVEREIRO",
@@ -33,6 +35,9 @@ MESES = {
 
 
 class FolhaPagamentoBase():
+    """_summary_ Classe que gera NLs para folha de pagamento e utiliza o driver PreenchimentoNL para preencher os dados na plataforma.
+    """
+
     def __init__(self, nome_fundo: str, nome_template: list[str] | str, run=True, test=False):
         self.nome_fundo = nome_fundo.lower()
         self.nome_template = nome_template
@@ -47,9 +52,9 @@ class FolhaPagamentoBase():
             nomes_templates = [self.nome_template]
         else:
             nomes_templates = self.nome_template
-    
+
         # Cria um dicionário associando o nome do template à folha gerada
-        folhas = [FolhaPagamento(nome_fundo=self.nome_fundo, nome_template=nome_template)
+        folhas = [FolhaPagamento(nome_fundo=self.nome_fundo, nome_template=nome_template, test=self.test)
                   for nome_template in nomes_templates]
         folhas_financeiro = {
             folha.nome_template: folha.gerar_folha() for folha in folhas}

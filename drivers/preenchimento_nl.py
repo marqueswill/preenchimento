@@ -7,7 +7,9 @@ from drivers.siggo_driver import SiggoDriver
 from selenium.webdriver.common.by import By
 
 ANO_ATUAL = datetime.now().year
-MES_ATUAL = datetime.now().month
+#MES_ATUAL = datetime.now().month
+MES_ATUAL = 6
+
 
 MESES = {
     1: "01-JANEIRO",

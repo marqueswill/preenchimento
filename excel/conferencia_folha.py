@@ -4,7 +4,9 @@
 # import pandas as pd
 
 # ANO_ATUAL = datetime.now().year
-# MES_ATUAL = datetime.now().month
+# #MES_ATUAL = datetime.now().month
+MES_ATUAL = 6
+
 # MESES = {
 #     1: "01-JANEIRO",
 #     2: "02-FEVEREIRO",

@@ -13,7 +13,9 @@ from datetime import datetime
 locale.setlocale(locale.LC_TIME, "pt_BR.utf8")
 
 ANO_ATUAL = datetime.now().year
-MES_ATUAL = datetime.now().month
+#MES_ATUAL = datetime.now().month
+MES_ATUAL = 6
+
 MESES = {
     1: "01-JANEIRO",
     2: "02-FEVEREIRO",
