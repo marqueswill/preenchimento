@@ -15,7 +15,7 @@ locale.setlocale(locale.LC_TIME, "pt_BR.utf8")
 
 
 ANO_ATUAL = datetime.now().year
-#MES_ATUAL = datetime.now().month
+# MES_ATUAL = datetime.now().month
 MES_ATUAL = 6
 
 MESES = {
@@ -43,8 +43,7 @@ class FolhaPagamentoBase():
         self.nome_template = nome_template
         self.run = run
         self.test = test
-        self.preenchedor = PreenchimentoNL(
-            nome_fundo, nome_template, run, test)
+        self.preenchedor = PreenchimentoNL(run, test)
 
     def executar(self):
         # Padroniza o nome_template para uma lista, se necessário
@@ -56,13 +55,12 @@ class FolhaPagamentoBase():
         # Cria um dicionário associando o nome do template à folha gerada
         folhas = [FolhaPagamento(nome_fundo=self.nome_fundo, nome_template=nome_template, test=self.test)
                   for nome_template in nomes_templates]
-        folhas_pagamento = {
-            folha.nome_template: folha.gerar_folha() for folha in folhas}
+        folhas_pagamento = [
+            {"folha": folha.gerar_folha(), "template": folha.carregar_template_cabecalho()} for folha in folhas]
 
         if self.test:
-            for i, folha in enumerate(folhas_pagamento.items()):
-                print(folha[0])
-                print(folha[1])
-
+            for i, folha in enumerate(folhas_pagamento):
+                print(folha["folha"])
+                print(folha["template"])
         if self.run:
             self.preenchedor.executar(folhas_pagamento)

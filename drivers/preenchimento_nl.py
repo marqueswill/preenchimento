@@ -3,11 +3,12 @@ import os
 from typing import Dict
 import pandas as pd
 from pandas import DataFrame
+from traitlets import List
 from drivers.siggo_driver import SiggoDriver
 from selenium.webdriver.common.by import By
 
 ANO_ATUAL = datetime.now().year
-#MES_ATUAL = datetime.now().month
+# MES_ATUAL = datetime.now().month
 MES_ATUAL = 6
 
 
@@ -35,11 +36,11 @@ class PreenchimentoNL():
     Utiliza o SiggoDriver para gerenciar a sessão do navegador.
     """
 
-    def __init__(self, nome_fundo: str, nome_template: str,  run=True, test=False):
+    def __init__(self, run=True, test=False):
         username = os.getlogin().strip()
         self.caminho_raiz = f"C:\\Users\\{username}\\OneDrive - Tribunal de Contas do Distrito Federal\\"
-        self.nome_fundo = nome_fundo.lower()
-        self.nome_template = nome_template
+        # self.nome_fundo = nome_fundo.lower()
+        # self.nome_template = nome_template
         if run:
             self.siggo_driver = SiggoDriver()
             self.siggo_driver.setup_driver()
@@ -51,27 +52,28 @@ class PreenchimentoNL():
             for i in range(0, len(dataframe), tamanho_pagina)
         ]
 
-    def executar(self, dados: DataFrame | Dict[str, DataFrame]):
-        if isinstance(dados, dict):
-            dataframes = dados
+    def executar(self, dados: dict[str, DataFrame] | list[Dict[str, DataFrame]]):
+        if isinstance(dados, dict):  # padroniza
+            dataframes = [dados]
         else:
-            dataframes = {self.nome_template: dados}  # padroniza
+            dataframes = dados 
 
-        for dado in dataframes.items():
-            self.nome_template = dado[0]
-            df = dado[1]
+        for dado in dataframes:
+            folha = dado["folha"]
+            template = dado["template"]
 
-            if df.empty:
+            if folha.empty:
                 continue
 
-            dados_por_pagina = self.separar_por_pagina(df)
+            dados_por_pagina = self.separar_por_pagina(folha)
             for dados_lancamentos in dados_por_pagina:
                 self.siggo_driver.nova_aba()
                 self.siggo_driver.acessar_link(
                     f"https://siggo.fazenda.df.gov.br/{ANO_ATUAL}/afc/nota-de-lancamento"
                 )
 
-                campos_cabecalho = self.preparar_preechimento_cabecalho()
+                campos_cabecalho = self.preparar_preechimento_cabecalho(
+                    template)
                 self.siggo_driver.selecionar_opcoes(campos_cabecalho["opcoes"])
                 self.siggo_driver.preencher_campos(campos_cabecalho["campos"])
 
@@ -81,22 +83,12 @@ class PreenchimentoNL():
 
         self.siggo_driver.fechar_primeira_aba()
 
-    def preparar_preechimento_cabecalho(self):
-        caminho_completo = (
-            self.caminho_raiz +
-            f"SECON - General\\CÓDIGOS\\TEMPLATES_NL_{self.nome_fundo.upper()}.xlsx"
-        )
-
-        # TODO: remover o self.nome_template dessa classe de alguma forma
-        df = pd.read_excel(
-            caminho_completo, sheet_name=self.nome_template, usecols="A:E", header=None
-        ).astype(str)
-
-        prioridade: str = df.iloc[0, 1]  # B1
-        credor: str = df.iloc[1, 1]  # B2
-        gestao: str = df.iloc[2, 1]  # B3
-        processo: str = df.iloc[3, 1]  # B4
-        observacao: str = df.iloc[4, 1]  # B5
+    def preparar_preechimento_cabecalho(self, template: DataFrame):
+        prioridade: str = template.iloc[0, 1]  # B1
+        credor: str = template.iloc[1, 1]  # B2
+        gestao: str = template.iloc[2, 1]  # B3
+        processo: str = template.iloc[3, 1]  # B4
+        observacao: str = template.iloc[4, 1]  # B5
 
         id_campo_gestao = {
             "2 - CNPJ": '//*[@id = "cocredorCNPJ"]/input',

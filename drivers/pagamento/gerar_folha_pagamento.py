@@ -88,6 +88,21 @@ class FolhaPagamento():
 
         return dataframe
 
+    def carregar_template_cabecalho(self):
+        caminho_completo = (
+            self.caminho_raiz +
+            f"SECON - General\\CÓDIGOS\\TEMPLATES_NL_{self.nome_fundo.upper()}.xlsx"
+        )
+
+        dataframe = pd.read_excel(
+            caminho_completo,
+            header=None,
+            sheet_name=self.nome_template,
+            usecols="A:I",
+        ).astype(str)
+
+        return dataframe
+    
     def gerar_conferencia(self):
         # Faz distinção entre proventos e descontos
         def cria_coluna_rubrica(row):
