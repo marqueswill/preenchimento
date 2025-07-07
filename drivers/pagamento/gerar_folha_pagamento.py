@@ -84,7 +84,7 @@ class FolhaPagamento():
 
         dataframe["CLASS. ORC"] = dataframe["CLASS. ORC"].apply(
             lambda x: x[1:] if len(x) == 9 else x
-        )
+        ).astype(str)
 
         return dataframe
 
@@ -301,6 +301,7 @@ class FolhaPagamento():
                     print(
                         f"VALOR calculado: {valor_somar:.2f} - {valor_subtrair:.2f}  = {valor:.2f}")
             else:
+                # Coloca um valor pequeno pra abrir a página pro preenchimento manual
                 folha_pagamento.at[idx, "VALOR"] = 0.000001
                 if self.test:
                     print(

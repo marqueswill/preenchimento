@@ -57,7 +57,7 @@ try:
         "PATRONAL_IPREV",
     ]
     driver = FolhaPagamentoBase(
-        "financeiro", nomes_templates, test=True, run=False)
+        "financeiro", nomes_templates, test=True, run=True)
     driver.executar()
 except Exception as e:
     print(e)

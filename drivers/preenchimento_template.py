@@ -15,7 +15,7 @@ locale.setlocale(locale.LC_TIME, "pt_BR.utf8")
 
 
 ANO_ATUAL = datetime.now().year
-#MES_ATUAL = datetime.now().month
+# MES_ATUAL = datetime.now().month
 MES_ATUAL = 6
 
 MESES = {
@@ -34,8 +34,8 @@ MESES = {
 }
 
 
-class FolhaPagamentoBase():
-    """_summary_ Classe que gera NLs para folha de pagamento e utiliza o driver PreenchimentoNL para preencher os dados na plataforma.
+class PreenchimentoTemplates():
+    """_summary_ Classe que pega NLs da planilha de templates e utiliza o driver PreenchimentoNL para preencher os dados na plataforma.
     """
 
     def __init__(self, nome_fundo: str, nome_template: list[str] | str, run=True, test=False):
