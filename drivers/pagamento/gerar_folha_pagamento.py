@@ -34,7 +34,7 @@ MESES = {
 
 class FolhaPagamento():
     """_summary_
-    Classe base para gerar folhas de pagamento no SIGGO.
+    Classe para gerar NLs das folhas de pagamento.
     """
 
     nome_template: str
@@ -104,7 +104,7 @@ class FolhaPagamento():
 
         return dataframe
     
-    def gerar_conferencia(self):
+    def gerar_conferencia(self, agrupar=True):
         # Faz distinção entre proventos e descontos
         def cria_coluna_rubrica(row):
             cdg_nat_despesa = str(row["CDG_NAT_DESPESA"])
@@ -198,6 +198,9 @@ class FolhaPagamento():
 
         conferencia_folha.sort_values(by=["CDG_NAT_DESPESA"])
 
+        if not agrupar:
+            return conferencia_folha
+        
         conferencia_folha_final = (
             conferencia_folha.groupby(["NME_NAT_DESPESA", "CDG_NAT_DESPESA", "TIPO_DESPESA"])[
                 ["PROVENTO", "DESCONTO"]

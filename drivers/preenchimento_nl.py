@@ -31,7 +31,7 @@ MESES = {
 class PreenchimentoNL():
     """_summary_
 
-    Driver para preenchimento de Notas Fiscais no SIGGO.
+    Driver para preenchimento de Notas Fiscais no SIGGO. Faz a lógica de separação dos dados por página e preenchimento dos campos necessários. Funciona para qualquer dataframe que siga o padrão esperado.
 
     Utiliza o SiggoDriver para gerenciar a sessão do navegador.
     """

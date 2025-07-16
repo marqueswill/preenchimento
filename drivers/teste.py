@@ -1,6 +1,6 @@
 import sys
 
-from drivers.template_nls.preenchimento_template import PreenchimentoTemplates
+from drivers.preenchimento_template import PreenchimentoTemplates
 
 
 try:

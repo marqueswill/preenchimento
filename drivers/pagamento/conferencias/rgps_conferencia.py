@@ -9,14 +9,9 @@ from pandas import DataFrame
 from openpyxl import Workbook, load_workbook
 from openpyxl.utils import column_index_from_string, get_column_letter
 
-from drivers.rgps.rgps_base import (
-    PreenchimentoRGPSBeneficios,
-    PreenchimentoRGPSDeaBeneficios,
-    PreenchimentoRGPSIndenizacoesRestituicoes,
-    PreenchimentoRGPSPrincipal,
-    PreenchimentoRGPSSubstituicoes,
-    PreenchimentoRGPSIndenizacoesPessoal,
-)
+from drivers.pagamento.gerar_folha_pagamento import FolhaPagamento
+
+
 
 ANO_ATUAL = datetime.now().year
 MES_ATUAL = datetime.now().month
@@ -52,10 +47,7 @@ class GerarConferencia:
         sum_numeric=False,
     ):
         # Caminho do arquivo
-        # caminho_arquivo = (
-        #     self.caminho_raiz
-        #     + f"SECON - General\\CÓDIGOS\\TEMPLATES_NL_RGPS - Copia.xlsx"
-        # )
+
         caminho_arquivo = (
             self.caminho_raiz
             + f"SECON - General\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_{ANO_ATUAL}\\{MESES[MES_ATUAL]}\\CONFERÊNCIA_RGPS.xlsx"
@@ -293,19 +285,21 @@ class GerarConferencia:
 
     def exportar_nls(self):
         drivers_rgps = [
-            PreenchimentoRGPSPrincipal(test=True),
-            PreenchimentoRGPSSubstituicoes(test=True),
-            PreenchimentoRGPSBeneficios(test=True),
-            PreenchimentoRGPSIndenizacoesRestituicoes(test=True),
-            PreenchimentoRGPSIndenizacoesPessoal(test=True),
-            PreenchimentoRGPSDeaBeneficios(test=True),
+            FolhaPagamento("rgps", "PRINCIPAL", test=True),
+            FolhaPagamento("rgps", "SUBSTITUICOES", test=True),
+            FolhaPagamento("rgps", "BENEFICIOS", test=True),
+            FolhaPagamento("rgps", "INDENIZACOES_RESTITUICOES", test=True),
+            FolhaPagamento("rgps", "INDENIZACOES_PESSOAL", test=True),
+            FolhaPagamento("rgps", "DEA_BENEFÍCIOS", test=True),
         ]
 
         nls = {
-            driver.nome_template: driver.gerar_folha_rgps() for driver in drivers_rgps
+            driver.nome_template: driver.gerar_folha() for driver in drivers_rgps
         }
 
         for sheet_name, table_data in nls.items():
+            print(f"Exportando {sheet_name}...")
+            print(table_data.head())
             self.exportar_para_planilha(table_data, sheet_name)
 
     def executar(self):
