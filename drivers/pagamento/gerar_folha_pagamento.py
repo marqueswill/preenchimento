@@ -235,7 +235,6 @@ class FolhaPagamento():
             ~conferencia_rgps_final["CDG_NAT_DESPESA"].str.startswith("3")
         ]
 
-        print(desc_folha)
         coluna_saldo_descontos = desc_folha["DESCONTO"] - \
             desc_folha["PROVENTO"]
 
@@ -266,8 +265,8 @@ class FolhaPagamento():
         for line in proventos_list + descontos_list:
             saldos_dict[line[0]][line[1]] = line[2]
 
-        if self.test:
-            print(dados_conferencia)
+        # if self.test:
+        #     print(dados_conferencia)
             # print(dados_proventos)
             # print(dados_descontos)
 
@@ -287,15 +286,15 @@ class FolhaPagamento():
         folha_pagamento = self.carregar_template_nl()
         folha_pagamento["VALOR"] = 0.0
 
-        if self.test:
-            print(folha_pagamento)
+        # if self.test:
+        #     print(folha_pagamento)
 
         saldos_dict = self.gerar_saldos()
 
-        if self.test:
-            print("\nSaldos:")
-            print(saldos_dict)
-            print("\n\n")
+        # if self.test:
+        #     print("\nSaldos:")
+        #     print(saldos_dict)
+        #     print("\n\n")
 
         # Calcula o valor para cada linha
         for idx, row in folha_pagamento.iterrows():

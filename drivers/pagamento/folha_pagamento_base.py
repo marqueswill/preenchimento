@@ -46,6 +46,8 @@ class FolhaPagamentoBase():
         self.preenchedor = PreenchimentoNL(run, test)
 
     def executar(self):
+
+        
         # Padroniza o nome_template para uma lista, se necessário
         if not isinstance(self.nome_template, list):
             nomes_templates = [self.nome_template]
@@ -57,12 +59,31 @@ class FolhaPagamentoBase():
         folhas = [FolhaPagamento(nome_fundo=self.nome_fundo, nome_template=nome_template, test=self.test)
                   for nome_template in nomes_templates]
 
-        folhas_pagamento = [
-            {"folha": folha.gerar_folha(), "cabecalho": folha.carregar_template_cabecalho()} for folha in folhas]
+        folhas_pagamento =[]
+        
+        for folha in folhas:
+            if self.test:
+                print("_" * 100)
+                print(f"Gerando NLs para o fundo: {self.nome_fundo.upper()}")
+                print(f"Usando template(s): {folha.nome_template}")
+                
+            folha_gerada = folha.gerar_folha()
+            cabecalho = folha.carregar_template_cabecalho()
+            
+            if self.test:
+                print(folha_gerada)
+        
+            folhas_pagamento.append({
+                "folha": folha_gerada,
+                "cabecalho": cabecalho
+            })
+    
+        # folhas_pagamento = [
+        #     {"folha": folha.gerar_folha(), "cabecalho": folha.carregar_template_cabecalho()} for folha in folhas]
 
-        if self.test:
-            for i, folha in enumerate(folhas_pagamento):
-                print(folha["folha"])
-                print(folha["cabecalho"])
+        # if self.test:
+        #     for i, folha in enumerate(folhas_pagamento):
+        #         print(folha["folha"])
+                # print(folha["cabecalho"])
         if self.run:
             self.preenchedor.executar(folhas_pagamento)
