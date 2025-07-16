@@ -8,8 +8,8 @@ from drivers.siggo_driver import SiggoDriver
 from selenium.webdriver.common.by import By
 
 ANO_ATUAL = datetime.now().year
-# MES_ATUAL = datetime.now().month
-MES_ATUAL = 6
+MES_ATUAL = datetime.now().month
+# MES_ATUAL = 6
 
 
 MESES = {
@@ -60,7 +60,7 @@ class PreenchimentoNL():
 
         for dado in dataframes:
             folha = dado["folha"]
-            template = dado["template"]
+            template = dado["cabecalho"]
 
             if folha.empty:
                 continue
@@ -72,8 +72,7 @@ class PreenchimentoNL():
                     f"https://siggo.fazenda.df.gov.br/{ANO_ATUAL}/afc/nota-de-lancamento"
                 )
 
-                campos_cabecalho = self.preparar_preechimento_cabecalho(
-                    template)
+                campos_cabecalho = self.preparar_preechimento_cabecalho(template)
                 self.siggo_driver.selecionar_opcoes(campos_cabecalho["opcoes"])
                 self.siggo_driver.preencher_campos(campos_cabecalho["campos"])
 

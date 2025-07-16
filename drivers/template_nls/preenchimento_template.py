@@ -1,23 +1,17 @@
-from typing import Optional
-import numpy as np
-from pandas import DataFrame
-
 import pandas as pd
 
 import os
 import locale
 from datetime import datetime
 
-from drivers.pagamento.gerar_folha_pagamento import FolhaPagamento
 from drivers.preenchimento_nl import PreenchimentoNL
-from drivers.template_nls.carregar_nl import CarregarNL
 
 locale.setlocale(locale.LC_TIME, "pt_BR.utf8")
 
 
 ANO_ATUAL = datetime.now().year
-# MES_ATUAL = datetime.now().month
-MES_ATUAL = 6
+MES_ATUAL = datetime.now().month
+# MES_ATUAL = 6
 
 MESES = {
     1: "01-JANEIRO",
@@ -77,7 +71,7 @@ class PreenchimentoTemplates():
             caminho_completo,
             header=None,
             sheet_name=nome_aba,
-            #usecols="A:I",
+            # usecols="A:I",
         ).astype(str)
 
         return dataframe
@@ -104,7 +98,7 @@ class PreenchimentoTemplates():
                     [
                         {
                             "folha": self.carregar_nl(planilha, aba),
-                            "template": self.carregar_cabecalho(planilha, aba)
+                            "cabecalho": self.carregar_cabecalho(planilha, aba)
                         }
                         for aba in nomes_templates
                     ])
@@ -114,6 +108,6 @@ class PreenchimentoTemplates():
         if self.test:
             for i, folha in enumerate(nls_carregadas):
                 print(folha["folha"])
-                print(folha["template"])
+                print(folha["cabecalho"])
         if self.run:
             self.preenchedor.executar(nls_carregadas)

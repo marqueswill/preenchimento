@@ -15,8 +15,8 @@ locale.setlocale(locale.LC_TIME, "pt_BR.utf8")
 
 
 ANO_ATUAL = datetime.now().year
-# MES_ATUAL = datetime.now().month
-MES_ATUAL = 6
+MES_ATUAL = datetime.now().month
+# MES_ATUAL = 6
 
 MESES = {
     1: "01-JANEIRO",
@@ -56,11 +56,11 @@ class FolhaPagamentoBase():
         folhas = [FolhaPagamento(nome_fundo=self.nome_fundo, nome_template=nome_template, test=self.test)
                   for nome_template in nomes_templates]
         folhas_pagamento = [
-            {"folha": folha.gerar_folha(), "template": folha.carregar_template_cabecalho()} for folha in folhas]
+            {"folha": folha.gerar_folha(), "cabecalho": folha.carregar_template_cabecalho()} for folha in folhas]
 
         if self.test:
             for i, folha in enumerate(folhas_pagamento):
                 print(folha["folha"])
-                print(folha["template"])
+                print(folha["cabecalho"])
         if self.run:
             self.preenchedor.executar(folhas_pagamento)

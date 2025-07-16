@@ -12,8 +12,8 @@ locale.setlocale(locale.LC_TIME, "pt_BR.utf8")
 
 
 ANO_ATUAL = datetime.now().year
-# MES_ATUAL = datetime.now().month
-MES_ATUAL = 6
+MES_ATUAL = datetime.now().month
+# MES_ATUAL = 6
 
 
 MESES = {
