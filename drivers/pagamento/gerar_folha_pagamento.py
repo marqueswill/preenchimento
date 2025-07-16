@@ -86,6 +86,7 @@ class FolhaPagamento():
             lambda x: x[1:] if len(x) == 9 else x
         ).astype(str)
 
+        
         return dataframe
 
     def carregar_template_cabecalho(self):

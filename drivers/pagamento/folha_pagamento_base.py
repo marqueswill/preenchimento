@@ -52,9 +52,11 @@ class FolhaPagamentoBase():
         else:
             nomes_templates = self.nome_template
 
+
         # Cria um dicionário associando o nome do template à folha gerada
         folhas = [FolhaPagamento(nome_fundo=self.nome_fundo, nome_template=nome_template, test=self.test)
                   for nome_template in nomes_templates]
+
         folhas_pagamento = [
             {"folha": folha.gerar_folha(), "cabecalho": folha.carregar_template_cabecalho()} for folha in folhas]
 

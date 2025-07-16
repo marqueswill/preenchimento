@@ -3,5 +3,5 @@ set SCRIPTS="RGPS_BENEFICIOS.py" "RGPS_CONFERENCIA.py" "RGPS_DEA_BENEFICIOS.py" 
 
 for %%s in (%SCRIPTS%) do (
     echo Building %%~ns...
-    python -m PyInstaller --onefile --noconsole drivers\rgps\%%~s
+    python -m PyInstaller --onefile drivers\pagamento\rgps\%%~s
 )
