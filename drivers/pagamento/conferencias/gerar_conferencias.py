@@ -236,7 +236,7 @@ class GerarConferencia:
 
 
 try:
-    for fundo in ["RGPS", "FINANCEIRO"]:
+    for fundo in ["RGPS", "FINANCEIRO","CAPITALIZADO"]:
         gerador = GerarConferencia(fundo)
         gerador.executar()
 except Exception as e:
