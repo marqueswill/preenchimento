@@ -87,7 +87,7 @@ class BaixaDiaria:
 
         caminhos_pdf = self.obter_caminhos_pdf()
         for i, pdf in enumerate(caminhos_pdf):
-            print(pdf)
+            # print(pdf)
             caminho_pdf = os.path.join(
                 self.caminho_raiz, "SECON - General", "ANO_ATUAL", "NL_AUTOMATICA", "NE_DIÁRIAS", pdf)
 
@@ -123,11 +123,11 @@ class BaixaDiaria:
         nl, cabecalho = self.gerar_nls()
 
         if self.test:
-            print(cabecalho)
+            print(cabecalho["Coluna 2"])
             print(nl)
         if self.run:
             self.preenchedor.executar({"folha": nl, "cabecalho": cabecalho})
 
 
-baixa = BaixaDiaria(run=True, test=True)
+baixa = BaixaDiaria(run=False, test=True)
 baixa.executar()

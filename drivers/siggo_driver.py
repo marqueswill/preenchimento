@@ -4,9 +4,9 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
 from selenium.common.exceptions import TimeoutException
-
+from selenium.webdriver.chrome.service import Service
 import pandas as pd
-
+import subprocess
 import sys, time, os, locale
 from datetime import datetime
 
@@ -36,20 +36,26 @@ class SiggoDriver:
     """_summary_
     Driver para automação e interação com o SIGGO  
     """
-    def __init__(self):
+    def __init__(self,run:bool = True, test:bool = False):
+        self.setup_pandas()
+        self.setup_driver()
+        if run:
+            self.esperar_login()
+        
 
-        # Configurar Pandas para exibir todas as colunas e linhas
-        pd.set_option("display.max_rows", None)  # Exibir todas as linhas
-        pd.set_option("display.max_columns", None)  # Exibir todas as colunas
-        pd.set_option(
-            "display.max_colwidth", None
-        )  # Exibir conteúdo completo das células
-
+    def setup_pandas(self):
+        pd.set_option("display.max_rows", None)
+        pd.set_option("display.max_columns", None)
+        pd.set_option("display.max_colwidth", None)
+        pd.set_option("display.width", 0)
+        pd.set_option("display.expand_frame_repr", False)
 
     def setup_driver(self):
         options = webdriver.ChromeOptions()
         options.add_argument("--start-maximized")
         options.add_experimental_option("detach", True)
+        options.add_argument("--log-level=3")  # Suppress Chrome logs
+        options.add_argument("--silent")
 
         self.driver = webdriver.Chrome(options=options)
 
@@ -137,6 +143,7 @@ class SiggoDriver:
     def acessar_link(self, link):
         self.driver.get(link)
         self.esperar_carregamento(timeout=120)
+        time.sleep(1)
 
     def fechar_primeira_aba(self):
         abas = self.driver.window_handles

@@ -38,9 +38,9 @@ class PreenchimentoNL():
 
     def __init__(self, run=True, test=False):
         if run:
-            self.siggo_driver = SiggoDriver()
-            self.siggo_driver.setup_driver()
-            self.siggo_driver.esperar_login()
+            self.siggo_driver = SiggoDriver(run)
+            # self.siggo_driver.setup_driver()
+            # self.siggo_driver.esperar_login()
 
     def separar_por_pagina(self, dataframe: DataFrame, tamanho_pagina=24):
         return [

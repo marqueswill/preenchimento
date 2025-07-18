@@ -8,6 +8,8 @@ import os
 import locale
 from datetime import datetime
 
+from interface import color_print, color_text
+
 
 locale.setlocale(locale.LC_TIME, "pt_BR.utf8")
 
@@ -87,7 +89,6 @@ class FolhaPagamento():
             lambda x: x[1:] if len(x) == 9 else x
         ).astype(str)
 
-        
         return dataframe
 
     def carregar_template_cabecalho(self):
@@ -104,7 +105,7 @@ class FolhaPagamento():
         ).astype(str)
 
         return dataframe
-    
+
     def gerar_conferencia(self, agrupar=True):
         # Faz distinção entre proventos e descontos
         def cria_coluna_rubrica(row):
@@ -145,7 +146,6 @@ class FolhaPagamento():
                     tipo = "PENSIONISTA"
 
             return tipo
-
 
         # Define o caminho até a pasta onde está o arquivo
         caminho_pasta = os.path.join(
@@ -216,7 +216,7 @@ class FolhaPagamento():
 
         if not agrupar:
             return conferencia_folha
-        
+
         conferencia_folha_final = (
             conferencia_folha.groupby(["NME_NAT_DESPESA", "CDG_NAT_DESPESA", "TIPO_DESPESA"])[
                 ["PROVENTO", "DESCONTO"]
@@ -302,18 +302,12 @@ class FolhaPagamento():
         folha_pagamento = self.carregar_template_nl()
         folha_pagamento["VALOR"] = 0.0
 
-        # if self.test:
-        #     print(folha_pagamento)
-
         saldos_dict = self.gerar_saldos()
-
-        # if self.test:
-        #     print("\nSaldos:")
-        #     print(saldos_dict)
-        #     print("\n\n")
 
         # Calcula o valor para cada linha
         for idx, row in folha_pagamento.iterrows():
+            class_orc = row.get("CLASS. ORC", "")
+            class_cont = row.get("CLASS. CONT", "")
             somar = row.get("SOMAR", [])
             subtrair = row.get("SUBTRAIR", [])
             tipo = row.get("TIPO", "")
@@ -321,10 +315,10 @@ class FolhaPagamento():
                 tipo = "ATIVO"
 
             if self.test:
-                print(f"\nProcessando linha {idx}:")
-                print(f"TIPO           : {tipo}")
-                print(f"SOMAR          : {somar}")
-                print(f"SUBTRAIR       : {subtrair}")
+                print(f"\nLINHA {idx}: {class_orc} / {class_cont}")
+                print(f"TIPO     : {tipo}")
+                print(f"SOMAR    : {somar}".replace("nan", ""))
+                print(f"SUBTRAIR : {subtrair}".replace("nan", ""))
 
             if tipo != "MANUAL":
                 valor_somar = soma_codigos(somar, saldos_dict[tipo])
@@ -333,17 +327,24 @@ class FolhaPagamento():
                 folha_pagamento.at[idx, "VALOR"] = valor
                 if self.test:
                     print(
-                        f"VALOR calculado: {valor_somar:.2f} - {valor_subtrair:.2f}  = {valor:.2f}")
+                        f"CALCULO  : " + color_text(f"{valor_somar:.2f}", "green") +
+                        " - " + color_text(f"{valor_subtrair:.2f}", "red") +
+                        " = " + color_text(f"{valor:.2f}", "green", "underline"))
             else:
                 # Coloca um valor pequeno pra abrir a página pro preenchimento manual
                 folha_pagamento.at[idx, "VALOR"] = 0.000001
                 if self.test:
-                    print(
-                        f"VALOR DEVE SER PREENCHIDO MANUALMENTE")
+                    color_print(
+                        f"VALOR DEVE SER PREENCHIDO MANUALMENTE",color= "yellow", style="bold")
                     print()
 
         folha_pagamento.drop(
             columns=["SOMAR", "SUBTRAIR", "TIPO"], inplace=True)
+
+        if self.test:
+            print()
+            print(folha_pagamento)
+
         folha_pagamento = folha_pagamento.sort_values(by="INSCRIÇÃO")
         folha_pagamento = folha_pagamento[folha_pagamento["VALOR"] > 0]
 
