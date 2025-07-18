@@ -76,7 +76,7 @@ class SiggoDriver:
             time.sleep(1)
             current_time = time.time()
             if current_time - start_time > timeout:
-                self.driver.quit()  # TODO: unificar método para finalizar o SiggoDriver
+                self.driver.quit()  
                 raise TimeoutException("Tempo limite para login excedido.")
 
     def esperar_carregamento(self, timeout=60):

@@ -31,7 +31,7 @@ MESES = {
     12: "12-DEZEMBRO",
 }
 
-
+# TODO: identificação e tratamento de erros (interface?)
 class SiggoDriver:
     """_summary_
     Driver para automação e interação com o SIGGO  
@@ -92,7 +92,7 @@ class SiggoDriver:
             time.sleep(1)
             current_time = time.time()
             if current_time - start_time > timeout:
-                self.driver.quit()  # TODO: unificar método para finalizar o SiggoDriver
+                self.driver.quit()
                 raise TimeoutException("Tempo limite para login excedido.")
 
     def esperar_carregamento(self, timeout=60):

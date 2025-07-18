@@ -184,35 +184,29 @@ class GerarConferencia:
         self.exportar_para_planilha(df, "ADIANTAMENTO_FÉRIAS")
 
     def exportar_nls(self):
+        username = os.getlogin().strip()
+
+        caminho_raiz = f"C:\\Users\\{username}\\OneDrive - Tribunal de Contas do Distrito Federal\\SECON - General\\CÓDIGOS\\"
+
+        excel_rgps = pd.ExcelFile(
+            caminho_raiz + "TEMPLATES_NL_RGPS.xlsx")
+        templates_rgps = excel_rgps.sheet_names
+
+        excel_financeiro = pd.ExcelFile(
+            caminho_raiz + "TEMPLATES_NL_FINANCEIRO.xlsx")
+        templates_financeiro = excel_financeiro.sheet_names
+
+        excel_capitalizado = pd.ExcelFile(
+            caminho_raiz + "TEMPLATES_NL_CAPITALIZADO.xlsx")
+        templates_capitalizado = excel_capitalizado.sheet_names
+
         nomes_templates = {
-            "RGPS": [
-                "PRINCIPAL",
-                "SUBSTITUICOES",
-                "BENEFICIOS",
-                "DEA_BENEFÍCIOS",
-                "INDENIZACOES_RESTITUICOES",
-                "INDENIZACOES_PESSOAL",
-            ],
-            "FINANCEIRO": [
-                "PRINCIPAL",
-                "SUBSTITUICOES",
-                "GRATIF_ENCARGOS_CURSO",
-                "BENEFICIOS_ATIVO",
-                "PROSAUDE_INATIVO",
-                "PROSAUDE_PENSIONISTA",
-                "LIC_PREMIO_APOSENTADOS",
-                "INDENIZ_FERIAS_LIC_COMPENSATORI",
-                "INDENIZAÇÕES_E_RESTITUIÇOES",
-                "DEA_VENCIMENTOS",
-                "DEA_SUBSTITUICOES",
-                "DEA_INDENIZAÇOES",
-                "DEA_BENEFÍCIOS",
-                "RETENCAO_IPREV",
-                "RETENÇAO_IRRF",
-                "RETENCAO_DF_PREVICOM_FINANCEIRO",
-                "PATRONAL_IPREV",
-            ],
-            "CAPITALIZADO": []}
+            "RGPS": templates_rgps,
+            "FINANCEIRO": templates_financeiro,
+            "CAPITALIZADO": templates_capitalizado
+        }
+
+        print(nomes_templates)
 
         drivers_pagamento = [
             FolhaPagamento(self.nome_fundo.lower(), nome_template, test=True) for nome_template in nomes_templates[self.nome_fundo]
@@ -236,7 +230,7 @@ class GerarConferencia:
 
 
 try:
-    for fundo in ["RGPS", "FINANCEIRO","CAPITALIZADO"]:
+    for fundo in ["RGPS", "FINANCEIRO", "CAPITALIZADO"]:
         gerador = GerarConferencia(fundo)
         gerador.executar()
 except Exception as e:

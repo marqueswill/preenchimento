@@ -1,3 +1,4 @@
+import glob
 import numpy as np
 from pandas import DataFrame
 
@@ -145,16 +146,31 @@ class FolhaPagamento():
 
             return tipo
 
-        # Carrega a tabela DEMOFIN - T para o mês e ano atuais
-        caminho_planilha = f"SECON - General\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_{ANO_ATUAL}\\{MESES[MES_ATUAL]}\\DEMOFIN_TABELA.xlsx"
-        caminho_completo = self.caminho_raiz + caminho_planilha
+
+        # Define o caminho até a pasta onde está o arquivo
+        caminho_pasta = os.path.join(
+            self.caminho_raiz,
+            f"SECON - General\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_{ANO_ATUAL}\\{MESES[MES_ATUAL]}"
+        )
+
+        # Usa glob para encontrar qualquer arquivo que comece com "DEMOFIN" e contenha "TABELA"
+        padrao_arquivo = os.path.join(caminho_pasta, "DEMOFIN*TAB*LA.xlsx")
+        arquivos_encontrados = glob.glob(padrao_arquivo)
+
+        if not arquivos_encontrados:
+            raise FileNotFoundError(
+                "Arquivo DEMOFIN_TABELA ou DEMOFIN - TABELA não encontrado.")
+
+        # Usa o primeiro arquivo encontrado
+        caminho_completo = arquivos_encontrados[0]
+
+        # Lê a planilha com o nome da aba "DEMOFIN - T"
         tabela_demofin = pd.read_excel(
             caminho_completo, sheet_name="DEMOFIN - T", header=1)
 
         # Remove "." dos códigos
         tabela_demofin["CDG_NAT_DESPESA"] = tabela_demofin["CDG_NAT_DESPESA"].str.replace(
-            ".", ""
-        )
+            ".", "")
 
         # Filtra a tabela para o fundo específico
         filtro_fundo = tabela_demofin["CDG_FUNDO"] == self.cod_fundo

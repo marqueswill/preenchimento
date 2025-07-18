@@ -37,10 +37,6 @@ class PreenchimentoNL():
     """
 
     def __init__(self, run=True, test=False):
-        username = os.getlogin().strip()
-        self.caminho_raiz = f"C:\\Users\\{username}\\OneDrive - Tribunal de Contas do Distrito Federal\\"
-        # self.nome_fundo = nome_fundo.lower()
-        # self.nome_template = nome_template
         if run:
             self.siggo_driver = SiggoDriver()
             self.siggo_driver.setup_driver()
@@ -59,6 +55,8 @@ class PreenchimentoNL():
             dataframes = dados 
 
         for dado in dataframes:
+            # feito assim para não ter que fazer login para cada folha
+            # TODO: usar o siggo_driver como parâmetro?
             folha = dado["folha"]
             template = dado["cabecalho"]
 
