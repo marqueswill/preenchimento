@@ -242,7 +242,7 @@ class FolhaPagamento():
             "CDG_NAT_DESPESA"
         ].str.slice(1)
 
-        prov_folha.sort_values(by=["CDG_NAT_DESPESA"])
+        prov_folha = prov_folha.sort_values(by=["CDG_NAT_DESPESA"])
 
         return prov_folha
 
@@ -258,7 +258,7 @@ class FolhaPagamento():
             :, ["NME_NAT_DESPESA", "CDG_NAT_DESPESA", "DESCONTO", "PROVENTO", "TIPO_DESPESA"]
         ].assign(SALDO=coluna_saldo_descontos)
 
-        desc_folha.sort_values(by=["CDG_NAT_DESPESA"])
+        desc_folha = desc_folha.sort_values(by=["CDG_NAT_DESPESA"])
 
         return desc_folha
 
@@ -335,7 +335,7 @@ class FolhaPagamento():
                 folha_pagamento.at[idx, "VALOR"] = 0.000001
                 if self.test:
                     color_print(
-                        f"VALOR DEVE SER PREENCHIDO MANUALMENTE",color= "yellow", style="bold")
+                        f"VALOR DEVE SER PREENCHIDO MANUALMENTE", color="yellow", style="bold")
                     print()
 
         folha_pagamento.drop(

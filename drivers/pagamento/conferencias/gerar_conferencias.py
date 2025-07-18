@@ -206,7 +206,7 @@ class GerarConferencia:
             "CAPITALIZADO": templates_capitalizado
         }
 
-        print(nomes_templates)
+        # print(nomes_templates)
 
         drivers_pagamento = [
             FolhaPagamento(self.nome_fundo.lower(), nome_template, test=True) for nome_template in nomes_templates[self.nome_fundo]
@@ -218,7 +218,7 @@ class GerarConferencia:
 
         for sheet_name, table_data in nls.items():
             print(f"Exportando {sheet_name}...")
-            print(table_data.head())
+            # print(table_data.head())
             self.exportar_para_planilha(table_data, sheet_name)
 
     def executar(self):

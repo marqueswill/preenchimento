@@ -129,5 +129,5 @@ class BaixaDiaria:
             self.preenchedor.executar({"folha": nl, "cabecalho": cabecalho})
 
 
-baixa = BaixaDiaria(run=False, test=True)
+baixa = BaixaDiaria(run=True, test=True)
 baixa.executar()

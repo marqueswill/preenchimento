@@ -1,3 +1,4 @@
+import sys
 import pandas as pd
 
 import os
@@ -108,6 +109,14 @@ class PreenchimentoTemplates():
         if self.test:
             for i, folha in enumerate(nls_carregadas):
                 print(folha["folha"])
-                print(folha["cabecalho"])
+                # print(folha["cabecalho"])
         if self.run:
             self.preenchedor.executar(nls_carregadas)
+
+
+try:
+    driver = PreenchimentoTemplates(test=True, run=True)
+    driver.executar()
+except Exception as e:
+    print(e)
+    sys.exit()
