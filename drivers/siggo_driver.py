@@ -4,9 +4,9 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
 from selenium.common.exceptions import TimeoutException
-
+from selenium.webdriver.chrome.service import Service
 import pandas as pd
-
+import subprocess
 import sys, time, os, locale
 from datetime import datetime
 
@@ -14,6 +14,8 @@ locale.setlocale(locale.LC_TIME, "pt_BR.utf8")
 
 ANO_ATUAL = datetime.now().year
 MES_ATUAL = datetime.now().month
+# MES_ATUAL = 6
+
 MESES = {
     1: "01-JANEIRO",
     2: "02-FEVEREIRO",
@@ -29,33 +31,31 @@ MESES = {
     12: "12-DEZEMBRO",
 }
 
-
+# TODO: identificação e tratamento de erros (interface?)
 class SiggoDriver:
-    def __init__(self, test=False):
-        username = os.getlogin().strip()
-        self.caminho_raiz = f"C:\\Users\\{username}\\Tribunal de Contas do Distrito Federal\\"
-
-        # Configurar Pandas para exibir todas as colunas e linhas
-        pd.set_option("display.max_rows", None)  # Exibir todas as linhas
-        pd.set_option("display.max_columns", None)  # Exibir todas as colunas
-        pd.set_option(
-            "display.max_colwidth", None
-        )  # Exibir conteúdo completo das células
-
-        if not test:
-            self.setup_driver()
+    """_summary_
+    Driver para automação e interação com o SIGGO  
+    """
+    def __init__(self,run:bool = True, test:bool = False):
+        self.setup_pandas()
+        self.setup_driver()
+        if run:
             self.esperar_login()
+        
 
-    def carregar_planilha(self, caminho_planilha):
-        caminho_completo = self.caminho_raiz + caminho_planilha
-        dataframe = pd.read_excel(caminho_completo)
-
-        return dataframe
+    def setup_pandas(self):
+        pd.set_option("display.max_rows", None)
+        pd.set_option("display.max_columns", None)
+        pd.set_option("display.max_colwidth", None)
+        pd.set_option("display.width", 0)
+        pd.set_option("display.expand_frame_repr", False)
 
     def setup_driver(self):
         options = webdriver.ChromeOptions()
         options.add_argument("--start-maximized")
         options.add_experimental_option("detach", True)
+        options.add_argument("--log-level=3")  # Suppress Chrome logs
+        options.add_argument("--silent")
 
         self.driver = webdriver.Chrome(options=options)
 
@@ -98,7 +98,7 @@ class SiggoDriver:
             time.sleep(1)
             current_time = time.time()
             if current_time - start_time > timeout:
-                self.driver.quit()  # TODO: unificar método para finalizar o SiggoDriver
+                self.driver.quit()
                 raise TimeoutException("Tempo limite para login excedido.")
 
     def esperar_carregamento(self, timeout=60):
@@ -133,13 +133,6 @@ class SiggoDriver:
                 opcao
             )
 
-    def separar_por_pagina(self, dataframe: DataFrame, tamanho_pagina=24):
-        return [
-            dataframe.iloc[i : i + tamanho_pagina]
-            for i in range(0, len(dataframe), tamanho_pagina)
-        ]
-
-
 
     # Método controle de páginas
     def nova_aba(self):
@@ -150,6 +143,7 @@ class SiggoDriver:
     def acessar_link(self, link):
         self.driver.get(link)
         self.esperar_carregamento(timeout=120)
+        time.sleep(1)
 
     def fechar_primeira_aba(self):
         abas = self.driver.window_handles

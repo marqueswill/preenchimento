@@ -37,9 +37,6 @@ class SiggoDriver:
 
         self.driver = webdriver.Chrome(options=options)
 
-    def finalizar(self):
-        self.driver.quit()
-
     # Métodos controle de login
     def login_siggo(self, cpf, password):
         url = "https://siggo.fazenda.df.gov.br/Account/Login"
@@ -76,7 +73,7 @@ class SiggoDriver:
             time.sleep(1)
             current_time = time.time()
             if current_time - start_time > timeout:
-                self.driver.quit()  # TODO: unificar método para finalizar o SiggoDriver
+                self.driver.quit()  
                 raise TimeoutException("Tempo limite para login excedido.")
 
     def esperar_carregamento(self, timeout=60):
@@ -131,73 +128,80 @@ class SiggoDriver:
         raise NotImplementedError("Método deve ser implementado na subclasse.")
 
 
-class PreenchimentoDiaria(SiggoDriver):
+class PreenchimetoBaixa(SiggoDriver):
     def __init__(self, test=False):
-        self.caminho_planilha = "FLUXO_DIÁRIAS\\TABELA_NL_DIARIAS_1.xlsx"
+        self.caminho_planilha = "FLUXO_DIÁRIAS\\BAIXA_DIARIAS.xlsx"
         super().__init__(test)
 
-    def separar_por_pagina(self, dataframe, tamanho_pagina=24):
-        return [
-            dataframe.iloc[i : i + tamanho_pagina]
-            for i in range(0, len(dataframe), tamanho_pagina)
-        ]
+    def separar_processos(self, dataframe):
+        dataframes_separados = {
+            processo: df for processo, df in dataframe.groupby("PROCESSO")
+        }
+        return dataframes_separados
 
-    def preencher_diaria(self, dados):
+    def preencher_baixa(self, dados):
         self.preencher_cabecalho(dados)
         self.preencher_lancamentos(dados)
-
-    def preencher_cabecalho(self, dados):
-        num_proc = str(dados.iloc[0, 6])
-        prioridade = "F0"
-        cod_ug = "020101-00001"
-        texto_obs = """CONCESSÃO DE DIÁRIAS A SERVIDORES P/ PARTICIPAÇÃO NO (nome_evento), PROMOVIDO PELO(A) (instituição), NO PERÍODO DE XXXX, EM (cidade)."""
-
-        opcoes = {'//*[@id="tipoCredor"]': "4 - UG/Gestão"}
-        campos = {
-            '//*[@id="nuProcesso"]/input': num_proc,
-            '//*[@id="prioridadePagamento"]/input': prioridade,
-            '//*[@id="codigoCredor"]/input': cod_ug,
-            '//*[@id="observacao"]': texto_obs,
-        }
-
-        self.selecionar_opcoes(opcoes)
-        self.preencher_campos(campos)
 
     def preencher_lancamentos(self, dados):
         delete_button = '//*[@id="ui-fieldset-0-content"]/div/div/div[1]/div/table/tbody/tr/td[7]/button'
         self.driver.find_element(By.XPATH, delete_button).click()
 
-        lines = dados.shape[0]
-        for i in range(lines):
+        linhas = dados.shape[0]
+        campos = {}
+        for i in range(linhas):
             self.driver.find_element(
                 By.XPATH, '//*[@id="incluirCampoLancamentos"]'
             ).click()
 
-            campos = {}
+            evento = 560379  # coluna 1
+            inscricao = dados.iloc[i]["CPF"]  # coluna 2
+            classificacao_contabil = 332110100  # coluna 3
+            valor = dados.iloc[i]["BAIXAR"]  # coluna 6
+
+            valores = [evento, inscricao, classificacao_contabil, None, None, valor]
+
             for j in range(6):
-                if j == 2:
+                if valores[j] is None:
                     continue
 
                 seletor = f'//*[@id="ui-fieldset-0-content"]/div/div/div[1]/div/table/tbody/tr[{i+1}]/td[{j+1}]/input'
-                dado = str(dados.iloc[i, j])
+                campos[seletor] = str(valores[j])
 
-                campos[seletor] = dado
+        self.preencher_campos(campos)
 
-            self.preencher_campos(campos)
+    def preencher_cabecalho(self, dados):
+        processo = dados.iloc[0]["PROCESSO"]
+        prioridade = "Z0"
+        cod_ug = "020101-00001"
+
+        campos = {
+            '//*[@id="nuProcesso"]/input': processo,
+            '//*[@id="prioridadePagamento"]/input': prioridade,
+            '//*[@id="codigoCredor"]/input': cod_ug,
+        }
+        opcoes = {
+            '//*[@id="tipoCredor"]': "4 - UG/Gestão",
+        }
+
+        self.selecionar_opcoes(opcoes)
+        self.preencher_campos(campos)
 
     def executar(self):
-        dados_por_pagina = self.separar_por_pagina(self.planilha)
+
+        dados_por_processo = self.separar_processos(self.planilha)
+
         link = f"https://siggo.fazenda.df.gov.br/{ANO_ATUAL}/afc/nota-de-lancamento"
-        for dados in dados_por_pagina:
+        for processo, dados in dados_por_processo.items():
             self.nova_aba()
             self.acessar_link(link)
-            self.preencher_diaria(dados)
+            self.preencher_baixa(dados)
 
         self.fechar_primeira_aba()
 
 
 try:
-    driver = PreenchimentoDiaria()
+    driver = PreenchimetoBaixa()
     driver.executar()
 except Exception as e:
     print(e)

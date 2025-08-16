@@ -1,7 +1,7 @@
 @echo off
-set SCRIPTS=rgps_beneficios.py rgps_conferencia.py rgps_dea_beneficios.py rgps_indenizacoes_pessoal.py rgps_indenizacoes_restituicoes.py rgps_principal.py rgps_substituicoes.py
+set SCRIPTS="RGPS_COMPLETO.py" "RGPS_BENEFICIOS.py" "RGPS_CONFERENCIA.py" "RGPS_DEA_BENEFICIOS.py" "RGPS_INDENIZACOES_PESSOAL.py" "RGPS_INDENIZACOES_RESTITUICOES.py" "RGPS_PRINCIPAL.py" "RGPS_SUBSTITUICOES.py"
 
 for %%s in (%SCRIPTS%) do (
-    echo Building %%s...
-    python -m PyInstaller --onefile --noconsole drivers\rgps\%%s
+    echo Building %%~ns...
+    python -m PyInstaller --onefile drivers\pagamento\rgps\%%~s
 )
