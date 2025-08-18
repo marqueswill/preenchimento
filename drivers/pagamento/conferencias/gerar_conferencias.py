@@ -241,10 +241,10 @@ class GerarConferencia:
             self.exportar_adiantamento_ferias()
 
 
-try:
-    for fundo in ["RGPS", "FINANCEIRO", "CAPITALIZADO"]:
-        gerador = GerarConferencia(fundo)
-        gerador.executar()
-except Exception as e:
-    print(e)
-    sys.exit()
+# try:
+#     for fundo in ["RGPS", "FINANCEIRO", "CAPITALIZADO"]:
+#         gerador = GerarConferencia(fundo)
+#         gerador.executar()
+# except Exception as e:
+#     print(e)
+#     sys.exit()
