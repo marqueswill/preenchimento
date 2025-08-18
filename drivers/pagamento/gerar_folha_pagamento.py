@@ -54,7 +54,18 @@ class FolhaPagamento():
         """
 
         username = os.getlogin().strip()
-        self.caminho_raiz = f"C:\\Users\\{username}\\Tribunal de Contas do Distrito Federal\\"
+        # Caminhos possíveis
+        caminho_base = f"C:\\Users\\{username}\\Tribunal de Contas do Distrito Federal\\"
+        caminho_onedrive = f"C:\\Users\\{username}\\OneDrive - Tribunal de Contas do Distrito Federal\\"
+
+        # Escolher o primeiro caminho válido
+        if os.path.exists(caminho_base):
+            self.caminho_raiz = caminho_base
+        elif os.path.exists(caminho_onedrive):
+            self.caminho_raiz = caminho_onedrive
+        else:
+            raise FileNotFoundError(
+                "Arquivo TEMPLATES_NL_RGPS.xlsx não encontrado em nenhum dos caminhos possíveis.")
 
         cod_fundos = {"rgps": 1, "financeiro": 2,
                       "capitalizado": 3, "inativo": 4, "pensão": 5}
@@ -153,17 +164,7 @@ class FolhaPagamento():
             f"SECON - General\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_{ANO_ATUAL}\\{MESES[MES_ATUAL]}"
         )
 
-        # Usa glob para encontrar qualquer arquivo que comece com "DEMOFIN" e contenha "TABELA"
-        padrao_arquivo = os.path.join(caminho_pasta, "DEMOFIN*TAB*LA.xlsx")
-        arquivos_encontrados = glob.glob(padrao_arquivo)
 
-
-        # if not arquivos_encontrados:
-        #     raise FileNotFoundError(
-        #         "Arquivo DEMOFIN_TABELA ou DEMOFIN - TABELA não encontrado.")
-
-        # Usa o primeiro arquivo encontrado
-        # caminho_completo = arquivos_encontrados[0]
         caminho_completo = caminho_pasta + "\\DEMOFIN_TABELA.xlsx"
 
         # Lê a planilha com o nome da aba "DEMOFIN - T"

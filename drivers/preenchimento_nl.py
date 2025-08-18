@@ -3,7 +3,6 @@ import os
 from typing import Dict
 import pandas as pd
 from pandas import DataFrame
-from traitlets import List
 from drivers.siggo_driver import SiggoDriver
 from selenium.webdriver.common.by import By
 
