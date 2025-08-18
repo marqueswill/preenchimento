@@ -1,5 +1,7 @@
+
 import os
 import sys
+import time
 
 import pandas as pd
 
@@ -101,11 +103,19 @@ while True:
         for template in templates_selecionados:
             print(f"Template selecionado: {template}")
 
+        print("\nIniciando o processamento", end='', flush=True)
+        for _ in range(3):
+            print(".",end='', flush=True)
+            time.sleep(0.5)
+
+        clear_console()
         driver = FolhaPagamentoBase(
             "capitalizado", templates_selecionados, test=True
         )
+        clear_console()
         driver.executar()
-
+        input("\nProcessamento concluído. Pressione ENTER para sair.")
+        sys.exit()
     except Exception as e:
         print(e)
         sys.exit()
