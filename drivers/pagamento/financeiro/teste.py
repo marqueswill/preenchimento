@@ -9,7 +9,7 @@ from drivers.pagamento.folha_pagamento_base import FolhaPagamentoBase
 try:
     username = os.getlogin().strip()
     caminho_completo = (
-        f"C:\\Users\\{username}\\OneDrive - Tribunal de Contas do Distrito Federal\\" +
+        f"C:\\Users\\{username}\\Tribunal de Contas do Distrito Federal\\" +
         f"SECON - General\\CÓDIGOS\\TEMPLATES_NL_FINANCEIRO.xlsx"
     )
 

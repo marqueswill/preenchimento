@@ -33,7 +33,7 @@ MESES = {
 class GerarConferencia:
     def __init__(self, nome_fundo: str):
         username = os.getlogin().strip()
-        self.caminho_raiz = f"C:\\Users\\{username}\\OneDrive - Tribunal de Contas do Distrito Federal\\"
+        self.caminho_raiz = f"C:\\Users\\{username}\\Tribunal de Contas do Distrito Federal\\"
         self.nome_template = "CONFERÊNCIA"
         self.nome_fundo = nome_fundo.upper()
 
@@ -186,7 +186,7 @@ class GerarConferencia:
     def exportar_nls(self):
         username = os.getlogin().strip()
 
-        caminho_raiz = f"C:\\Users\\{username}\\OneDrive - Tribunal de Contas do Distrito Federal\\SECON - General\\CÓDIGOS\\"
+        caminho_raiz = f"C:\\Users\\{username}\\Tribunal de Contas do Distrito Federal\\SECON - General\\CÓDIGOS\\"
 
         excel_rgps = pd.ExcelFile(
             caminho_raiz + "TEMPLATES_NL_RGPS.xlsx")
