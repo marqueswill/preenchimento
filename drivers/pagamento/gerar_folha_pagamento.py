@@ -93,7 +93,7 @@ class FolhaPagamento():
             caminho_completo,
             header=6,
             sheet_name=self.nome_template,
-            usecols="A:I",
+            usecols="A:I", dtype=str
         ).astype(str)
 
         dataframe["CLASS. ORC"] = dataframe["CLASS. ORC"].apply(
@@ -163,7 +163,6 @@ class FolhaPagamento():
             self.caminho_raiz,
             f"SECON - General\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_{ANO_ATUAL}\\{MESES[MES_ATUAL]}"
         )
-
 
         caminho_completo = caminho_pasta + "\\DEMOFIN_TABELA.xlsx"
 
@@ -302,6 +301,9 @@ class FolhaPagamento():
 
             return resultado
 
+        print()
+        print("*" * 50)
+        print("Gerando folha de pagamento com base no template:", self.nome_template)
         folha_pagamento = self.carregar_template_nl()
         folha_pagamento["VALOR"] = 0.0
 

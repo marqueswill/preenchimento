@@ -1,7 +1,7 @@
 from datetime import datetime
 import os
 import sys
-
+from openpyxl.styles import PatternFill, Font
 import numpy as np
 import pandas as pd
 from pandas import DataFrame
@@ -228,10 +228,62 @@ class GerarConferencia:
             driver.nome_template: driver.gerar_folha() for driver in drivers_pagamento
         }
 
+        print(nls.keys())
         for sheet_name, table_data in nls.items():
             print(f"Exportando {sheet_name}...")
             # print(table_data.head())
             self.exportar_para_planilha(table_data, sheet_name)
+
+
+    def destacar_linhas(
+        self,
+        sheet_name: str,
+        cor_fundo="FFFF00",
+        negrito=False,
+    ):
+        """
+        Destaca as linhas cuja coluna NME_NAT_DESPESA == 31901157
+        """
+
+        # Caminho do arquivo
+        caminho_arquivo = (
+            self.caminho_raiz
+            + f"SECON - General\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_{ANO_ATUAL}\\{MESES[MES_ATUAL]}\\CONFERÊNCIA_{self.nome_fundo}.xlsx"
+        )
+
+        workbook = load_workbook(caminho_arquivo)
+        if sheet_name not in workbook.sheetnames:
+            raise ValueError(f"Aba '{sheet_name}' não encontrada.")
+
+        sheet = workbook[sheet_name]
+
+        # Cabeçalho
+        headers = [cell.value for cell in sheet[1]]
+
+        # Procura índice da coluna alvo
+        try:
+            idx_nat = headers.index("CDG_NAT_DESPESA")
+        except ValueError:
+            raise ValueError(
+                "Coluna 'CDG_NAT_DESPESA' não encontrada na planilha.")
+
+        # Estilo
+        fill = PatternFill(start_color=cor_fundo,
+                        end_color=cor_fundo, fill_type="solid")
+        font = Font(bold=negrito)
+
+        # Percorre linhas (pulando cabeçalho)
+        for row in sheet.iter_rows(min_row=2):
+            valor = row[idx_nat].value
+            if str(valor) == "31901157":
+                for i,cell in enumerate(row):
+                    if i == 6:
+                        break
+                    cell.fill = fill
+                    if negrito:
+                        cell.font = font
+
+        workbook.save(caminho_arquivo)
 
     def executar(self):
         self.exportar_conferencia()
@@ -241,10 +293,18 @@ class GerarConferencia:
             self.exportar_adiantamento_ferias()
 
 
-# try:
-#     for fundo in ["RGPS", "FINANCEIRO", "CAPITALIZADO"]:
-#         gerador = GerarConferencia(fundo)
-#         gerador.executar()
-# except Exception as e:
-#     print(e)
-#     sys.exit()
+        self.destacar_linhas(
+            sheet_name="CONFERÊNCIA",
+            cor_fundo="FF9999",  # vermelho claro
+            negrito=True
+        )
+
+
+if __name__ == "__main__":
+    try:
+        for fundo in ["CAPITALIZADO"]:
+            gerador = GerarConferencia(fundo)
+            gerador.executar()
+    except Exception as e:
+        print(e)
+        sys.exit()

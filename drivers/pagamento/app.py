@@ -67,7 +67,7 @@ while True:
             for fundo in ["RGPS", "FINANCEIRO", "CAPITALIZADO"]:
                 gerador = GerarConferencia(fundo)
                 gerador.executar()
-                continue
+            continue
 
         username = os.getlogin().strip()
         caminho_base = f"C:\\Users\\{username}\\Tribunal de Contas do Distrito Federal\\"

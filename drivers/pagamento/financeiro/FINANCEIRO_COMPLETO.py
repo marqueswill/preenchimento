@@ -10,8 +10,8 @@ try:
     username = os.getlogin().strip()
 
     # Caminhos possíveis
-    caminho_base = f"C:\\Users\\{username}\\Tribunal de Contas do Distrito Federal\\SECON - General\\CÓDIGOS\\TEMPLATES_NL_RGPS.xlsx"
-    caminho_onedrive = f"C:\\Users\\{username}\\OneDrive - Tribunal de Contas do Distrito Federal\\SECON - General\\CÓDIGOS\\TEMPLATES_NL_RGPS.xlsx"
+    caminho_base = f"C:\\Users\\{username}\\Tribunal de Contas do Distrito Federal\\SECON - General\\CÓDIGOS\\TEMPLATES_NL_FINANCEIRO.xlsx"
+    caminho_onedrive = f"C:\\Users\\{username}\\OneDrive - Tribunal de Contas do Distrito Federal\\SECON - General\\CÓDIGOS\\TEMPLATES_NL_FINANCEIRO.xlsx"
 
     # Escolher o primeiro caminho válido
     if os.path.exists(caminho_base):
@@ -20,7 +20,7 @@ try:
         caminho_completo = caminho_onedrive
     else:
         raise FileNotFoundError(
-            "Arquivo TEMPLATES_NL_RGPS.xlsx não encontrado em nenhum dos caminhos possíveis.")
+            "Arquivo TEMPLATES_NL_FINANCEIRO.xlsx não encontrado em nenhum dos caminhos possíveis.")
 
     excel_file = pd.ExcelFile(caminho_completo)
     nomes_templates = excel_file.sheet_names
