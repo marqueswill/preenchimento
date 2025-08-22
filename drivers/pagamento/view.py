@@ -61,7 +61,8 @@ class ConsoleView:
         """Exibe uma mensagem e espera que o usuário pressione ENTER."""
         input(f"\n{message}\nPressione ENTER para sair.")
 
-    def color_text(self, text, color=None, style=None, background=None):
+    @staticmethod
+    def color_text(text, color=None, style=None, background=None):
         # ANSI color codes
         colors = {
             "black": 30, "red": 31, "green": 32, "yellow": 33,
@@ -89,8 +90,10 @@ class ConsoleView:
 
         return f"{prefix}{text}{suffix}"
 
-    def color_print(self, *args, color=None, style=None, background=None, sep=" ", end="\n"):
-        colored_args = [self.color_text(
+
+    @staticmethod
+    def color_print(*args, color=None, style=None, background=None, sep=" ", end="\n"):
+        colored_args = [ConsoleView.color_text(
             str(arg), color=color, style=style, background=background) for arg in args]
         print(*colored_args, sep=sep, end=end)
 

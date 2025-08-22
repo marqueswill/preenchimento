@@ -38,7 +38,7 @@ MESES = {
     12: "12-DEZEMBRO",
 }
 
-
+view = ConsoleView()
 def get_root_paths() -> str:
     """
     Determina o caminho correto para o arquivo de template,
@@ -427,7 +427,7 @@ class GeradorFolhaPagamento:
                 # Coloca um valor pequeno pra abrir a página pro preenchimento manual
                 folha_pagamento.at[idx, "VALOR"] = 0.000001
                 if self.test:
-                    color_print(
+                    ConsoleView.color_print(
                         f"VALOR DEVE SER PREENCHIDO MANUALMENTE",
                         color="yellow",
                         style="bold",
@@ -459,7 +459,7 @@ class GeradorFolhaPagamento:
         if self.test:
             if folha_pagamento.empty:
                 print()
-                color_print("FOLHA VAZIA", color="yellow", style="bold")
+                ConsoleView.color_print("FOLHA VAZIA", color="yellow", style="bold")
             else:
                 print()
                 print(folha_pagamento)
