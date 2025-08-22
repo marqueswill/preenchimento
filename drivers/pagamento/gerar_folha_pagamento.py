@@ -117,7 +117,7 @@ class FolhaPagamento():
 
         return dataframe
 
-    def gerar_conferencia(self, agrupar=True):
+    def gerar_conferencia(self, agrupar=True, adiantamento_ferias=False):
         # Faz distinção entre proventos e descontos
         def cria_coluna_rubrica(row):
             cdg_nat_despesa = str(row["CDG_NAT_DESPESA"])
@@ -219,13 +219,22 @@ class FolhaPagamento():
         if not agrupar:
             return conferencia_folha
 
-        conferencia_folha_final = (
-            conferencia_folha.groupby(["NME_NAT_DESPESA", "CDG_NAT_DESPESA", "TIPO_DESPESA"])[
-                ["PROVENTO", "DESCONTO"]
-            ]
-            .agg(lambda x: np.sum(np.abs(x)))
-            .reset_index()
-        )
+        if adiantamento_ferias:
+            conferencia_folha_final = (
+                conferencia_folha.groupby(["NME_NAT_DESPESA", "CDG_NAT_DESPESA", "TIPO_DESPESA","AJUSTE"])[
+                    ["PROVENTO", "DESCONTO"]
+                ]
+                .agg(lambda x: np.sum(np.abs(x)))
+                .reset_index()
+            )
+        else:
+            conferencia_folha_final = (
+                conferencia_folha.groupby(["NME_NAT_DESPESA", "CDG_NAT_DESPESA", "TIPO_DESPESA"])[
+                    ["PROVENTO", "DESCONTO"]
+                ]
+                .agg(lambda x: np.sum(np.abs(x)))
+                .reset_index()
+            )
 
         return conferencia_folha_final
 
@@ -266,9 +275,11 @@ class FolhaPagamento():
 
     def gerar_saldos(self):
         dados_conferencia = self.gerar_conferencia()
+        dados_conferencia_ferias = self.gerar_conferencia(adiantamento_ferias=True)
         dados_proventos = self.gerar_proventos(dados_conferencia)
         dados_descontos = self.gerar_descontos(dados_conferencia)
-
+        print(dados_conferencia)
+        print(dados_conferencia_ferias)
         # Transforma a tabela com os dados de proventos em uma lista
         proventos_list = list(
             zip(dados_proventos["TIPO_DESPESA"], dados_proventos["CDG_NAT_DESPESA"], dados_proventos["SALDO"]))
