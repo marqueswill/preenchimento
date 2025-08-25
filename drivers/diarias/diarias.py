@@ -2,6 +2,7 @@ import os
 from pandas import DataFrame
 from tabula import read_pdf
 
+from drivers.pagamento.services import get_root_paths
 from drivers.preenchimento_nl import PreenchimentoNL
 
 
@@ -10,11 +11,10 @@ class BaixaDiaria:
 
     def __init__(self, run=True, test=False):
         """Inicializa a classe BaixaDiaria."""
-        username = os.getlogin().strip()
-        self.caminho_raiz = f"C:\\Users\\{username}\\Tribunal de Contas do Distrito Federal\\"
+
+        self.caminho_raiz = get_root_paths()
         self.run = run
         self.test = test
-
         self.preenchedor = PreenchimentoNL(run=self.run, test=self.test)
 
     def obter_caminhos_pdf(self):
@@ -129,5 +129,5 @@ class BaixaDiaria:
             self.preenchedor.executar({"folha": nl, "cabecalho": cabecalho})
 
 
-baixa = BaixaDiaria(run=True, test=True)
+baixa = BaixaDiaria(run=False, test=True)
 baixa.executar()

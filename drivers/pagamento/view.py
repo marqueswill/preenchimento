@@ -98,3 +98,4 @@ class ConsoleView:
         print(*colored_args, sep=sep, end=end)
 
 # TODO: ExcelExporter
+# TODO: Logger para isolar prints de debug
