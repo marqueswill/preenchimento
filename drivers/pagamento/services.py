@@ -1,17 +1,14 @@
 import os
 import locale
-from datetime import datetime
 import pandas as pd
 import numpy as np
+from datetime import datetime
 from pandas import DataFrame
 
 # Importa as classes de serviço que contêm a lógica de negócio
 from drivers.pagamento.view import ConsoleView
 from drivers.preenchimento_nl import PreenchimentoNL
-
-from openpyxl import Workbook, load_workbook
-from openpyxl.utils import column_index_from_string, get_column_letter
-from openpyxl.styles import PatternFill, Font
+from excel.excel_service import ExcelService
 
 # Define a configuração regional para datas e horários em português
 try:
@@ -39,6 +36,8 @@ MESES = {
 }
 
 view = ConsoleView()
+
+
 def get_root_paths() -> str:
     """
     Determina o caminho correto para o arquivo de template,
@@ -438,7 +437,7 @@ class GeradorFolhaPagamento:
                 valor_subtrair = soma_codigos(subtrair, saldos_dict[tipo])
                 valor = valor_somar - valor_subtrair
                 folha_pagamento.at[idx, "VALOR"] = valor
-                #TODO:mover isso pra uma view
+                # TODO:mover isso pra uma view
                 if self.test and valor != 0 and False:
                     print(f"\nLINHA {idx}: {class_orc} / {class_cont}")
                     print(f"TIPO     : {tipo}")
@@ -459,7 +458,8 @@ class GeradorFolhaPagamento:
         if self.test:
             if folha_pagamento.empty:
                 print()
-                ConsoleView.color_print("FOLHA VAZIA", color="yellow", style="bold")
+                ConsoleView.color_print(
+                    "FOLHA VAZIA", color="yellow", style="bold")
             else:
                 print()
                 print(folha_pagamento)
@@ -509,100 +509,18 @@ class FolhaPagamentoService:
 
 
 class ConferenciaService:
-    def __init__(self, nome_fundo: str):
+    def __init__(self, nome_fundo: str, test=False):
         self.caminho_raiz = get_root_paths()
         self.nome_template = "CONFERÊNCIA"
         self.nome_fundo = nome_fundo.upper()
-
-    def exportar_para_planilha(
-        self,
-        table: DataFrame,
-        sheet_name: str,
-        start_column="A",
-        start_line="1",
-        clear=False,
-        sum_numeric=False,
-    ):
-        # Caminho do arquivo
-
-        caminho_arquivo = (
-            self.caminho_raiz
-            + f"SECON - General\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_{ANO_ATUAL}\\{MESES[MES_ATUAL]}\\CONFERÊNCIA_{self.nome_fundo}.xlsx"
-        )
-
-        # Abre o arquivo existente
-        if not os.path.exists(caminho_arquivo):
-            # Cria um novo arquivo Excel
-            wb = Workbook()
-            wb.create_sheet(sheet_name)
-            del wb["Sheet"]
-            wb.save(caminho_arquivo)
-
-        workbook = load_workbook(caminho_arquivo)
-
-        # Cria aba se não existir
-        if sheet_name in workbook.sheetnames:
-            sheet = workbook[sheet_name]
+        if test:
+            caminho_arquivo_excel = self.caminho_raiz + \
+                f"SECON - General\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_{ANO_ATUAL}\\{MESES[MES_ATUAL]}\\CONFERÊNCIA_{self.nome_fundo}.xlsx"
         else:
-            sheet = workbook.create_sheet(sheet_name)
+            caminho_arquivo_excel = self.caminho_raiz + \
+                f"SECON - General\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_{ANO_ATUAL}\\TESTES\\CONFERÊNCIA_{self.nome_fundo}.xlsx"
 
-        # Limpa a aba se necessário
-        if clear:
-            sheet.delete_rows(1, sheet.max_row)
-
-        # Converte coluna e linha iniciais
-        col_idx = column_index_from_string(start_column)
-        row_idx = int(start_line)
-
-        # Escreve cabeçalhos
-        for j, column_name in enumerate(table.columns):
-            sheet.cell(row=row_idx, column=col_idx + j, value=column_name)
-
-        # Escreve os dados
-        for row_offset, row in enumerate(table.itertuples(index=False)):
-            for col_offset, value in enumerate(row):
-                cell = sheet.cell(
-                    row=row_idx + 1 + row_offset,
-                    column=col_idx + col_offset,
-                    value=value,
-                )
-                col_name = table.columns[col_offset]
-                if col_name.upper() in {
-                    "VALOR",
-                    "TOTAL",
-                    "SALDO",
-                    "DESCONTO",
-                    "PROVENTO",
-                } and isinstance(value, (int, float)):
-                    cell.number_format = (
-                        '_-R$ * #,##0.00_-;-R$ * #,##0.00_-;_-R$ * "-"??_-;_-@_-'
-                    )
-
-        # Soma colunas numéricas (opcional)
-        if sum_numeric:
-            last_row = row_idx + len(table)
-            for j, column in enumerate(table.columns):
-                if table[column].dtype.kind in "iuf":  # int, unsigned, float
-                    soma = table[column].sum()
-                    sheet.cell(row=last_row + 1,
-                               column=col_idx + j, value=soma)
-
-        # Fit Columns
-        for column_cells in sheet.columns:
-            max_length = 0
-            column = column_cells[0].column  # Get the column index (number)
-            column_letter = get_column_letter(column)  # Convert to letter
-
-            for cell in column_cells:
-                if cell.value:
-                    max_length = max(max_length, len(str(cell.value)))
-
-            # Set column width (add a little padding)
-            adjusted_width = max_length + 5
-            sheet.column_dimensions[column_letter].width = adjusted_width
-
-        # Salva alterações
-        workbook.save(caminho_arquivo)
+        self.excel_service = ExcelService(caminho_arquivo_excel)
 
     def exportar_conferencia(self):
         folha_pagamento = GeradorFolhaPagamento(
@@ -616,11 +534,11 @@ class ConferenciaService:
             dados_conferencia_financeiro)
 
         # Exporta proventos na coluna A
-        self.exportar_para_planilha(
+        self.excel_service.exportar_para_planilha(
             proventos_folha, self.nome_template, clear=True)
 
         # Exporta descontos na coluna G
-        self.exportar_para_planilha(
+        self.excel_service.exportar_para_planilha(
             descontos_folha, self.nome_template, start_column="H", clear=False
         )
 
@@ -644,7 +562,7 @@ class ConferenciaService:
         ultima_linha = len(descontos_folha) + 3
 
         # Exporta os totais abaixo dos dados
-        self.exportar_para_planilha(
+        self.excel_service.exportar_para_planilha(
             totais,
             self.nome_template,
             start_column="H",
@@ -658,7 +576,7 @@ class ConferenciaService:
         df = folha_pagamento.gerar_conferencia(agrupar=False)
 
         df = df[df["AJUSTE"] == "ADIANTAMENTO FÉRIAS"]
-        self.exportar_para_planilha(df, "ADIANTAMENTO_FÉRIAS")
+        self.excel_service.exportar_para_planilha(df, "ADIANTAMENTO_FÉRIAS")
 
     def exportar_nls(self):
         caminho_raiz = self.caminho_raiz + f"SECON - General\\CÓDIGOS\\"
@@ -695,57 +613,12 @@ class ConferenciaService:
         for sheet_name, table_data in nls.items():
             print(f"Exportando {sheet_name}...")
             # print(table_data.head())
-            self.exportar_para_planilha(table_data, sheet_name)
+            self.excel_service.exportar_para_planilha(table_data, sheet_name)
 
-    def destacar_linhas(
-        self,
-        sheet_name: str,
-        cor_fundo="FFFF00",
-        negrito=False,
-    ):
-        """
-        Destaca as linhas cuja coluna NME_NAT_DESPESA == 31901157
-        """
-
-        # Caminho do arquivo
-        caminho_arquivo = (
-            self.caminho_raiz
-            + f"SECON - General\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_{ANO_ATUAL}\\{MESES[MES_ATUAL]}\\CONFERÊNCIA_{self.nome_fundo}.xlsx"
-        )
-
-        workbook = load_workbook(caminho_arquivo)
-        if sheet_name not in workbook.sheetnames:
-            raise ValueError(f"Aba '{sheet_name}' não encontrada.")
-
-        sheet = workbook[sheet_name]
-
-        # Cabeçalho
-        headers = [cell.value for cell in sheet[1]]
-
-        # Procura índice da coluna alvo
-        try:
-            idx_nat = headers.index("CDG_NAT_DESPESA")
-        except ValueError:
-            raise ValueError(
-                "Coluna 'CDG_NAT_DESPESA' não encontrada na planilha.")
-
-        # Estilo
-        fill = PatternFill(start_color=cor_fundo,
-                           end_color=cor_fundo, fill_type="solid")
-        font = Font(bold=negrito)
-
-        # Percorre linhas (pulando cabeçalho)
-        for row in sheet.iter_rows(min_row=2):
-            valor = row[idx_nat].value
-            if str(valor) == "31901157":
-                for i, cell in enumerate(row):
-                    if i == 6:
-                        break
-                    cell.fill = fill
-                    if negrito:
-                        cell.font = font
-
-        workbook.save(caminho_arquivo)
+    def destacar_linhas(self, sheet_name: str, cor_fundo="FF9999", negrito=True):
+        # Usa o serviço de Excel para destacar linhas
+        self.excel_service.destacar_linhas(
+            sheet_name, cor_fundo, negrito, coluna_alvo="CDG_NAT_DESPESA", valor_alvo="31901157")
 
     def executar(self):
         self.exportar_conferencia()
@@ -753,9 +626,14 @@ class ConferenciaService:
 
         if self.nome_fundo == "RGPS":
             self.exportar_adiantamento_ferias()
+            
+        
+        # formato_monetario = '_-R$ * #,##0.00_-;-R$ * #,##0.00_-;_-R$ * "-"??_-;_-@_-'
+        #     # if col_name.upper() in {"VALOR", "TOTAL", "SALDO", "DESCONTO", "PROVENTO"} and isinstance(value, (int, float)):
+        #     #     cell.number_format = '_-R$ * #,##0.00_-;-R$ * #,##0.00_-;_-R$ * "-"??_-;_-@_-'
 
-        self.destacar_linhas(
-            sheet_name="CONFERÊNCIA",
-            cor_fundo="FF9999",  # vermelho claro
-            negrito=True
-        )
+        #     self.apply_format()
+        
+        self.destacar_linhas(sheet_name="CONFERÊNCIA")
+
+

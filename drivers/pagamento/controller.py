@@ -1,5 +1,4 @@
 import sys
-import pandas as pd
 
 # Importa as classes de Model e as funções de View
 from drivers.pagamento.services import ConferenciaService, FolhaPagamentoService, get_template_names, get_template_paths
@@ -32,7 +31,7 @@ def main(test=False, run=True):
             if tipo_folha_selecionado == "GERAR CONFERÊNCIAS":
                 # Model: Chama o serviço para geração de conferências
                 for fundo in ["RGPS", "FINANCEIRO", "CAPITALIZADO"]:
-                    gerador = ConferenciaService(fundo)
+                    gerador = ConferenciaService(fundo,test)
                     gerador.executar()
                 app_view.show_message("Conferências geradas com sucesso.")
                 continue
