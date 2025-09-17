@@ -2,7 +2,7 @@ import sys
 
 # Importa as classes de Model e as funções de View
 from drivers.pagamento.services import ConferenciaService, FolhaPagamentoService, get_template_names, get_template_paths
-from drivers.pagamento.view import ConsoleView
+from drivers.view import ConsoleView
 
 
 def main(test=False, run=True):

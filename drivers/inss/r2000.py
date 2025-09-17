@@ -6,7 +6,7 @@ from datetime import datetime
 from pandas import DataFrame
 
 from drivers.pagamento.services import get_root_paths
-from drivers.pagamento.view import ConsoleView
+from drivers.view import ConsoleView
 from drivers.preenchimento_nl import PreenchimentoNL
 from excel.excel_service import ExcelService
 

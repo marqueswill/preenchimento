@@ -6,7 +6,7 @@ from datetime import datetime
 from pandas import DataFrame
 
 # Importa as classes de serviço que contêm a lógica de negócio
-from drivers.pagamento.view import ConsoleView
+from drivers.view import ConsoleView
 from drivers.preenchimento_nl import PreenchimentoNL
 from excel.excel_service import ExcelService
 
@@ -537,11 +537,11 @@ class ConferenciaService:
         self.excel_service.exportar_para_planilha(
             proventos_folha, self.nome_template, clear=True)
 
+        return
         # Exporta descontos na coluna G
         self.excel_service.exportar_para_planilha(
             descontos_folha, self.nome_template, start_column="H", clear=False
         )
-
         # Calcula os totais
         total_proventos = (
             proventos_folha["PROVENTO"].sum(
@@ -622,18 +622,16 @@ class ConferenciaService:
 
     def executar(self):
         self.exportar_conferencia()
+        return
         self.exportar_nls()
 
         if self.nome_fundo == "RGPS":
             self.exportar_adiantamento_ferias()
-            
-        
+
         # formato_monetario = '_-R$ * #,##0.00_-;-R$ * #,##0.00_-;_-R$ * "-"??_-;_-@_-'
         #     # if col_name.upper() in {"VALOR", "TOTAL", "SALDO", "DESCONTO", "PROVENTO"} and isinstance(value, (int, float)):
         #     #     cell.number_format = '_-R$ * #,##0.00_-;-R$ * #,##0.00_-;_-R$ * "-"??_-;_-@_-'
 
         #     self.apply_format()
-        
+
         self.destacar_linhas(sheet_name="CONFERÊNCIA")
-
-
