@@ -302,7 +302,7 @@ class GerarConferencia:
 
 if __name__ == "__main__":
     try:
-        for fundo in ["CAPITALIZADO"]:
+        for fundo in ["RGPS","FINANCEIRO","CAPITALIZADO"]:
             gerador = GerarConferencia(fundo)
             gerador.executar()
     except Exception as e:

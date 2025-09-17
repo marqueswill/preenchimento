@@ -278,15 +278,21 @@ class FolhaPagamento():
             zip(dados_descontos["TIPO_DESPESA"], dados_descontos["CDG_NAT_DESPESA"], dados_descontos["SALDO"]))
 
         # Faz um dicionário com todos os saldos (proventos e descontos) segmentados pelo tipo do saldo
-        saldos_dict = {"ATIVO": {}, "INATIVO": {},
-                       "COMPENSATÓRIA": {}, "PENSIONISTA": {}}
+        saldos_dict = {
+            "ATIVO": {},
+            "INATIVO": {},
+            "COMPENSATÓRIA": {},
+            "PENSIONISTA": {},
+            "PROVENTO ADIANTAMENTO FÉRIAS": {},
+            "DESCONTO ADIANTAMENTO FÉRIAS": {},
+        }
         for line in proventos_list + descontos_list:
             saldos_dict[line[0]][line[1]] = line[2]
 
         # if self.test:
         #     print(dados_conferencia)
-            # print(dados_proventos)
-            # print(dados_descontos)
+        # print(dados_proventos)
+        # print(dados_descontos)
 
         return saldos_dict
 
