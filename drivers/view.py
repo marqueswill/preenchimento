@@ -26,6 +26,7 @@ class ConsoleView:
     def get_user_input(self, opcoes: list[str], selecionar_todos=False, permitir_voltar=False):
         """Obtém e valida a entrada do usuário a partir do menu exibido."""
         while True:
+            #TODO: input multiplo
             escolha = input("Digite o número correspondente: ").strip().upper()
 
             if escolha == 'X':

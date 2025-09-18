@@ -125,38 +125,43 @@ class GeradorFolhaPagamento:
         return dataframe
 
     def carregar_template_nl(self):
-        caminho_completo = get_template_paths(self.nome_fundo)
+        try:
+            caminho_completo = get_template_paths(self.nome_fundo)
+            dataframe = pd.read_excel(
+                caminho_completo,
+                header=6,
+                sheet_name=self.nome_template,
+                usecols="A:I",
+                dtype=str,
+            ).astype(str)
 
-        dataframe = pd.read_excel(
-            caminho_completo,
-            header=6,
-            sheet_name=self.nome_template,
-            usecols="A:I",
-            dtype=str,
-        ).astype(str)
+            dataframe["CLASS. ORC"] = (
+                dataframe["CLASS. ORC"]
+                .apply(lambda x: x[1:] if len(x) == 9 else x)
+                .astype(str)
+            )
 
-        dataframe["CLASS. ORC"] = (
-            dataframe["CLASS. ORC"]
-            .apply(lambda x: x[1:] if len(x) == 9 else x)
-            .astype(str)
-        )
-
-        return dataframe
+            return dataframe
+        except Exception as e:
+            print("Feche todas planilhas de template e tente novamente.")
 
     def gerar_cabecalho(self):
-        caminho_completo = (
-            self.caminho_raiz
-            + f"SECON - General\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_{ANO_ATUAL}\\TEMPLATES\\TEMPLATES_NL_{self.nome_fundo.upper()}.xlsx"
-        )
+        try:
+            caminho_completo = (
+                self.caminho_raiz
+                + f"SECON - General\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_{ANO_ATUAL}\\TEMPLATES\\TEMPLATES_NL_{self.nome_fundo.upper()}.xlsx"
+            )
 
-        dataframe = pd.read_excel(
-            caminho_completo,
-            header=None,
-            sheet_name=self.nome_template,
-            usecols="A:I",
-        ).astype(str)
+            dataframe = pd.read_excel(
+                caminho_completo,
+                header=None,
+                sheet_name=self.nome_template,
+                usecols="A:I",
+            ).astype(str)
 
-        return dataframe
+            return dataframe
+        except:
+            print("Feche as planilhas de template e tente novamente.")
 
     def gerar_conferencia(self, agrupar=True, adiantamento_ferias=False):
         # Faz distinção entre proventos e descontos
@@ -565,12 +570,11 @@ class ConferenciaService:
         self.caminho_raiz = get_root_paths()
         self.nome_template = "CONFERÊNCIA"
         self.nome_fundo = nome_fundo.upper()
-
+        self.total_liquidado = 0
         caminho_arquivo_excel = (
             self.caminho_raiz
             + f"SECON - General\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_{ANO_ATUAL}\\{MESES[MES_ATUAL]}\\CONFERÊNCIA_{self.nome_fundo}.xlsx"
         )
-
 
         self.excel_service = ExcelService(caminho_arquivo_excel)
 
@@ -584,10 +588,26 @@ class ConferenciaService:
                 proventos_folha["DESCONTO"].sum() + descontos_folha["DESCONTO"].sum()
             )
             total_liquido = total_proventos - total_descontos
+            total_saldo = proventos_folha["SALDO"].sum()
+
             totais = DataFrame(
                 {
-                    "TOTAIS": ["PROVENTOS", "DESCONTOS", "LÍQUIDO_FINANCEIRO"],
-                    "VALOR": [total_proventos, total_descontos, total_liquido],
+                    "TOTAIS": [
+                        "PROVENTOS",
+                        "DESCONTOS",
+                        "LÍQUIDO FINANCEIRO",
+                        "",
+                        "TOTAL DE SALDO",
+                        "TOTAL LIQUIDADO",
+                    ],
+                    "VALOR": [
+                        total_proventos,
+                        total_descontos,
+                        total_liquido,
+                        None,
+                        total_saldo,
+                        self.total_liquidado,
+                    ],
                 }
             )
 
@@ -621,7 +641,7 @@ class ConferenciaService:
             start_line=ultima_linha,
             clear=False,
         )
-        
+
         self.excel_service.delete_sheet("Sheet")
 
     def exportar_adiantamento_ferias(self):
@@ -665,6 +685,14 @@ class ConferenciaService:
             driver.nome_template: driver.gerar_folha() for driver in drivers_pagamento
         }
 
+        total_liquidado = 0
+        for nl in [v for k, v in nls.items() if k != "ADIANTAMENTO_FERIAS"]:
+            total_liquidado += nl.loc[
+                nl["EVENTO"].astype(str).str.startswith("510", na=False), "VALOR"
+            ].sum()
+
+        self.total_liquidado = total_liquidado
+
         # Exporta cada NL para a planilha passada
         for sheet_name, table_data in nls.items():
             print(f"Exportando {sheet_name}...")
@@ -681,6 +709,6 @@ class ConferenciaService:
         )
 
     def executar(self):
-        self.exportar_conferencia()
         self.exportar_nls()
+        self.exportar_conferencia()
         self.destacar_linhas(sheet_name="CONFERÊNCIA")
