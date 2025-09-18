@@ -30,7 +30,7 @@ def main(test=False, run=True):
 
             if tipo_folha_selecionado is None:
                 continue
-
+            print(tipo_folha_selecionado)
             if tipo_folha_selecionado == "GERAR CONFERÊNCIAS":
                 # Model: Chama o serviço para geração de conferências
                 for fundo in ["RGPS", "FINANCEIRO", "CAPITALIZADO"]:
@@ -50,7 +50,7 @@ def main(test=False, run=True):
                 permitir_voltar=True,
             )
             templates_selecionados = app_view.get_user_input(
-                nomes_templates, selecionar_todos=True, permitir_voltar=True
+                nomes_templates, selecionar_todos=True, permitir_voltar=True, multipla_escolha=True
             )
 
             if templates_selecionados is None:
