@@ -74,7 +74,7 @@ def listar_pdfs():
     return nomes_pdfs
 
 
-def enviar_email(empresa, email_empresa, caminho_pdf, test=False, display=False):
+def enviar_email(empresa, email_empresa, caminho_pdf, test=True, display=False):
     try:
         outlook = win32.Dispatch("outlook.application")
         mail = outlook.CreateItem(0)
@@ -89,8 +89,8 @@ def enviar_email(empresa, email_empresa, caminho_pdf, test=False, display=False)
             mail.Display()
 
         if not test and not TESTE:
-            pass
-            # mail.Send()
+            # pass
+            mail.Send()
 
     except Exception as e:
         ConsoleView.color_print(
@@ -180,7 +180,7 @@ def enviar_emails_driss(emails_para_enviar: List[Dict], test=True):
                         email_data["nome_empresa"],
                         email_empresa,
                         email_data["caminho_saida"],
-                        test=test,
+                        test=TESTE,
                         display=False,
                     )
                     ConsoleView.color_print(f"E-mail enviado para {email_empresa}")
@@ -300,6 +300,14 @@ def main(test=False):
             paginas_por_empresa = extrair_paginas_por_empresa(file)
             for nome_pdf, paginas in paginas_por_empresa.items():
                 # Procura o e-mail correspondente na planilha
+                emails_extraidos = extrair_emails_empresa(nome_pdf)
+                if emails_extraidos is None:
+                    # ConsoleView.color_print(
+                    #     f"E-mail para a empresa '{nome_pdf}' não encontrado na planilha.",
+                    #     color="yellow",
+                    # )
+                    continue
+
                 nome_planilha, emails_encontrados = extrair_emails_empresa(nome_pdf)
 
                 caminho_saida = (
@@ -325,7 +333,7 @@ def main(test=False):
 
     # Enviar e-mails para todos os endereços encontrados
     ConsoleView.color_print("\nEnviando emails paras empresas".upper(), style="bold")
-    enviar_emails_driss(emails_para_enviar)
+    enviar_emails_driss(emails_para_enviar, test=TESTE)
 
 
 if __name__ == "__main__":

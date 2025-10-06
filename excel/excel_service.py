@@ -62,6 +62,23 @@ class ExcelService:
             sheet_to_delete = self.workbook[sheet_name]
             self.workbook.remove(sheet_to_delete)
 
+    def move_to_first(self, sheet_name: str):
+        """
+        Move a specific sheet to the first position in the Excel file.
+        """
+        try:
+            # Find the sheet object
+            sheet_to_move = self.workbook[sheet_name]
+
+            # Remove the sheet from its current position in the internal list
+            self.workbook._sheets.remove(sheet_to_move)
+
+            # Insert the sheet at the beginning of the internal list
+            self.workbook._sheets.insert(0, sheet_to_move)
+
+        except KeyError:
+            # Handle the case where the sheet isn't found
+            raise ValueError(f"Sheet '{sheet_name}' not found.")
 
     def exportar_para_planilha(
         self,

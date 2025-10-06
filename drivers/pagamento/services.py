@@ -18,7 +18,7 @@ except locale.Error:
     # Se falhar, tenta uma localidade comum para Windows
     locale.setlocale(locale.LC_ALL, "Portuguese_Brazil.1252")
 
-TESTE = True
+TESTE = False
 ANO_ATUAL = datetime.now().year
 MES_ATUAL = datetime.now().month if not TESTE else 0
 
@@ -643,6 +643,7 @@ class ConferenciaService:
         )
 
         self.excel_service.delete_sheet("Sheet")
+        self.excel_service.move_to_first("CONFERÊNCIA")
 
     def exportar_adiantamento_ferias(self):
         folha_pagamento = GeradorFolhaPagamento(self.nome_fundo, "PRINCIPAL", test=True)
