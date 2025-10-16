@@ -89,6 +89,7 @@ class ExcelService:
         clear=False,
         sum_numeric=False,
         fit_columns=True,
+        write_headers=True,
     ):
 
         # Cria aba se não existir
@@ -111,12 +112,25 @@ class ExcelService:
 
         # Escreve os dados
         for row_offset, row in enumerate(table.itertuples(index=False)):
+            thin_border = Side(border_style="thin", color="000000")
+            border = Border(
+                left=thin_border, right=thin_border, top=thin_border, bottom=thin_border
+            )
+            fill = PatternFill(
+                start_color="DDEBF7" if row_offset % 2 == 0 else "FFFFFF",
+                end_color="DDEBF7" if row_offset % 2 == 0 else "FFFFFF",
+                fill_type="solid",
+            )
             for col_offset, value in enumerate(row):
                 cell = sheet.cell(
                     row=row_idx + 1 + row_offset,
                     column=col_idx + col_offset,
                     value=value,
                 )
+
+                cell.fill = fill
+                cell.border = border
+
                 col_name = table.columns[col_offset]
                 if col_name.upper() in {
                     "VALOR",
@@ -140,6 +154,9 @@ class ExcelService:
         # Fit Columns
         if fit_columns:
             self.fit_columns(sheet)
+
+        if not write_headers:
+            sheet.delete_rows(row_idx, 1)
 
         # Salva alterações
         self.save()

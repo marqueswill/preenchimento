@@ -10,7 +10,7 @@ from pandas import DataFrame
 
 from drivers.view import ConsoleView
 
-TESTE = True
+TESTE = False
 ANO_ATUAL = datetime.now().year
 MES_REFERENCIA = datetime.now().month - 1 if not TESTE else 0
 MESES = {
@@ -74,10 +74,21 @@ def listar_pdfs():
     return nomes_pdfs
 
 
-def enviar_email(empresa, email_empresa, caminho_pdf, test=True, display=False):
+def enviar_email(
+    empresa,
+    email_empresa,
+    caminho_pdf,
+    test=True,
+    display=False,
+):
     try:
+        email_de_origem = "secon.gab@tc.df.gov.br"
         outlook = win32.Dispatch("outlook.application")
         mail = outlook.CreateItem(0)
+
+        mail.SentOnBehalfOfName = email_de_origem
+
+
         mail.To = email_empresa
         mail.Subject = "Declaração de Retenção do ISS"
         msg_txt, msg_html = gerar_mensagem(empresa)
@@ -88,14 +99,18 @@ def enviar_email(empresa, email_empresa, caminho_pdf, test=True, display=False):
         if display:
             mail.Display()
 
-        if not test and not TESTE:
+        if not test:
             # pass
-            mail.Send()
+            mail.Send()                    
+            ConsoleView.color_print(
+                f"E-mail enviado de '{email_de_origem}' para '{email_empresa}'."
+            )
 
     except Exception as e:
         ConsoleView.color_print(
             f"Ocorreu um erro inesperado ao processar {empresa}: {e}\n", color="red"
         )
+        raise e
 
 
 def gerar_mensagem(empresa):
@@ -121,23 +136,6 @@ def gerar_mensagem(empresa):
 
     return msg_txt, msg_html
 
-    # def enviar_emails_driss(emails_empresa: List[str], caminho_pdf: str, nome_empresa: str):
-    #     if emails_empresa == []:
-    #         ConsoleView.color_print(
-    #             f"E-mail para a empresa '{nome_empresa}' não encontrado na planilha.",
-    #             color="yellow",
-    #         )
-    #         return
-
-    #     for email_empresa in emails_empresa:
-    #         enviar_email(
-    #             nome_empresa,
-    #             email_empresa,
-    #             caminho_pdf,
-    #             test=TESTE,
-    #         )
-    #         ConsoleView.color_print(f"E-mail enviado para {email_empresa}", color="green")
-
 
 def enviar_emails_driss(emails_para_enviar: List[Dict], test=True):
 
@@ -153,13 +151,8 @@ def enviar_emails_driss(emails_para_enviar: List[Dict], test=True):
                     test=True,  # Mantém o modo de teste
                 )
             except Exception as e:
-                ConsoleView.color_print(
-                    f"Erro ao preparar e-mail para {email_empresa}: {e}",
-                    color="red",
-                )
-                envio_falhou = True
+                envio_falhou = True #TODO: transformar em tratamento de erro
                 break  # Sai do loop interno
-
         if envio_falhou:
             break  # Sai do loop externo
 
@@ -183,7 +176,6 @@ def enviar_emails_driss(emails_para_enviar: List[Dict], test=True):
                         test=TESTE,
                         display=False,
                     )
-                    ConsoleView.color_print(f"E-mail enviado para {email_empresa}")
                 except Exception as e:
                     ConsoleView.color_print(
                         f"Erro crítico ao enviar e-mail para {email_empresa}: {e}",
@@ -338,3 +330,4 @@ def main(test=False):
 
 if __name__ == "__main__":
     main(test=TESTE)
+    input("Pressione Enter para sair...")

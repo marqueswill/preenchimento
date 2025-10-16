@@ -1,7 +1,7 @@
 ### Dependências
 
 Dev and client:
-`pip install selenium pandas openpyxl PyPDF2 pyinstaller pywin32`
+`pip install selenium pandas openpyxl PyPDF2 pywin32 pyinstaller`
 
 
 ### Gerando executável

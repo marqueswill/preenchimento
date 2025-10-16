@@ -12,10 +12,13 @@ from excel.excel_service import ExcelService
 
 ANO_ATUAL = datetime.now().year
 MES_ATUAL = datetime.now().month
-# MES_ATUAL = 6
 
+TESTE = True
+# MES_REFERENCIA = MES_ATUAL - 1 if MES_ATUAL > 1 else 12 if not TESTE else 0
+MES_REFERENCIA = 0
 
 MESES = {
+    0: "TESTES",
     1: "01-JANEIRO",
     2: "02-FEVEREIRO",
     3: "03-MARÇO",
@@ -30,6 +33,10 @@ MESES = {
     12: "12-DEZEMBRO",
 }
 
+NOME_MES = (
+    "TESTES" if MES_REFERENCIA == 0 or TESTE else MESES[MES_REFERENCIA].split("-")[1]
+)
+
 # TODO: renomear classe e generalizar para uma classe de Extração de dados de PDFs
 
 
@@ -43,35 +50,29 @@ class ExtrairDadosR2000:
         self.caminho_raiz = get_root_paths()
         self.run = run
         self.test = test
-        self.preenchedor = PreenchimentoNL(run=self.run, test=self.test)
 
-        caminho_planilha_template = (
+        self.caminho_planilha_template = (
             self.caminho_raiz
             + f"\\SECON - General\\ANO_ATUAL\\EFD-REINF\\Preenchimento Reinf.xlsx"
         )
-
-        caminho_mes_atual = (
+        self.caminho_mes_atual = (
             self.caminho_raiz
-            + f"\\SECON - General\\ANO_ATUAL\\EFD-REINF\\{MESES[MES_ATUAL] if not self.test else "TESTES"}"
+            + f"\\SECON - General\\ANO_ATUAL\\EFD-REINF\\{MESES[MES_REFERENCIA]}"
         )
 
-        self.caminho_planilha = caminho_mes_atual + f"\\Preenchimento Reinf.xlsx"
-        
-        ExcelService.copy_to(caminho_planilha_template, caminho_mes_atual)
-        # ExcelService.copy_data_with_pandas(caminho_planilha_template, caminho_mes_atual)
+        if not test:
+            ExcelService.copy_to(self.caminho_planilha_template, self.caminho_mes_atual)
 
+        self.caminho_planilha = self.caminho_mes_atual + f"\\Preenchimento Reinf.xlsx"
         self.excel_service = ExcelService(self.caminho_planilha)
 
     def obter_caminhos_pdf(self):
-        if self.test:
-            caminho_completo = (
-                self.caminho_raiz + f"SECON - General\\ANO_ATUAL\\LIQ_DESPESA\\TESTES"
-            )
-        else:
-            caminho_completo = (
-                self.caminho_raiz
-                + f"SECON - General\\ANO_ATUAL\\LIQ_DESPESA\\{MESES[MES_ATUAL]}"
-            )
+
+        caminho_completo = (
+            self.caminho_raiz
+            + f"SECON - General\\ANO_ATUAL\\LIQ_DESPESA\\{MESES[MES_REFERENCIA]}"
+        )
+
         nomes_pdfs = [
             nome
             for nome in os.listdir(caminho_completo)
@@ -79,11 +80,11 @@ class ExtrairDadosR2000:
             if (nome.endswith((".pdf")) or nome.endswith((".PDF")))
             and not nome.startswith("~$")
         ]
+
         return nomes_pdfs
 
     def extrair_dados_pdf(self, caminho_pdf: str):
         """Extrai dados de um PDF de diárias."""
-        # print(caminho_pdf)
 
         with open(caminho_pdf, "rb") as file:
             reader = PyPDF2.PdfReader(file)
@@ -97,8 +98,13 @@ class ExtrairDadosR2000:
         processo_match = re.search(r"PROCESSO Nº : ([\d/]+)", text)
         processo = processo_match.group(1) if processo_match else None
 
-        cnpj_match = re.search(r"CNPJ DO PRESTADOR/FORNCEDOR: ([\d./-]+)", text)
-        cnpj = cnpj_match.group(1) if cnpj_match else None
+        cnpj_match1 = re.search(r"CNPJ DO PRESTADOR/FORNCEDOR: ([\d./-]+)", text)
+        cnpj_match2 = re.search(r"CNPJ DA EMPRESA ([\d./-]+)", text)
+        cnpj = (
+            cnpj_match1.group(1)
+            if cnpj_match1
+            else cnpj_match2.group(1) if cnpj_match2 else None
+        )
 
         tipo_servico_match = re.search(r"TIPO DE SERVIÇO: (.*?)[\s\n]", text)
         tipo_servico = (
@@ -113,7 +119,9 @@ class ExtrairDadosR2000:
         )
 
         num_nf_match = re.search(r"[\s\n]+([\d.,]+) Emissão:", text)
-        num_nf = num_nf_match.group(1).strip() if num_nf_match else None
+        num_nf = (
+            num_nf_match.group(1).strip().replace(".", "") if num_nf_match else None
+        )
 
         data_emissao_match = re.search(r"Emissão: ([\d/]+)", text)
         data_emissao = data_emissao_match.group(1) if data_emissao_match else None
@@ -146,6 +154,11 @@ class ExtrairDadosR2000:
         cprb = cprb_match.group(1) if cprb_match else None
 
         dados_pdf = {
+            "CHAVE": (
+                "0" * (15 - len(processo)) + processo + "," + num_nf
+                if processo and num_nf
+                else None
+            ),
             "PROCESSO": processo,
             "CNPJ": (
                 str(cnpj.replace(".", "").replace("/", "").replace("-", ""))
@@ -154,7 +167,7 @@ class ExtrairDadosR2000:
             ),
             "TIPO_SERVICO": tipo_servico,
             "VALOR_NF": float(valor_nf) if valor_nf else None,
-            "NUM_NF": num_nf.replace(".", "") if num_nf else None,
+            "NUM_NF": num_nf if num_nf else None,
             "DATA_EMISSAO": (
                 datetime.strptime(data_emissao, "%d/%m/%Y").date()
                 if data_emissao
@@ -171,13 +184,64 @@ class ExtrairDadosR2000:
             "CPRB": 0 if cprb == "N" else 1,
         }
 
-        # print(dados_pdf)
-        # if cprb != "N":
-        #     return None
-        if valor_inss_retido and cnpj:
+        if cnpj:  # ignora pessoas físicas
             return dados_pdf
         else:
             return None
+
+    def exportar_valores_pagos(self, dados_inss):
+        caminho_planilha_valores_pagos = (
+            self.caminho_raiz
+            + f"\\SECON - General\\ANO_ATUAL\\EFD-REINF\\VALORES_PAGOS.xlsx"
+        )
+        excel_service = ExcelService(caminho_planilha_valores_pagos)
+
+        df_valores_pagos = self.gerar_dataframe_valores_pagos(dados_inss)
+        excel_service.exportar_para_planilha(df_valores_pagos, NOME_MES)
+
+    def gerar_dataframe_valores_pagos(self, df_principal):
+        if not df_principal.empty:
+            df_principal = df_principal.sort_values(by=["CNPJ", "NUM_NF"])
+        else:
+            print("O DataFrame principal está vazio, não há dados para preencher.")
+            return None, None
+
+        df_valores_pagos = DataFrame(
+            columns=[
+                "CHAVE",
+                "PROCESSO",
+                "CNPJ",
+                "NUM NF",
+                "VALOR BRUTO",
+            ]
+        )
+
+        # Acumula as linhas em listas
+        linhas_df = []
+
+        # Itera sobre as linhas do DataFrame principal para preencher os novos DFs
+        for i, dados in df_principal.iterrows():
+            # Preenche a linha para df_r2010_1
+            nova_linha = {
+                "CHAVE": dados["CHAVE"],
+                "PROCESSO": dados["PROCESSO"],
+                "CNPJ": dados["CNPJ"],
+                "NUM NF": dados["NUM_NF"],
+                "VALOR BRUTO": dados["VALOR_NF"],
+            }
+            linhas_df.append(nova_linha)
+
+        df_valores_pagos = DataFrame(
+            linhas_df,
+            columns=[
+                "CHAVE",
+                "PROCESSO",
+                "CNPJ",
+                "NUM NF",
+                "VALOR BRUTO",
+            ],
+        )
+        return df_valores_pagos
 
     def gerar_dataframes_reinf(self, df_principal):
         """
@@ -226,6 +290,7 @@ class ExtrairDadosR2000:
 
         # O seu CNPJ de tomador fixo
         cnpj_tomador = "00534560000126"
+
         # Acumula as linhas em listas
         linhas_r2010_1 = []
         linhas_r2010_2 = []
@@ -316,34 +381,30 @@ class ExtrairDadosR2000:
     def executar(self):
         caminhos_pdf = self.obter_caminhos_pdf()
 
-        lista_de_dados = []
-        for pdf in caminhos_pdf:
+        lista_de_dados_completa = []
 
-            if self.test:
-                caminho_pdf = (
-                    self.caminho_raiz
-                    + f"SECON - General\\ANO_ATUAL\\LIQ_DESPESA\\TESTES"
-                    + f"\\{pdf}"
-                )
-            else:
-                caminho_pdf = (
-                    self.caminho_raiz
-                    + f"SECON - General\\ANO_ATUAL\\LIQ_DESPESA\\{MESES[MES_ATUAL]}"
-                    + f"\\{pdf}"
-                )
+        for pdf in caminhos_pdf:
+            caminho_pdf = (
+                self.caminho_raiz
+                + f"SECON - General\\ANO_ATUAL\\LIQ_DESPESA\\{MESES[MES_REFERENCIA]}"
+                + f"\\{pdf}"
+            )
 
             dados_extraidos = self.extrair_dados_pdf(caminho_pdf)
 
-            if dados_extraidos:
-                lista_de_dados.append(dados_extraidos)
+            if dados_extraidos is not None:
+                lista_de_dados_completa.append(dados_extraidos)
 
-        if lista_de_dados:
-            df = DataFrame(lista_de_dados)
+        if lista_de_dados_completa:
+            df = DataFrame(lista_de_dados_completa)
             df = df.sort_values(by=["CNPJ", "NUM_NF"]).reset_index(drop=True)
 
-        # print(df)
+        print(df)
+        self.exportar_valores_pagos(df)
 
-        df_r2010_1, df_r2010_2 = self.gerar_dataframes_reinf(df)
+
+        df_apenas_retencao = df[df["VALOR_INSS_RETIDO"] > 0].reset_index(drop=True)
+        df_r2010_1, df_r2010_2 = self.gerar_dataframes_reinf(df_apenas_retencao)
 
         # Procurar correspondências na tabela da aba VALIDAÇÃO_BD
         # usar CNPJ.NUM_NF para tabela validacao, CNPJPRESTADOR.NUMDOCTO para R-2010-1
@@ -354,10 +415,7 @@ class ExtrairDadosR2000:
             .dropna(subset=["CNPJ/CPF"])
         )
 
-        # print(planilha_validacao)
-
         # Adicionar a coluna 'CORRESPONDENCIA' A R-2010-1 COM VALORES BOOLEANOS PARA IDENTIFICAR CORRESPONDÊNCIAS
-
         # Criar uma chave de busca unificada na planilha de validação
         planilha_validacao["CHAVE_BUSCA"] = (
             planilha_validacao["CNPJ/CPF"].astype(str)
@@ -377,7 +435,6 @@ class ExtrairDadosR2000:
         df_r2010_1["CORRESPONDENCIA"] = df_r2010_1["IDENTIFICADOR CNPJ-NF"].isin(
             planilha_validacao["CHAVE_BUSCA"]
         )
-
 
         # O DataFrame df_r2010_1 agora tem a coluna 'CORRESPONDENCIA'
         self.exportar_para_planilha(df_r2010_1, "R-2010-1")
@@ -410,5 +467,6 @@ class ExtrairDadosR2000:
         )
 
 
-baixa = ExtrairDadosR2000(run=False, test=True)
-baixa.executar()
+if __name__ == "__main__":
+    baixa = ExtrairDadosR2000(run=True, test=TESTE)
+    baixa.executar()

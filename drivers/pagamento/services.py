@@ -52,9 +52,9 @@ def get_root_paths() -> str:
         f"C:\\Users\\{username}\\OneDrive - Tribunal de Contas do Distrito Federal\\"
     )
 
-    if os.path.exists(caminho_base):
+    if os.path.exists(caminho_base + "SECON - General\\"):
         caminho_raiz = caminho_base
-    elif os.path.exists(caminho_onedrive):
+    elif os.path.exists(caminho_onedrive + "SECON - General\\"):
         caminho_raiz = caminho_onedrive
     else:
         raise FileNotFoundError(
@@ -578,6 +578,9 @@ class ConferenciaService:
 
         self.excel_service = ExcelService(caminho_arquivo_excel)
 
+    def exportar_relatorio(self):
+        pass
+
     def exportar_conferencia(self):
 
         def calcular_totais(proventos_folha: DataFrame, descontos_folha: DataFrame):
@@ -711,5 +714,6 @@ class ConferenciaService:
 
     def executar(self):
         self.exportar_nls()
+        self.exportar_relatorio()
         self.exportar_conferencia()
         self.destacar_linhas(sheet_name="CONFERÊNCIA")
