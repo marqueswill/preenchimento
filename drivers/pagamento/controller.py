@@ -30,13 +30,20 @@ def main(test=False, run=True):
 
             if tipo_folha_selecionado is None:
                 continue
+
             print(tipo_folha_selecionado)
             if tipo_folha_selecionado == "GERAR CONFERÊNCIAS":
                 # Model: Chama o serviço para geração de conferências
-                for fundo in ["RGPS", "FINANCEIRO", "CAPITALIZADO"]:
-                    gerador = ConferenciaService(fundo, test)
-                    gerador.executar()
-                app_view.show_message("Conferências geradas com sucesso.")
+                app_view.display_menu(
+                    list(fundos.values())[:-1],
+                    "Selecione o fundo para gerar a sua conferência:",
+                )
+                fundo_para_conferencia = app_view.get_user_input(list(fundos.values()))[0]
+
+                gerador = ConferenciaService(fundo_para_conferencia, test)
+                gerador.executar()
+
+                app_view.show_message("Conferência gerada com sucesso.")
                 continue
 
             # Model: Obtém os caminhos dos templates
@@ -69,10 +76,13 @@ def main(test=False, run=True):
             app_view.show_message("Processamento concluído.")
             sys.exit()
 
+
+    
         except Exception as e:
             # Em caso de erro, exibe a mensagem de erro e sai
             app_view.show_message(f"Ocorreu um erro: {e}")
-            sys.exit()
+            continue
+        
 
 
 if __name__ == "__main__":

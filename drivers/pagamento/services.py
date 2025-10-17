@@ -1,6 +1,7 @@
 import os
 import locale
 import re
+import PyPDF2
 import pandas as pd
 import numpy as np
 from datetime import datetime
@@ -242,6 +243,14 @@ class GeradorFolhaPagamento:
         tabela_demofin["CDG_NAT_DESPESA"] = tabela_demofin[
             "CDG_NAT_DESPESA"
         ].str.replace(".", "")
+
+        tabela_demofin["NME_NAT_DESPESA"] = tabela_demofin[
+            "NME_NAT_DESPESA"
+        ].str.strip()
+
+        tabela_demofin["NME_NAT_DESPESA"] = tabela_demofin[
+            "NME_NAT_DESPESA"
+        ].str.replace(r"\s+", " ", regex=True)
 
         # Filtra a tabela para o fundo específico
         filtro_fundo = tabela_demofin["CDG_FUNDO"] == self.cod_fundo
@@ -579,7 +588,105 @@ class ConferenciaService:
         self.excel_service = ExcelService(caminho_arquivo_excel)
 
     def exportar_relatorio(self):
-        pass
+        diretorio_alvo = os.path.join(
+            self.caminho_raiz,
+            "SECON - General",
+            "ANO_ATUAL",
+            f"FOLHA_DE_PAGAMENTO_{ANO_ATUAL}",
+            MESES[MES_ATUAL],
+        )
+
+        caminho_pdf_relatorio = None
+
+        if os.path.exists(diretorio_alvo):
+            for nome_arquivo in os.listdir(diretorio_alvo):
+                # Converte para minúsculas para ignorar caixa alta/baixa
+                nome_lower = nome_arquivo.lower()
+                if nome_lower.startswith("relatórios") and nome_lower.endswith(".pdf"):
+                    caminho_pdf_relatorio = os.path.join(diretorio_alvo, nome_arquivo)
+                    break
+        else:
+            print(f"Atenção: O diretório '{diretorio_alvo}' não foi encontrado.")
+
+        if not caminho_pdf_relatorio:
+            print("Nenhum arquivo PDF começando com 'RELATÓRIOS' foi encontrado.")
+
+        with open(caminho_pdf_relatorio, "rb") as file:
+            reader = PyPDF2.PdfReader(file)
+            text = ""
+            for page in reader.pages:
+                extracted_text = page.extract_text()
+                if extracted_text.find("DEMOFIM - ATIVOS") != -1:
+                    text += extracted_text.replace("\n", " ").replace("  ", " ")
+                else:
+                    break
+
+        relatorios = {
+            "RGPS": {"PROVENTOS": None, "DESCONTOS": None},
+            "FINANCEIRO": {"PROVENTOS": None, "DESCONTOS": None},
+            "CAPITALIZADO": {"PROVENTOS": None, "DESCONTOS": None},
+        }
+
+        dados_brutos = text.split("Total por Fundo de Previdência:")
+
+        for fundo, relatorio in zip(relatorios.keys(), dados_brutos[:3]):
+            inicio_proventos = relatorio.find("Proventos")
+            inicio_descontos = relatorio.find("Descontos Elem. Despesa:")
+
+            relatorios[fundo]["PROVENTOS"] = relatorio[
+                inicio_proventos:inicio_descontos
+            ]
+            relatorios[fundo]["DESCONTOS"] = relatorio[inicio_descontos:]
+
+        for nome_fundo, relatorio_fundo in relatorios.items():
+            if nome_fundo != self.nome_fundo:
+                continue
+
+            padrao = re.compile(
+                r"(\d{1,2}\.\d{1,2}\.\d{1,2}\.\d{1,2}\.\d{1,2})\s-\s(.*?)\sRubrica.*?Total por Natureza:\s([\d\.,]+)"
+            )
+
+            dados_proventos = []
+            for item in relatorio_fundo["PROVENTOS"].split("Elem. Despesa:"):
+                correspondencia = padrao.search(item)
+                if correspondencia:
+                    cod_nat = correspondencia.group(1).replace(".", "")
+                    cod_nat = cod_nat[1:] if cod_nat.startswith("3") and len(cod_nat) == 9 else cod_nat
+                    nome_nat = correspondencia.group(2).strip()
+                    total_natureza = float(
+                        correspondencia.group(3).replace(".", "").replace(",", ".")
+                    )
+                    dados_proventos.append([nome_nat, cod_nat, total_natureza])
+
+            dados_descontos = []
+            for item in relatorio_fundo["DESCONTOS"].split("Elem. Despesa:"):
+                correspondencia = padrao.search(item)
+                if correspondencia:
+                    cod_nat = correspondencia.group(1).replace(".", "")
+                    cod_nat = cod_nat[1:] if cod_nat.startswith("3") and len(cod_nat) == 9 else cod_nat
+
+                    nome_nat = correspondencia.group(2).strip()
+                    total_natureza = float(
+                        correspondencia.group(3).replace(".", "").replace(",", ".")
+                    )
+                    dados_descontos.append([nome_nat, cod_nat, total_natureza])
+
+            colunas = ["NOME NAT", "COD NAT", "PROVENTO"]
+            df_proventos = pd.DataFrame(dados_proventos, columns=colunas)
+
+            self.excel_service.exportar_para_planilha(
+                df_proventos, sheet_name="RELATÓRIO", start_column="A", clear=True
+            )
+
+            colunas = ["NOME NAT", "COD NAT", "DESCONTO"]
+            df_descontos = pd.DataFrame(dados_descontos, columns=colunas)
+            self.excel_service.exportar_para_planilha(
+                df_descontos, sheet_name="RELATÓRIO", start_column="E", clear=False
+            )
+            self.excel_service.move_to_first("RELATÓRIO")
+
+            # =E(SEERRO(PROCV($A1;RELATÓRIO!$A:$C;3;0)<>$C1;VERDADEIRO);ÉNÚM($C1))
+            # =E(SEERRO(PROCV($H1;RELATÓRIO!$E:$G;3;0)<>$J1;VERDADEIRO);ÉNÚM($J1))
 
     def exportar_conferencia(self):
 
@@ -714,6 +821,12 @@ class ConferenciaService:
 
     def executar(self):
         self.exportar_nls()
-        self.exportar_relatorio()
         self.exportar_conferencia()
+        self.exportar_relatorio()
         self.destacar_linhas(sheet_name="CONFERÊNCIA")
+
+
+
+# if __name__ == "__main__":
+#     conferencia_service = ConferenciaService("rgps", test=True)
+#     conferencia_service.executar()

@@ -26,13 +26,29 @@ class ExcelService:
         self.workbook = self._get_workbook()
 
     def _get_workbook(self):
-        """Abre um arquivo Excel existente ou cria um novo se não existir."""
-        if not os.path.exists(self.caminho_arquivo):
-            wb = Workbook()
-            wb.save(self.caminho_arquivo)
-        return load_workbook(self.caminho_arquivo)
+        """
+        Abre um arquivo Excel existente ou cria um novo.
+        Lança uma exceção clara se o arquivo estiver aberto (PermissionError).
+        """
+        try:
+            if not os.path.exists(self.caminho_arquivo):
+                # Tenta criar e salvar o novo workbook
+                wb = Workbook()
+                wb.save(self.caminho_arquivo)
+            
+            # Tenta carregar o workbook
+            return load_workbook(self.caminho_arquivo)
 
-    def get_sheet(self, sheet_name: str, as_dataframe=False, header_row=1, columns=None):
+        except PermissionError:
+            # Captura o erro específico e lança uma nova exceção com uma mensagem amigável
+            raise Exception(
+                f"Permissão negada ao acessar o arquivo: '{self.caminho_arquivo}'.\n"
+                f"Verifique se a planilha não está aberta em outro programa (como o Excel) e tente novamente."
+            )
+
+    def get_sheet(
+        self, sheet_name: str, as_dataframe=False, header_row=1, columns=None
+    ):
         """
         Retorna uma aba específica do arquivo Excel.
         Se as_dataframe=True, retorna como pandas DataFrame.
@@ -107,12 +123,22 @@ class ExcelService:
         row_idx = int(start_line)
 
         # Escreve cabeçalhos
+        thin_border = Side(border_style="thin", color="000000")
+
         for j, column_name in enumerate(table.columns):
-            sheet.cell(row=row_idx, column=col_idx + j, value=column_name)
+            cell = sheet.cell(row=row_idx, column=col_idx + j, value=column_name)
+            cell.fill = PatternFill(
+                start_color="4F81BD",
+                end_color="4F81BD",
+                fill_type="solid",
+            )
+            cell.border = Border(
+                left=thin_border, right=thin_border, top=thin_border, bottom=thin_border
+            )
+            cell.font = Font(bold=True, color="FFFFFF")
 
         # Escreve os dados
         for row_offset, row in enumerate(table.itertuples(index=False)):
-            thin_border = Side(border_style="thin", color="000000")
             border = Border(
                 left=thin_border, right=thin_border, top=thin_border, bottom=thin_border
             )
@@ -161,88 +187,6 @@ class ExcelService:
         # Salva alterações
         self.save()
 
-    # def exportar_para_planilha(
-    #     self,
-    #     table: DataFrame,
-    #     sheet_name: str,
-    #     fit_columns=True,
-    #     start_column="A",
-    #     start_line="1",
-    #     write_headers=True,
-    #     clear=False,
-    #     sum_numeric=False,
-    # ):
-    #     """Escreve dados de um DataFrame em uma aba do Excel."""
-    #     if sheet_name in self.workbook.sheetnames:
-    #         sheet = self.workbook[sheet_name]
-    #     else:
-    #         sheet = self.workbook.create_sheet(sheet_name)
-
-    #     if clear:
-    #         sheet.delete_rows(1, sheet.max_row)
-
-    #     col_idx = column_index_from_string(start_column)
-    #     row_idx = int(start_line) - 1
-
-    #     # Escreve os cabeçalhos apenas se o parâmetro write_headers for True
-    #     if write_headers:
-    #         for j, column_name in enumerate(table.columns):
-    #             sheet.cell(row=row_idx, column=col_idx + j, value=column_name)
-    #         # Aumenta o índice da linha de partida para escrever os dados abaixo dos cabeçalhos
-    #         data_start_row = row_idx + 1
-    #     else:
-    #         # Se os cabeçalhos não forem escritos, os dados começam na linha de partida
-    #         data_start_row = row_idx
-
-    #     return
-    #     # Escreve os dados e aplica formatação
-    #     for row_offset, row in enumerate(table.itertuples(index=False)):
-    #         thin_border = Side(border_style="thin", color="000000")
-    #         border = Border(
-    #             left=thin_border, right=thin_border, top=thin_border, bottom=thin_border
-    #         )
-    #         fill = PatternFill(
-    #             start_color="DDEBF7" if row_offset % 2 == 0 else "FFFFFF",
-    #             end_color="DDEBF7" if row_offset % 2 == 0 else "FFFFFF",
-    #             fill_type="solid",
-    #         )
-    #         for col_offset, value in enumerate(row):
-    #             cell = sheet.cell(
-    #                 row=data_start_row + 1 + row_offset,
-    #                 column=col_idx + col_offset,
-    #                 value=value,
-
-    #             )
-
-    #             cell.fill=fill
-    #             cell.border=border
-
-    #             col_name = table.columns[col_offset]
-    #             # TODO: remover essa gambiarra depois
-    #             if isinstance(value, datetime):
-    #                 cell.number_format = 'DD/MM/YYYY'
-    #             elif (
-    #                 col_name.upper()
-    #                 in {"VALOR", "TOTAL", "SALDO", "DESCONTO", "PROVENTO"}
-    #                 or col_name.upper().startswith("VLR")
-    #             ) and isinstance(value, (int, float)):
-    #                 cell.number_format = (
-    #                     '_-R$ * #,##0.00_-;-R$ * #,##0.00_-;_-R$ * "-"??_-;_-@_-'
-    #                 )
-
-    #     # Soma colunas numéricas (opcional)
-    #     if sum_numeric:
-    #         last_row = data_start_row + len(table)
-    #         for j, column in enumerate(table.columns):
-    #             if table[column].dtype.kind in "iuf":
-    #                 soma = table[column].sum()
-    #                 sheet.cell(row=last_row + 1, column=col_idx + j, value=soma)
-
-    #     if fit_columns:
-    #         self.fit_columns(sheet)
-
-    #     self.save()
-
     def fit_columns(self, sheet):
         """Ajusta a largura das colunas da planilha."""
         for column_cells in sheet.columns:
@@ -254,7 +198,7 @@ class ExcelService:
                 if cell.value:
                     max_length = max(max_length, len(str(cell.value)))
 
-            adjusted_width = max_length + 5
+            adjusted_width = max_length + 7
             sheet.column_dimensions[column_letter].width = adjusted_width
 
     def delete_rows(self, sheet_name: str, start_row: int = 1):
@@ -378,7 +322,8 @@ class ExcelService:
         # Garante que a pasta de destino exista
         if not os.path.isdir(pasta_destino):
             raise FileNotFoundError(
-                f"A pasta de destino '{pasta_destino}' não foi encontrada.")
+                f"A pasta de destino '{pasta_destino}' não foi encontrada."
+            )
 
         # Constrói o caminho completo do novo arquivo na pasta de destino
         nome_arquivo = os.path.basename(caminho_arquivo)
@@ -388,7 +333,7 @@ class ExcelService:
         shutil.copy(caminho_arquivo, caminho_destino)
         print(f"Arquivo copiado para: {caminho_destino}")
 
-    @staticmethod   
+    @staticmethod
     def copy_data_with_pandas(caminho_origem: str, caminho_destino: str):
         """
         Copia os dados de um arquivo Excel para outro usando o pandas.
@@ -402,8 +347,7 @@ class ExcelService:
                     df = pd.read_excel(xlsx, sheet_name)
                     df.to_excel(writer, sheet_name=sheet_name, index=False)
 
-            print(
-                f"Dados copiados de '{caminho_origem}' para '{caminho_destino}'.")
+            print(f"Dados copiados de '{caminho_origem}' para '{caminho_destino}'.")
 
         except Exception as e:
             print(f"Ocorreu um erro: {e}")
