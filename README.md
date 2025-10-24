@@ -1,3 +1,9 @@
+### Venv
+`python3 -m venv venv`
+
+windows:
+`venv\Scripts\Activate.ps1`
+
 ### Dependências
 
 Dev and client:
