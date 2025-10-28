@@ -1,7 +1,13 @@
 import sys
 
 
+from core.usecases.gerar_conferencia_usecase import GerarConferenciaUseCase
 from infrastructure.cli.console_service import ConsoleService
+from infrastructure.files.excel_service import ExcelService
+from infrastructure.services.conferencia_gateway import ConferenciaGateway
+from infrastructure.services.pathing_gateway import PathingGateway
+
+from config import *
 
 
 def FolhaPagamentoController(test=False, run=True):
@@ -35,10 +41,12 @@ def FolhaPagamentoController(test=False, run=True):
                 fundo_para_conferencia = app_view.get_user_input(list(fundos.values()))[
                     0
                 ]
-                
-                
+
                 # Instanciar usecase de coferencia, passando o fundo escolhido
-                # Executar o usecase
+
+                gateway = ConferenciaGateway()
+                use_case = GerarConferenciaUseCase(gateway)
+                use_case.executar(fundo_para_conferencia)
 
                 app_view.show_message("Conferência gerada com sucesso.")
                 continue

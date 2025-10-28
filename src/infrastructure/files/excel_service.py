@@ -9,16 +9,6 @@ from openpyxl import Workbook, load_workbook
 from openpyxl.utils import column_index_from_string, get_column_letter
 from openpyxl.styles import PatternFill, Font, Border, Side
 
-# Define a configuração regional para datas e horários em português
-try:
-    locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
-except locale.Error:
-    # Se falhar, tenta uma localidade comum para Windows
-    # TODO: refatorar essa classe pra um serviço genérico de Excel
-    locale.setlocale(locale.LC_ALL, "Portuguese_Brazil.1252")
-
-# TODO: padronizar nomes de métodos em inglês ou português
-
 
 class ExcelService:
     def __init__(self, caminho_arquivo):
