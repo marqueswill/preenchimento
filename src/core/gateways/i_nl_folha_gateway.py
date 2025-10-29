@@ -2,8 +2,7 @@ from abc import ABC, abstractmethod
 
 from pandas import DataFrame
 
-from core.gateways.i_excel_service import IExcelService
-from core.gateways.i_pathing_gateway import IPathingGateway
+from src.core.gateways.i_pathing_gateway import IPathingGateway
 
 
 class INLFolhaGateway:

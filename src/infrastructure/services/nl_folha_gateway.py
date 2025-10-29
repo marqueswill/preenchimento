@@ -1,7 +1,8 @@
-from config import *
-import pandas as pd
-from core.gateways.i_nl_folha_gateway import INLFolhaGateway
 from pandas import DataFrame
+import pandas as pd
+
+from src.config import *
+from src.core.gateways.i_nl_folha_gateway import INLFolhaGateway
 
 
 class NLFolhaGateway(INLFolhaGateway):

@@ -1,11 +1,9 @@
 import sys
 
 
-from factories import UseCaseFactory
-from infrastructure.cli.console_service import ConsoleService
-
-
-from config import *
+from src.factories import UseCaseFactory
+from src.infrastructure.cli.console_service import ConsoleService
+from src.config import *
 
 
 def FolhaPagamentoController(test=False, run=True):
@@ -42,7 +40,9 @@ def FolhaPagamentoController(test=False, run=True):
                 # Instanciar usecase de coferencia, passando o fundo escolhido
 
                 factory = UseCaseFactory()
-                use_case = factory.create_gerar_conferencia_use_case()
+                use_case = factory.create_gerar_conferencia_use_case(
+                    fundo_para_conferencia
+                )
                 use_case.executar(fundo_para_conferencia)
 
                 # nl_folha_gw = NLFolhaGateway()

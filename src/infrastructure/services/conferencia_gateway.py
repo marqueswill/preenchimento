@@ -7,17 +7,17 @@ import pandas as pd
 from typing import List
 from pandas import DataFrame
 
-from config import ANO_ATUAL, PASTA_MES_ATUAL
-from core.gateways.i_conferencia_gateway import IConferenciaGateway
-from core.gateways.i_excel_service import IExcelService
-from core.gateways.i_nl_folha_gateway import INLFolhaGateway
-from core.gateways.i_pathing_gateway import IPathingGateway
+from src.config import ANO_ATUAL, PASTA_MES_ATUAL
+from src.core.gateways.i_conferencia_gateway import IConferenciaGateway
+from src.core.gateways.i_excel_service import IExcelService
+from src.core.gateways.i_nl_folha_gateway import INLFolhaGateway
+from src.core.gateways.i_pathing_gateway import IPathingGateway
 
 
 class ConferenciaGateway(IConferenciaGateway):
 
-    def __init__(self, nl_gateway, path_gateway, excel_svc):
-        super().__init__(nl_gateway, path_gateway, excel_svc)
+    def __init__(self, path_gateway, excel_svc):
+        super().__init__(path_gateway, excel_svc)
 
     def get_nomes_templates(self, fundo: str) -> List[str]:
         caminho_raiz = (
@@ -51,6 +51,14 @@ class ConferenciaGateway(IConferenciaGateway):
             self.excel_service.exportar_para_planilha(table_data, sheet_name)
 
     def get_dados_conferencia(self, fundo, agrupar=True, adiantamento_ferias=False):
+        cod_fundos = {
+            "RGPS": 1,
+            "FINANCEIRO": 2,
+            "CAPITALIZADO": 3,
+            "INATIVO": 4,
+            "PENSÃO": 5,
+        }
+
         # Define o caminho até a pasta onde está o arquivo
         caminho_completo = self.pathing_gw.get_caminho_tabela_demofin()
 
@@ -73,7 +81,7 @@ class ConferenciaGateway(IConferenciaGateway):
         ].str.replace(r"\s+", " ", regex=True)
 
         # Filtra a tabela para o fundo específico
-        filtro_fundo = tabela_demofin["CDG_FUNDO"] == self.cod_fundo
+        filtro_fundo = tabela_demofin["CDG_FUNDO"] == cod_fundos[fundo]
 
         # Seleciona colunas de interesse
         plan_folha = tabela_demofin.loc[
@@ -320,7 +328,6 @@ class ConferenciaGateway(IConferenciaGateway):
 
     def extrair_dados_relatorio(self, fundo_escolhido: str):
         caminho_pdf_relatorio = self.pathing_gw.get_caminho_pdf_relatorio()
-
         with open(caminho_pdf_relatorio, "rb") as file:
             reader = PyPDF2.PdfReader(file)
             text = ""
@@ -337,8 +344,8 @@ class ConferenciaGateway(IConferenciaGateway):
             "CAPITALIZADO": {"PROVENTOS": None, "DESCONTOS": None},
         }
 
+  
         dados_brutos = text.split("Total por Fundo de Previdência:")
-
         for fundo, relatorio in zip(relatorios.keys(), dados_brutos[:3]):
             inicio_proventos = relatorio.find("Proventos")
             inicio_descontos = relatorio.find("Descontos Elem. Despesa:")

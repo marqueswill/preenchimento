@@ -1,6 +1,6 @@
 import re
-from config import *
-from core.gateways.i_pathing_gateway import IPathingGateway
+from src.config import *
+from src.core.gateways.i_pathing_gateway import IPathingGateway
 
 
 class PathingGateway(IPathingGateway):
@@ -86,7 +86,7 @@ class PathingGateway(IPathingGateway):
                 nome_lower = nome_arquivo.lower()
                 if nome_lower.startswith("relatórios") and nome_lower.endswith(".pdf"):
                     caminho_pdf_relatorio = os.path.join(diretorio_alvo, nome_arquivo)
-                    break
+                    return caminho_pdf_relatorio
         else:
             raise FileNotFoundError(
                 f"Atenção: O diretório '{diretorio_alvo}' não foi encontrado."

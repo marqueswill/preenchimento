@@ -2,9 +2,8 @@ from abc import ABC, abstractmethod
 from typing import Dict, List, Tuple
 from pandas import DataFrame
 
-from core.gateways.i_excel_service import IExcelService
-from core.gateways.i_pathing_gateway import IPathingGateway
-from infrastructure.files.excel_service import ExcelService
+from src.core.gateways.i_excel_service import IExcelService
+from src.core.gateways.i_pathing_gateway import IPathingGateway
 from src.core.gateways.i_nl_folha_gateway import INLFolhaGateway
 
 
@@ -19,11 +18,9 @@ class IConferenciaGateway(ABC):
 
     def __init__(
         self,
-        nl_folha_gw: INLFolhaGateway,  # Gerar NLs
         pathing_gw: IPathingGateway,  # Configuração do pathing
         excel_service: IExcelService,  # Exportação e importação
     ):
-        self.nl_folha_gw = nl_folha_gw
         self.pathing_gw = pathing_gw
         self.excel_service = excel_service
         super().__init__()

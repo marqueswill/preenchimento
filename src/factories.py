@@ -20,23 +20,23 @@ class UseCaseFactory:
     com todas as suas dependências.
     """
 
-    def create_gerar_conferencia_use_case(self) -> GerarConferenciaUseCase:
+    def create_gerar_conferencia_use_case(self, fundo: str) -> GerarConferenciaUseCase:
         """Cria o use case de Geração de Conferência pronto para usar."""
 
         # 1. Criar dependências de nível mais baixo
-        nl_folha_gw: INLFolhaGateway = NLFolhaGateway()
         pathing_gw: IPathingGateway = PathingGateway()
+        nl_folha_gw: INLFolhaGateway = NLFolhaGateway(pathing_gw)
 
         # 2. Lógica de configuração
-        caminho_planilha_conferencia = pathing_gw.get_caminho_conferencia()
+        caminho_planilha_conferencia = pathing_gw.get_caminho_conferencia(fundo)
         excel_svc: IExcelService = ExcelService(caminho_planilha_conferencia)
 
         # 3. Injetar tudo no ConferenciaGateway
         conferencia_gw: IConferenciaGateway = ConferenciaGateway(
-            nl_gateway=nl_folha_gw, path_gateway=pathing_gw, excel_svc=excel_svc
+            path_gateway=pathing_gw, excel_svc=excel_svc
         )
 
         # 4. Montar o Use Case final
-        use_case = GerarConferenciaUseCase(conferencia_gw)
+        use_case = GerarConferenciaUseCase(conferencia_gw, nl_folha_gw)
 
         return use_case
