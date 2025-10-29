@@ -1,12 +1,9 @@
 import sys
 
 
-from core.usecases.gerar_conferencia_usecase import GerarConferenciaUseCase
+from factories import UseCaseFactory
 from infrastructure.cli.console_service import ConsoleService
-from infrastructure.files.excel_service import ExcelService
-from infrastructure.services.conferencia_gateway import ConferenciaGateway
-from infrastructure.services.nl_folha_gateway import NLFolhaGateway
-from infrastructure.services.pathing_gateway import PathingGateway
+
 
 from config import *
 
@@ -32,7 +29,6 @@ def FolhaPagamentoController(test=False, run=True):
             if tipo_folha_selecionado is None:
                 continue
 
-            print(tipo_folha_selecionado)
             if tipo_folha_selecionado == "GERAR CONFERÊNCIAS":
                 # Model: Chama o serviço para geração de conferências
                 app_view.display_menu(
@@ -48,7 +44,7 @@ def FolhaPagamentoController(test=False, run=True):
                 factory = UseCaseFactory()
                 use_case = factory.create_gerar_conferencia_use_case()
                 use_case.executar(fundo_para_conferencia)
-                
+
                 # nl_folha_gw = NLFolhaGateway()
                 # pathing_gw = PathingGateway()
                 # caminho_planilha_conferencia = pathing_gw.get_caminho_conferencia()

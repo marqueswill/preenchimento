@@ -1,16 +1,18 @@
 from typing import Dict, List
 from pandas import DataFrame
 from core.gateways.i_conferencia_gateway import IConferenciaGateway
+from core.gateways.i_excel_service import IExcelService
 from core.gateways.i_nl_folha_gateway import INLFolhaGateway
 
 
 class GerarConferenciaUseCase:
 
     def __init__(
-        self, conferencia_gw: IConferenciaGateway, nl_folha_gw: INLFolhaGateway
+        self, conferencia_gw: IConferenciaGateway, nl_folha_gw: INLFolhaGateway, excel_svc:IExcelService
     ):
         self.conferencia_gw = conferencia_gw
         self.nl_folha_gw = nl_folha_gw
+        self.excel_service = excel_svc
 
     def executar(self, fundo):
         # --- Lógica NLs ---
@@ -29,8 +31,8 @@ class GerarConferenciaUseCase:
         # 3. Calcular os totais
         # 4. Exportar dados
         conferencia_completa = self.conferencia_gw.get_dados_conferencia(fundo)
-        proventos = self._separar_proventos(conferencia_completa)
-        descontos = self._separar_descontos(conferencia_completa)
+        proventos = self.conferencia_gw.separar_proventos(conferencia_completa)
+        descontos = self.conferencia_gw.separar_descontos(conferencia_completa)
         totais = self._calcular_totais(nls_fundo, proventos, descontos)
         self.conferencia_gw.salvar_dados_conferencia(proventos, descontos, totais)
 
@@ -84,46 +86,3 @@ class GerarConferenciaUseCase:
         )
 
         return totais
-
-    def _separar_proventos(self, conferencia_rgps_final: DataFrame):
-        prov_folha = conferencia_rgps_final.loc[
-            conferencia_rgps_final["CDG_NAT_DESPESA"].str.startswith("3")
-        ]
-
-        coluna_saldo_proventos = prov_folha["PROVENTO"] - prov_folha["DESCONTO"]
-        prov_folha = prov_folha.loc[
-            :,
-            [
-                "NME_NAT_DESPESA",
-                "CDG_NAT_DESPESA",
-                "PROVENTO",
-                "DESCONTO",
-                "TIPO_DESPESA",
-            ],
-        ].assign(SALDO=coluna_saldo_proventos)
-
-        prov_folha = prov_folha.sort_values(by=["CDG_NAT_DESPESA"])
-
-        return prov_folha
-
-    def _separar_descontos(self, conferencia_rgps_final: DataFrame):
-        desc_folha = conferencia_rgps_final.loc[
-            ~conferencia_rgps_final["CDG_NAT_DESPESA"].str.startswith("3")
-        ]
-
-        coluna_saldo_descontos = desc_folha["DESCONTO"] - desc_folha["PROVENTO"]
-
-        desc_folha = desc_folha.loc[
-            :,
-            [
-                "NME_NAT_DESPESA",
-                "CDG_NAT_DESPESA",
-                "DESCONTO",
-                "PROVENTO",
-                "TIPO_DESPESA",
-            ],
-        ].assign(SALDO=coluna_saldo_descontos)
-
-        desc_folha = desc_folha.sort_values(by=["CDG_NAT_DESPESA"])
-
-        return desc_folha

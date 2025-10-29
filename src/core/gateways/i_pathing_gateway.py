@@ -14,3 +14,7 @@ class IPathingGateway(ABC):
     @abstractmethod
     def get_caminho_conferencia(self, fundo: str):
         pass
+
+    @abstractmethod
+    def get_caminho_tabela_demofin() -> str:
+        pass

@@ -16,21 +16,12 @@ from core.gateways.i_pathing_gateway import IPathingGateway
 
 class ConferenciaGateway(IConferenciaGateway):
 
-    def __init__(
-        self,
-        nl_gateway: INLFolhaGateway,
-        path_gateway: IPathingGateway,
-        excel_svc: IExcelService
-    ):
-        self.nl_folha_gw = nl_gateway
-        self.pathing = path_gateway
-        caminho_planilha_conferencia = self.pathing.get_caminho_conferencia()
-        self.excel_service = 
-        super().__init__()
+    def __init__(self, nl_gateway, path_gateway, excel_svc):
+        super().__init__(nl_gateway, path_gateway, excel_svc)
 
     def get_nomes_templates(self, fundo: str) -> List[str]:
         caminho_raiz = (
-            self.caminho_raiz
+            self.pathing.get_root_path()
             + f"SECON - General\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_{ANO_ATUAL}\\TEMPLATES\\"
         )
 
@@ -53,12 +44,17 @@ class ConferenciaGateway(IConferenciaGateway):
             "CAPITALIZADO": templates_capitalizado,
         }
 
-        return nomes_templates
+        return nomes_templates[fundo]
 
-    def get_nls_folha(self, fundo: str, nomes_templates: List[str], nl_folha_gw:INLFolhaGateway):
+    def gerar_nls_folha(self, fundo: str, nomes_templates: List[str]):
+        conferencia_completa = self.get_dados_conferencia(fundo)
+        ferias = self.get_dados_conferencia(fundo,adiantamento_ferias=True)
+        proventos = self.separar_proventos(conferencia_completa)
+        descontos = self.separar_descontos(conferencia_completa)
+        saldos = self.gerar_saldos(ferias, proventos, descontos)
         nls = {}
         for template in nomes_templates:
-            nls[template] = nl_folha_gw.gerar_nl_folha(fundo, template)
+            nls[template] = self.nl_folha_gw.gerar_nl_folha(fundo, template, saldos)
         return nls
 
     def salvar_nls_conferencia(self, nls: List[DataFrame]):
@@ -67,7 +63,7 @@ class ConferenciaGateway(IConferenciaGateway):
 
     def get_dados_conferencia(self, fundo, agrupar=True, adiantamento_ferias=False):
         # Define o caminho até a pasta onde está o arquivo
-        caminho_completo = self.pathing.get_caminho_tabela_demofin()
+        caminho_completo = self.pathing_gw.get_caminho_tabela_demofin()
 
         # Lê a planilha com o nome da aba "DEMOFIN - T"
         tabela_demofin = pd.read_excel(
@@ -233,6 +229,99 @@ class ConferenciaGateway(IConferenciaGateway):
 
         self.excel_service.delete_sheet("Sheet")
         self.excel_service.move_to_first("CONFERÊNCIA")
+
+    def separar_proventos(self, conferencia_rgps_final: DataFrame):
+        prov_folha = conferencia_rgps_final.loc[
+            conferencia_rgps_final["CDG_NAT_DESPESA"].str.startswith("3")
+        ]
+
+        coluna_saldo_proventos = prov_folha["PROVENTO"] - prov_folha["DESCONTO"]
+        prov_folha = prov_folha.loc[
+            :,
+            [
+                "NME_NAT_DESPESA",
+                "CDG_NAT_DESPESA",
+                "PROVENTO",
+                "DESCONTO",
+                "TIPO_DESPESA",
+            ],
+        ].assign(SALDO=coluna_saldo_proventos)
+
+        prov_folha = prov_folha.sort_values(by=["CDG_NAT_DESPESA"])
+
+        return prov_folha
+
+    def separar_descontos(self, conferencia_rgps_final: DataFrame):
+        desc_folha = conferencia_rgps_final.loc[
+            ~conferencia_rgps_final["CDG_NAT_DESPESA"].str.startswith("3")
+        ]
+
+        coluna_saldo_descontos = desc_folha["DESCONTO"] - desc_folha["PROVENTO"]
+
+        desc_folha = desc_folha.loc[
+            :,
+            [
+                "NME_NAT_DESPESA",
+                "CDG_NAT_DESPESA",
+                "DESCONTO",
+                "PROVENTO",
+                "TIPO_DESPESA",
+            ],
+        ].assign(SALDO=coluna_saldo_descontos)
+
+        desc_folha = desc_folha.sort_values(by=["CDG_NAT_DESPESA"])
+
+        return desc_folha
+
+    def gerar_saldos(self, dados_conferencia_ferias, dados_proventos, dados_descontos):
+        saldos_proventos = list(
+            zip(
+                dados_proventos["TIPO_DESPESA"],
+                dados_proventos["CDG_NAT_DESPESA"],
+                dados_proventos["SALDO"],
+            )
+        )
+        saldos_descontos = list(
+            zip(
+                dados_descontos["TIPO_DESPESA"],
+                dados_descontos["CDG_NAT_DESPESA"],
+                dados_descontos["SALDO"],
+            )
+        )
+
+        proventos_ferias = list(
+            zip(
+                dados_conferencia_ferias["AJUSTE"],
+                dados_conferencia_ferias["CDG_NAT_DESPESA"],
+                dados_conferencia_ferias["PROVENTO"],
+            )
+        )
+        descontos_ferias = list(
+            zip(
+                dados_conferencia_ferias["AJUSTE"],
+                dados_conferencia_ferias["CDG_NAT_DESPESA"],
+                dados_conferencia_ferias["DESCONTO"],
+            )
+        )
+
+        # Faz um dicionário com todos os saldos (proventos e descontos) segmentados pelo tipo do saldo
+        saldos = {
+            "ATIVO": {},
+            "INATIVO": {},
+            "COMPENSATÓRIA": {},
+            "PENSIONISTA": {},
+            "PROVENTO ADIANTAMENTO FÉRIAS": {},
+            "DESCONTO ADIANTAMENTO FÉRIAS": {},
+        }
+
+        for line in saldos_proventos + saldos_descontos:
+            saldos[line[0]][line[1]] = line[2]
+        for line in proventos_ferias:
+            saldos["PROVENTO ADIANTAMENTO FÉRIAS"][line[1]] = line[2]
+        for line in descontos_ferias:
+            saldos["DESCONTO ADIANTAMENTO FÉRIAS"][line[1]] = line[2]
+
+        return saldos
 
     def extrair_dados_relatorio(self, fundo_escolhido: str):
         caminho_pdf_relatorio = self.pathing.get_caminho_pdf_relatorio()

@@ -2,22 +2,27 @@ from abc import ABC, abstractmethod
 
 from pandas import DataFrame
 
-class INLFolhaGateway: 
+from core.gateways.i_excel_service import IExcelService
+from core.gateways.i_pathing_gateway import IPathingGateway
+
+
+class INLFolhaGateway:
     """_summary_ Gera uma NL para folha de pagamento a partir de um fundo e um template
-    de preenchimento 
+    de preenchimento
     """
-    
-    def __init__(self):
-        pass
-    
+
+    def __init__(self, excel_service: IExcelService, pathing_gw: IPathingGateway):
+        self.excel_service = excel_service
+        self.pathing = pathing_gw
+
     @abstractmethod
-    def gerar_nl_folha(self,fundo:str, template:str) -> DataFrame:
+    def gerar_nl_folha(self, fundo: str, template: str, saldos: str):
         pass
 
-# 1. Obter o nome do fundo e do template selecionado
-# 2. Carregar template 
-# 3. Carregar cabecalho do template
-# 4. Fazer cálculo usando saldos e instruções do template
-#   Obter saldos -> controller irá passar como argumento na hora de fazer o cálculo, 
-#   transferir método/lógica pro ConferenciaGateway
-# 5. Retornar dataframe do template com valores calculados
+    @abstractmethod
+    def carregar_template_nl(self) -> DataFrame:
+        pass
+
+    @abstractmethod
+    def carregar_cabecalho(self) -> DataFrame:
+        pass
