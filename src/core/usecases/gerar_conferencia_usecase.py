@@ -1,41 +1,48 @@
-from typing import List
+from typing import Dict, List
 from pandas import DataFrame
 from core.gateways.i_conferencia_gateway import IConferenciaGateway
+from core.gateways.i_nl_folha_gateway import INLFolhaGateway
 
 
 class GerarConferenciaUseCase:
-    def __init__(self, conferencia_gw: IConferenciaGateway):
-        self.service = conferencia_gw
+
+    def __init__(
+        self, conferencia_gw: IConferenciaGateway, nl_folha_gw: INLFolhaGateway
+    ):
+        self.conferencia_gw = conferencia_gw
+        self.nl_folha_gw = nl_folha_gw
 
     def executar(self, fundo):
         # --- Lógica NLs ---
         # 1. obter nome dos templates para o fundo informado
         # 2. gerar as nls para o fundo
         # 3. exportar nls
-        nomes_templates = self.service.get_nomes_templates(fundo)
-        nls_fundo = self.service.get_nls_folha(fundo, nomes_templates)
-        self.service.salvar_nls_conferencia(nls_fundo)
+        nomes_templates = self.conferencia_gw.get_nomes_templates(fundo)
+        nls_fundo = self.conferencia_gw.get_nls_folha(
+            fundo, nomes_templates, self.nl_folha_gw
+        )
+        self.conferencia_gw.salvar_nls_conferencia(nls_fundo)
 
         # --- Lógica conferência da folha ---
         # 1. Obter dados conferencia de "DEMOFIN - T"
         # 2. Obter proventos e descontos passando dados conferencia
         # 3. Calcular os totais
         # 4. Exportar dados
-        conferencia_completa = self.service.get_dados_conferencia(fundo)
+        conferencia_completa = self.conferencia_gw.get_dados_conferencia(fundo)
         proventos = self._separar_proventos(conferencia_completa)
         descontos = self._separar_descontos(conferencia_completa)
         totais = self._calcular_totais(nls_fundo, proventos, descontos)
-        self.service.salvar_dados_conferencia(proventos, descontos, totais)
+        self.conferencia_gw.salvar_dados_conferencia(proventos, descontos, totais)
 
         # --- Lógica relatórios ---
         # 1. Extrair dados de proventos e descontos do relatório
         # 2. Exportar dados para conferencia
-        dados_relatorio = self.service.extrair_dados_relatorio(fundo)
-        self.service.salvar_dados_relatorio(dados_relatorio)
+        dados_relatorio = self.conferencia_gw.extrair_dados_relatorio(fundo)
+        self.conferencia_gw.salvar_dados_relatorio(dados_relatorio)
 
     def _calcular_totais(
         self,
-        nls: List[DataFrame],
+        nls: Dict[str, DataFrame],
         proventos_folha: DataFrame,
         descontos_folha: DataFrame,
     ) -> DataFrame:

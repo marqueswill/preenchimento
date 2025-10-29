@@ -9,16 +9,23 @@ from pandas import DataFrame
 
 from config import ANO_ATUAL, PASTA_MES_ATUAL
 from core.gateways.i_conferencia_gateway import IConferenciaGateway
-from infrastructure.files.excel_service import ExcelService
-from infrastructure.services.pathing_gateway import PathingGateway
+from core.gateways.i_excel_service import IExcelService
+from core.gateways.i_nl_folha_gateway import INLFolhaGateway
+from core.gateways.i_pathing_gateway import IPathingGateway
 
 
 class ConferenciaGateway(IConferenciaGateway):
 
-    def __init__(self):
-        self.pathing = PathingGateway()
+    def __init__(
+        self,
+        nl_gateway: INLFolhaGateway,
+        path_gateway: IPathingGateway,
+        excel_svc: IExcelService
+    ):
+        self.nl_folha_gw = nl_gateway
+        self.pathing = path_gateway
         caminho_planilha_conferencia = self.pathing.get_caminho_conferencia()
-        self.excel_service = ExcelService(caminho_planilha_conferencia)
+        self.excel_service = 
         super().__init__()
 
     def get_nomes_templates(self, fundo: str) -> List[str]:
@@ -48,15 +55,10 @@ class ConferenciaGateway(IConferenciaGateway):
 
         return nomes_templates
 
-    def get_nls_folha(self, fundo: str, nomes_templates: List[str]):
-        # drivers_pagamento = [
-        #     GeradorFolhaPagamento(self.nome_fundo.lower(), nome_template, test=True)
-        #     for nome_template in nomes_templates[self.nome_fundo]
-        # ]
-        # nls = {
-        #     driver.nome_template: driver.gerar_folha() for driver in drivers_pagamento
-        # }
+    def get_nls_folha(self, fundo: str, nomes_templates: List[str], nl_folha_gw:INLFolhaGateway):
         nls = {}
+        for template in nomes_templates:
+            nls[template] = nl_folha_gw.gerar_nl_folha(fundo, template)
         return nls
 
     def salvar_nls_conferencia(self, nls: List[DataFrame]):

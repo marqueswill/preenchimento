@@ -1,9 +1,17 @@
+from abc import ABC, abstractmethod
+
+from pandas import DataFrame
+
 class INLFolhaGateway: 
     """_summary_ Gera uma NL para folha de pagamento a partir de um fundo e um template
     de preenchimento 
     """
     
     def __init__(self):
+        pass
+    
+    @abstractmethod
+    def gerar_nl_folha(self,fundo:str, template:str) -> DataFrame:
         pass
 
 # 1. Obter o nome do fundo e do template selecionado

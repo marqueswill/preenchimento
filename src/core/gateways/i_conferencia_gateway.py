@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 from pandas import DataFrame
 
 from infrastructure.files.excel_service import ExcelService
@@ -15,17 +15,14 @@ class IConferenciaGateway(ABC):
         ABC (_type_): _description_
     """
 
-    def __init__(self):
-        self.excel_service = ExcelService
-        self.nl_folha_gw = INLFolhaGateway
-        super().__init__()
-
     @abstractmethod
     def get_nomes_templates(self, fundo: str) -> List[str]:
         pass
 
     @abstractmethod
-    def get_nls_folha(self, fundo: str, nomes_templates: List[str]) -> List[DataFrame]:
+    def get_nls_folha(
+        self, fundo: str, nomes_templates: List[str], nl_folha_gw: INLFolhaGateway
+    ) -> Dict[str, DataFrame]:
         pass
 
     @abstractmethod
