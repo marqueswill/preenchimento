@@ -3,12 +3,21 @@ from typing import List, Tuple
 from pandas import DataFrame
 
 from infrastructure.files.excel_service import ExcelService
+from src.core.gateways.i_nl_folha_gateway import INLFolhaGateway
 
 
 class IConferenciaGateway(ABC):
+    """_summary_ Extração e transformação dos dados para gerar a conferência da folha de pagamentos.
 
-    def __init__(self, excel_service: ExcelService):
-        self.excel_service = excel_service
+
+
+    Args:
+        ABC (_type_): _description_
+    """
+
+    def __init__(self):
+        self.excel_service = ExcelService
+        self.nl_folha_gw = INLFolhaGateway
         super().__init__()
 
     @abstractmethod
