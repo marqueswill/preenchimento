@@ -5,10 +5,21 @@ from pandas import DataFrame
 
 
 class NLFolhaGateway(INLFolhaGateway):
-    def __init__(self, excel_service, pathing_gw):
-        super().__init__(excel_service, pathing_gw)
+    def __init__(self, pathing_gw):
+        super().__init__(pathing_gw)
 
-    def gerar_nl_folha(self, fundo: str, template: str, saldos:str):
+    def gerar_nl_folha(self, fundo: str, template: str, saldos: dict):
+        """_summary_ Recebe um fundo e o nome de um nome de uma nl e preenche o template encontrado
+        com os valores de saldo passados.
+
+        Args:
+            fundo (str): _description_ Fundo referente a folha de pagamento
+            template (str): _description_ Nome do template de nl que será utilizado
+            saldos (str): _description_ Valores de saldo para preenchimento
+
+        Returns:
+            _type_: _description_ DataFrame que representa a NL preenchida
+        """
         folha_pagamento = self.carregar_template_nl(fundo, template)
 
         # Calcula o valor para cada linha
@@ -35,7 +46,7 @@ class NLFolhaGateway(INLFolhaGateway):
 
         return folha_pagamento
 
-    def carregar_template_nl(self, nome_fundo:str, template:str) -> DataFrame:
+    def carregar_template_nl(self, nome_fundo: str, template: str) -> DataFrame:
         try:
             caminho_completo = self.pathing.get_template_paths(nome_fundo)
             dataframe = pd.read_excel(

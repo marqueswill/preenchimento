@@ -11,8 +11,7 @@ class INLFolhaGateway:
     de preenchimento
     """
 
-    def __init__(self, excel_service: IExcelService, pathing_gw: IPathingGateway):
-        self.excel_service = excel_service
+    def __init__(self, pathing_gw: IPathingGateway):
         self.pathing = pathing_gw
 
     @abstractmethod

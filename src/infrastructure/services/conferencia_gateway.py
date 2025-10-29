@@ -21,7 +21,7 @@ class ConferenciaGateway(IConferenciaGateway):
 
     def get_nomes_templates(self, fundo: str) -> List[str]:
         caminho_raiz = (
-            self.pathing.get_root_path()
+            self.pathing_gw.get_root_path()
             + f"SECON - General\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_{ANO_ATUAL}\\TEMPLATES\\"
         )
 
@@ -46,18 +46,7 @@ class ConferenciaGateway(IConferenciaGateway):
 
         return nomes_templates[fundo]
 
-    def gerar_nls_folha(self, fundo: str, nomes_templates: List[str]):
-        conferencia_completa = self.get_dados_conferencia(fundo)
-        ferias = self.get_dados_conferencia(fundo,adiantamento_ferias=True)
-        proventos = self.separar_proventos(conferencia_completa)
-        descontos = self.separar_descontos(conferencia_completa)
-        saldos = self.gerar_saldos(ferias, proventos, descontos)
-        nls = {}
-        for template in nomes_templates:
-            nls[template] = self.nl_folha_gw.gerar_nl_folha(fundo, template, saldos)
-        return nls
-
-    def salvar_nls_conferencia(self, nls: List[DataFrame]):
+    def salvar_nls_conferencia(self, nls: dict[str, DataFrame]):
         for sheet_name, table_data in nls.items():
             self.excel_service.exportar_para_planilha(table_data, sheet_name)
 
@@ -209,19 +198,25 @@ class ConferenciaGateway(IConferenciaGateway):
     ):
         # Exporta proventos na coluna A
         self.excel_service.exportar_para_planilha(
-            proventos_folha, self.nome_template, start_column="A", clear=True
+            table=proventos_folha,
+            sheet_name="CONFERÊNCIA",
+            start_column="A",
+            clear=True,
         )
 
         # Exporta descontos na coluna H
         self.excel_service.exportar_para_planilha(
-            descontos_folha, self.nome_template, start_column="H", clear=False
+            table=descontos_folha,
+            sheet_name="CONFERÊNCIA",
+            start_column="H",
+            clear=False,
         )
 
         # Exporta os totais para coluna H, abaixo dos descontos
         ultima_linha = str(len(descontos_folha) + 3)
         self.excel_service.exportar_para_planilha(
-            totais,
-            self.nome_template,
+            table=totais,
+            sheet_name="CONFERÊNCIA",
             start_column="H",
             start_line=ultima_linha,
             clear=False,
@@ -324,7 +319,7 @@ class ConferenciaGateway(IConferenciaGateway):
         return saldos
 
     def extrair_dados_relatorio(self, fundo_escolhido: str):
-        caminho_pdf_relatorio = self.pathing.get_caminho_pdf_relatorio()
+        caminho_pdf_relatorio = self.pathing_gw.get_caminho_pdf_relatorio()
 
         with open(caminho_pdf_relatorio, "rb") as file:
             reader = PyPDF2.PdfReader(file)

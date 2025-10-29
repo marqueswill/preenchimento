@@ -33,12 +33,6 @@ class IConferenciaGateway(ABC):
         pass
 
     @abstractmethod
-    def gerar_nls_folha(
-        self, fundo: str, nomes_templates: List[str], nl_folha_gw: INLFolhaGateway
-    ) -> Dict[str, DataFrame]:
-        pass
-
-    @abstractmethod
     def salvar_nls_conferencia(self, nls: List[DataFrame]):
         pass
 
@@ -54,6 +48,14 @@ class IConferenciaGateway(ABC):
 
     @abstractmethod
     def separar_descontos(self, conferencia_rgps_final: DataFrame) -> DataFrame:
+        pass
+
+    def gerar_saldos(
+        self,
+        dados_conferencia_ferias: DataFrame,
+        dados_proventos: DataFrame,
+        dados_descontos: DataFrame,
+    ) -> DataFrame:
         pass
 
     @abstractmethod
