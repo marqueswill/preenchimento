@@ -9,9 +9,6 @@ class IExcelService(ABC):
     """
     Define a interface (contrato) para um serviço que
     manipula arquivos de planilha (Excel).
-
-    Qualquer classe concreta que implemente esta interface
-    deve fornecer implementações para estes métodos.
     """
 
     @abstractmethod

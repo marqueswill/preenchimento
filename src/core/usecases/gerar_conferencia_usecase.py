@@ -1,7 +1,6 @@
 from typing import Dict, List
 from pandas import DataFrame
 from src.core.gateways.i_conferencia_gateway import IConferenciaGateway
-from src.core.gateways.i_excel_service import IExcelService
 from src.core.gateways.i_nl_folha_gateway import INLFolhaGateway
 
 
@@ -17,7 +16,6 @@ class GerarConferenciaUseCase:
 
     def executar(self, fundo):
         conferencia_completa = self.conferencia_gw.get_dados_conferencia(fundo)
-
         conferencia_ferias = self.conferencia_gw.get_dados_conferencia(
             fundo, adiantamento_ferias=True
         )
@@ -25,15 +23,14 @@ class GerarConferenciaUseCase:
         proventos = self.conferencia_gw.separar_proventos(conferencia_completa)
         descontos = self.conferencia_gw.separar_descontos(conferencia_completa)
 
-        saldos = self.conferencia_gw.gerar_saldos(
+        saldos = self.conferencia_gw.get_saldos(
             conferencia_ferias, proventos, descontos
         )
 
         nls_fundo = self._gerar_nls_folha(fundo, saldos)
-   
+
         totais = self._calcular_totais(nls_fundo, proventos, descontos)
 
-    
         dados_relatorio = self.conferencia_gw.extrair_dados_relatorio(fundo)
 
         self.conferencia_gw.salvar_dados_conferencia(proventos, descontos, totais)

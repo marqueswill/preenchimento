@@ -13,6 +13,7 @@ def FolhaPagamentoController(test=False, run=True):
 
     while True:
         try:
+            factory = UseCaseFactory()
             fundos = {
                 1: "RGPS",
                 2: "FINANCEIRO",
@@ -39,7 +40,6 @@ def FolhaPagamentoController(test=False, run=True):
 
                 # Instanciar usecase de coferencia, passando o fundo escolhido
 
-                factory = UseCaseFactory()
                 use_case = factory.create_gerar_conferencia_use_case(
                     fundo_para_conferencia
                 )
@@ -55,9 +55,11 @@ def FolhaPagamentoController(test=False, run=True):
                 app_view.show_message("Conferência gerada com sucesso.")
                 continue
 
-            break
             # Model: Obtém os caminhos dos templates
-            nomes_templates = get_template_names(tipo_folha_selecionado)
+            use_case = factory.create_preenchimento_folha_use_case(
+                tipo_folha_selecionado, run=True
+            )
+            nomes_templates = use_case.get_nomes_templates(tipo_folha_selecionado)
 
             # View: Exibe o menu de templates e obtém a seleção do usuário
             app_view.display_menu(
@@ -73,19 +75,14 @@ def FolhaPagamentoController(test=False, run=True):
                 multipla_escolha=True,
             )
 
+
             if templates_selecionados is None:
                 continue
 
-            # View: Exibe a mensagem de processamento
             app_view.show_processing_message("Iniciando o processamento")
 
-            # Model: Chama o serviço para processar a folha de pagamento
-            service = FolhaPagamentoService(
-                tipo_folha_selecionado, templates_selecionados, test=test, run=run
-            )
-            service.preencher_folhas()
+            use_case.preencher_nls_siggo(tipo_folha_selecionado, templates_selecionados)
 
-            # View: Exibe a mensagem de conclusão
             app_view.show_message("Processamento concluído.")
             sys.exit()
 

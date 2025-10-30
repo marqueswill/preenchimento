@@ -9,17 +9,9 @@ class NLFolhaGateway(INLFolhaGateway):
     def __init__(self, pathing_gw):
         super().__init__(pathing_gw)
 
-    def gerar_nl_folha(self, fundo: str, template: str, saldos: dict):
+    def gerar_nl_folha(self, fundo: str, template: str, saldos: dict) -> DataFrame:
         """_summary_ Recebe um fundo e o nome de um nome de uma nl e preenche o template encontrado
         com os valores de saldo passados.
-
-        Args:
-            fundo (str): _description_ Fundo referente a folha de pagamento
-            template (str): _description_ Nome do template de nl que será utilizado
-            saldos (str): _description_ Valores de saldo para preenchimento
-
-        Returns:
-            _type_: _description_ DataFrame que representa a NL preenchida
         """
         folha_pagamento = self.carregar_template_nl(fundo, template)
 

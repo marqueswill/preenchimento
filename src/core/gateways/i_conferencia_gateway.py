@@ -9,11 +9,7 @@ from src.core.gateways.i_nl_folha_gateway import INLFolhaGateway
 
 class IConferenciaGateway(ABC):
     """_summary_ Extração e transformação dos dados para gerar a conferência da folha de pagamentos.
-
-
-
-    Args:
-        ABC (_type_): _description_
+    Inclui os dados de proventos e descontos do Demofin, os dados do relatório e as NLs geradas.
     """
 
     def __init__(
@@ -47,12 +43,17 @@ class IConferenciaGateway(ABC):
     def separar_descontos(self, conferencia_rgps_final: DataFrame) -> DataFrame:
         pass
 
-    def gerar_saldos(
+    @abstractmethod
+    def get_saldos(
         self,
         dados_conferencia_ferias: DataFrame,
         dados_proventos: DataFrame,
         dados_descontos: DataFrame,
-    ) -> DataFrame:
+    ) -> dict[str, dict]:
+        pass
+
+    @abstractmethod
+    def gerar_saldos(fundo: str) -> dict[str, dict]:
         pass
 
     @abstractmethod

@@ -276,7 +276,7 @@ class ConferenciaGateway(IConferenciaGateway):
 
         return desc_folha
 
-    def gerar_saldos(self, dados_conferencia_ferias, dados_proventos, dados_descontos):
+    def get_saldos(self, dados_conferencia_ferias, dados_proventos, dados_descontos):
         saldos_proventos = list(
             zip(
                 dados_proventos["TIPO_DESPESA"],
@@ -326,6 +326,17 @@ class ConferenciaGateway(IConferenciaGateway):
 
         return saldos
 
+    def gerar_saldos(self, fundo) -> dict[str, dict]:
+        conferencia_completa = self.get_dados_conferencia(fundo)
+        conferencia_ferias = self.get_dados_conferencia(fundo, adiantamento_ferias=True)
+
+        proventos = self.separar_proventos(conferencia_completa)
+        descontos = self.separar_descontos(conferencia_completa)
+
+        saldos = self.get_saldos(conferencia_ferias, proventos, descontos)
+
+        return saldos
+
     def extrair_dados_relatorio(self, fundo_escolhido: str):
         caminho_pdf_relatorio = self.pathing_gw.get_caminho_pdf_relatorio()
         with open(caminho_pdf_relatorio, "rb") as file:
@@ -344,7 +355,6 @@ class ConferenciaGateway(IConferenciaGateway):
             "CAPITALIZADO": {"PROVENTOS": None, "DESCONTOS": None},
         }
 
-  
         dados_brutos = text.split("Total por Fundo de Previdência:")
         for fundo, relatorio in zip(relatorios.keys(), dados_brutos[:3]):
             inicio_proventos = relatorio.find("Proventos")

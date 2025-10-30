@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
 
 
-# Fiz isso pra conseguir personalizar os caminhos durante os testes
 class IPathingGateway(ABC):
+    """_summary_ Gateway usado para unificar a personalização de caminhos"""
+
     @abstractmethod
     def get_root_path(self) -> str:
         pass
@@ -18,7 +19,7 @@ class IPathingGateway(ABC):
     @abstractmethod
     def get_caminho_tabela_demofin() -> str:
         pass
-    
+
     @abstractmethod
     def get_caminho_pdf_relatorio() -> str:
         pass
