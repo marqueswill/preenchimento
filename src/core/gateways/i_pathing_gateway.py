@@ -5,7 +5,7 @@ class IPathingGateway(ABC):
     """_summary_ Gateway usado para unificar a personalização de caminhos"""
 
     @abstractmethod
-    def get_root_path(self) -> str:
+    def get_secon_root_path(self) -> str:
         pass
 
     @abstractmethod

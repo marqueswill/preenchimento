@@ -5,7 +5,7 @@ from src.core.gateways.i_pathing_gateway import IPathingGateway
 
 class PathingGateway(IPathingGateway):
 
-    def get_root_path(self) -> str:
+    def get_secon_root_path(self) -> str:
         """
         Determina o caminho correto para o arquivo de template,
         verificando se o usuário está usando o caminho base ou o do OneDrive.
@@ -27,19 +27,19 @@ class PathingGateway(IPathingGateway):
 
     def get_template_paths(self, tipo_folha: str) -> str:
         return (
-            self.get_root_path()
+            self.get_secon_root_path()
             + f"SECON - General\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_{ANO_ATUAL}\\TEMPLATES\\TEMPLATES_NL_{tipo_folha.upper()}.xlsx"
         )
 
     def get_caminho_conferencia(self, fundo: str):
         return (
-            self.get_root_path()
+            self.get_secon_root_path()
             + f"SECON - General\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_{ANO_ATUAL}\\{PASTA_MES_ATUAL}\\CONFERÊNCIA_{fundo}.xlsx"
         )
 
     def get_caminho_pasta_folha(self):
         return (
-            self.get_root_path()
+            self.get_secon_root_path()
             + f"SECON - General\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_{ANO_ATUAL}\\{PASTA_MES_ATUAL}"
         )
 
@@ -69,7 +69,7 @@ class PathingGateway(IPathingGateway):
 
     def get_caminho_pdf_relatorio(self):
         diretorio_alvo = os.path.join(
-            self.get_root_path(),
+            self.get_secon_root_path(),
             "SECON - General",
             "ANO_ATUAL",
             f"FOLHA_DE_PAGAMENTO_{ANO_ATUAL}",

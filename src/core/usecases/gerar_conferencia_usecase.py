@@ -1,7 +1,7 @@
 from typing import Dict, List
 from pandas import DataFrame
-from core.gateways.i_conferencia_gateway import IConferenciaGateway
-from core.usecases.pagamento_usecase import PagamentoUseCase
+from src.core.gateways.i_conferencia_gateway import IConferenciaGateway
+from src.core.usecases.pagamento_usecase import PagamentoUseCase
 from src.core.gateways.i_nl_folha_gateway import INLFolhaGateway
 
 

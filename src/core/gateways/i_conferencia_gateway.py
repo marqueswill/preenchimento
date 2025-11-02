@@ -15,20 +15,18 @@ class IConferenciaGateway(ABC):
     def __init__(
         self,
         pathing_gw: IPathingGateway,  # Configuração do pathing
-        excel_service: IExcelService,  # Exportação e importação
+        excel_svc: IExcelService,  # Exportação e importação
     ):
         self.pathing_gw = pathing_gw
-        self.excel_service = excel_service
+        self.excel_svc = excel_svc
         super().__init__()
-
-
 
     @abstractmethod
     def get_tabela_demofin() -> DataFrame:
         pass
 
     @abstractmethod
-    def parse_relatorio(self, fundo: str) -> str:
+    def parse_relatorio(self) -> str:
         pass
 
     @abstractmethod
