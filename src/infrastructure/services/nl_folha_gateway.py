@@ -37,37 +37,8 @@ class NLFolhaGateway(INLFolhaGateway):
 
         return nomes_templates[fundo]
 
-    def gerar_nl_folha(self, fundo: str, template: str, saldos: dict) -> DataFrame:
-        """_summary_ Recebe um fundo e o nome de um nome de uma nl e preenche o template encontrado
-        com os valores de saldo passados.
-        """
-        folha_pagamento = self._carregar_template_nl(fundo, template)
 
-        # Calcula o valor para cada linha
-        for idx, row in folha_pagamento.iterrows():
-            class_orc = row.get("CLASS. ORC", "")
-            class_cont = row.get("CLASS. CONT", "")
-            somar = row.get("SOMAR", [])
-            subtrair = row.get("SUBTRAIR", [])
-            tipo = (
-                "ATIVO" if row.get("TIPO", "") in {"", "nan"} else row.get("TIPO", "")
-            )
-
-            if tipo == "MANUAL":
-                folha_pagamento.at[idx, "VALOR"] = 0.000001
-            else:
-                valor_somar = self._soma_codigos(somar, saldos[tipo])
-                valor_subtrair = self._soma_codigos(subtrair, saldos[tipo])
-                valor = valor_somar - valor_subtrair
-                folha_pagamento.at[idx, "VALOR"] = valor
-
-        folha_pagamento.drop(columns=["SOMAR", "SUBTRAIR", "TIPO"], inplace=True)
-        folha_pagamento = folha_pagamento[folha_pagamento["VALOR"] > 0]
-        folha_pagamento = folha_pagamento.sort_values(by="INSCRIÇÃO")
-
-        return folha_pagamento
-
-    def _carregar_template_nl(self, nome_fundo: str, template: str) -> DataFrame:
+    def carregar_template_nl(self, nome_fundo: str, template: str) -> DataFrame:
         try:
             caminho_completo = self.pathing_gw.get_template_paths(nome_fundo)
             dataframe = pd.read_excel(
@@ -101,12 +72,3 @@ class NLFolhaGateway(INLFolhaGateway):
             return dataframe
         except:
             print("Feche as planilhas de template e tente novamente.")
-
-    def _soma_codigos(self, codigos: str, dicionario: dict):
-        lista_codigos = list(map(str.strip, codigos.split(",")))
-        lista_codigos = [
-            c[1:] if c.startswith("33") and len(c) == 9 else c for c in lista_codigos
-        ]
-        resultado = sum(float(dicionario.get(str(c), 0.0)) for c in lista_codigos)
-
-        return resultado

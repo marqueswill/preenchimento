@@ -3,15 +3,18 @@ import PyPDF2
 import numpy as np
 import pandas as pd
 from pandas import DataFrame
-from core.gateways.i_conferencia_gateway import IConferenciaGateway
+from src.core.gateways.i_conferencia_gateway import IConferenciaGateway
+from src.core.gateways.i_nl_folha_gateway import INLFolhaGateway
 
 
 class PagamentoUseCase:
     """_summary_ Contém a lógica de negócio para o processamento dos dados de pagamento do Demofin."""
 
-    def __init__(self, conferencia_gw: IConferenciaGateway):
+    def __init__(
+        self, conferencia_gw: IConferenciaGateway, nl_folha_gw: INLFolhaGateway
+    ):
         self.conferencia_gw = conferencia_gw
-
+        self.nl_folha_gw = nl_folha_gw
 
     def get_dados_conferencia(self, fundo, agrupar=True, adiantamento_ferias=False):
         cod_fundos = {
@@ -335,3 +338,42 @@ class PagamentoUseCase:
                 "PROVENTOS": df_proventos,
                 "DESCONTOS": df_descontos,
             }
+
+    def gerar_nl_folha(self, fundo: str, template: str, saldos: dict) -> DataFrame:
+        """_summary_ Recebe um fundo e o nome de um nome de uma nl e preenche o template encontrado
+        com os valores de saldo passados.
+        """
+        folha_pagamento = self.nl_folha_gw.carregar_template_nl(fundo, template)
+
+        # Calcula o valor para cada linha
+        for idx, row in folha_pagamento.iterrows():
+            class_orc = row.get("CLASS. ORC", "")
+            class_cont = row.get("CLASS. CONT", "")
+            somar = row.get("SOMAR", [])
+            subtrair = row.get("SUBTRAIR", [])
+            tipo = (
+                "ATIVO" if row.get("TIPO", "") in {"", "nan"} else row.get("TIPO", "")
+            )
+
+            if tipo == "MANUAL":
+                folha_pagamento.at[idx, "VALOR"] = 0.000001
+            else:
+                valor_somar = self.soma_codigos(somar, saldos[tipo])
+                valor_subtrair = self.soma_codigos(subtrair, saldos[tipo])
+                valor = valor_somar - valor_subtrair
+                folha_pagamento.at[idx, "VALOR"] = valor
+
+        folha_pagamento.drop(columns=["SOMAR", "SUBTRAIR", "TIPO"], inplace=True)
+        folha_pagamento = folha_pagamento[folha_pagamento["VALOR"] > 0]
+        folha_pagamento = folha_pagamento.sort_values(by="INSCRIÇÃO")
+
+        return folha_pagamento
+
+    def soma_codigos(self, codigos: str, dicionario: dict):
+        lista_codigos = list(map(str.strip, codigos.split(",")))
+        lista_codigos = [
+            c[1:] if c.startswith("33") and len(c) == 9 else c for c in lista_codigos
+        ]
+        resultado = sum(float(dicionario.get(str(c), 0.0)) for c in lista_codigos)
+
+        return resultado

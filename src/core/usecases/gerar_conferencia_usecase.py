@@ -10,10 +10,8 @@ class GerarConferenciaUseCase:
     def __init__(
         self,
         pagamento_uc: PagamentoUseCase,
-        nl_folha_gw: INLFolhaGateway,
     ):
         self.pagamento_uc = pagamento_uc
-        self.nl_folha_gw = nl_folha_gw
 
     def executar(self, fundo):
         conferencia_completa = self.pagamento_uc.get_dados_conferencia(fundo)
@@ -82,8 +80,8 @@ class GerarConferenciaUseCase:
         return totais
 
     def _gerar_nls_folha(self, fundo: str, saldos: dict):
-        nomes_templates = self.pagamento_uc.conferencia_gw.get_nomes_templates(fundo)
+        nomes_templates = self.pagamento_uc.nl_folha_gw.get_nomes_templates(fundo)
         nls = {}
         for template in nomes_templates:
-            nls[template] = self.nl_folha_gw.gerar_nl_folha(fundo, template, saldos)
+            nls[template] = self.pagamento_uc.gerar_nl_folha(fundo, template, saldos)
         return nls

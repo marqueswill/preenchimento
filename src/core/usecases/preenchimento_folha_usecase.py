@@ -10,15 +10,13 @@ class PreenchimentoFolhaUseCase:
     def __init__(
         self,
         pagamento_uc: PagamentoUseCase,
-        nl_folha_gw: INLFolhaGateway,
         preenchedor_gw: IPreenchimentoGateway
     ):
         self.pagamento_uc = pagamento_uc
-        self.nl_folha_gw = nl_folha_gw
         self.preenchedor_gw = preenchedor_gw
 
     def get_nomes_templates(self, fundo: str):
-        return self.nl_folha_gw.get_nomes_templates(fundo)
+        return self.pagamento_uc.nl_folha_gw.get_nomes_templates(fundo)
 
     def executar(self, fundo: str, templates: list[str]):
         saldos = self.pagamento_uc.gerar_saldos(fundo)
@@ -32,8 +30,12 @@ class PreenchimentoFolhaUseCase:
         for template in nomes_templates:
             folhas.append(
                 {
-                    "cabecalho": self.nl_folha_gw.carregar_cabecalho(fundo, template),
-                    "folha": self.nl_folha_gw.gerar_nl_folha(fundo, template, saldos),
+                    "cabecalho": self.pagamento_uc.nl_folha_gw.carregar_cabecalho(
+                        fundo, template
+                    ),
+                    "folha": self.pagamento_uc.gerar_nl_folha(
+                        fundo, template, saldos
+                    ),
                 }
             )
         return folhas

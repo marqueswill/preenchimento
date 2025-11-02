@@ -18,7 +18,7 @@ class INLFolhaGateway:
         pass
 
     @abstractmethod
-    def gerar_nl_folha(self, fundo: str, template: str, saldos: str) -> DataFrame:
+    def carregar_template_nl(self, nome_fundo: str, template: str) -> DataFrame:
         pass
 
     @abstractmethod
