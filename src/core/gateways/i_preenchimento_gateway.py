@@ -13,6 +13,7 @@ class IPreenchimentoGateway(ABC):
         self.siggo_driver = siggo_service
         super().__init__()
 
+    @abstractmethod
     def executar(self, dados: list[Dict[str, DataFrame]]):
         pass
 

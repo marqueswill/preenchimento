@@ -4,8 +4,6 @@ from src.core.gateways.i_pathing_gateway import IPathingGateway
 
 
 class PathingGateway(IPathingGateway):
-    def __init__(self):
-        super().__init__()
 
     def get_root_path(self) -> str:
         """

@@ -15,9 +15,6 @@ from src.core.gateways.i_conferencia_gateway import IConferenciaGateway
 # mover processamento, lógica de negócio e orquestrações para usecase, manter somente I/O
 class ConferenciaGateway(IConferenciaGateway):
 
-    def __init__(self, path_gateway, excel_svc):
-        super().__init__(path_gateway, excel_svc)
-
     def get_tabela_demofin(self):
         caminho_completo = self.pathing_gw.get_caminho_tabela_demofin()
         tabela_demofin = pd.read_excel(

@@ -7,8 +7,6 @@ from src.core.gateways.i_nl_folha_gateway import INLFolhaGateway
 
 
 class NLFolhaGateway(INLFolhaGateway):
-    def __init__(self, pathing_gw):
-        super().__init__(pathing_gw)
 
     def get_nomes_templates(self, fundo: str) -> List[str]:
         caminho_raiz = (
@@ -36,7 +34,6 @@ class NLFolhaGateway(INLFolhaGateway):
         }
 
         return nomes_templates[fundo]
-
 
     def carregar_template_nl(self, nome_fundo: str, template: str) -> DataFrame:
         try:

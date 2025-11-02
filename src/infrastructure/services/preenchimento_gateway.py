@@ -5,11 +5,10 @@ from selenium.webdriver.common.by import By
 from src.core.gateways.i_preenchimento_gateway import IPreenchimentoGateway
 from src.config import *
 
-class PreenchimentoGateway(IPreenchimentoGateway):
-    def __init__(self, siggo_service):
-        super().__init__(siggo_service)
 
-    def executar(self, dados:  list[Dict[str, DataFrame]]):
+class PreenchimentoGateway(IPreenchimentoGateway):
+
+    def executar(self, dados: list[Dict[str, DataFrame]]):
         self.siggo_driver.start()
 
         for dado in dados:

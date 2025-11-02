@@ -19,13 +19,14 @@ from src.core.gateways.i_conferencia_gateway import IConferenciaGateway
 from src.core.gateways.i_preenchimento_gateway import IPreenchimentoGateway
 from src.core.gateways.i_siggo_service import ISiggoService
 
+
 class UseCaseFactory:
     """
     Responsável por "montar" (construir) os use cases
     com todas as suas dependências.
     """
 
-    def create_pagamento_use_case(self, fundo:str) -> PagamentoUseCase:
+    def create_pagamento_use_case(self, fundo: str) -> PagamentoUseCase:
         pathing_gw: IPathingGateway = PathingGateway()
 
         caminho_planilha_conferencia = pathing_gw.get_caminho_conferencia(fundo)
@@ -34,34 +35,27 @@ class UseCaseFactory:
         conferencia_gw: IConferenciaGateway = ConferenciaGateway(
             path_gateway=pathing_gw, excel_svc=excel_svc
         )
+        nl_folha_gw: INLFolhaGateway = NLFolhaGateway(pathing_gw)
 
-        use_case = PagamentoUseCase(conferencia_gw)
+        use_case = PagamentoUseCase(conferencia_gw, nl_folha_gw)
 
         return use_case
 
     def create_gerar_conferencia_use_case(self, fundo: str) -> GerarConferenciaUseCase:
         """Cria o use case de Geração de Conferência pronto para usar."""
 
-        pathing_gw: IPathingGateway = PathingGateway()
-        nl_folha_gw: INLFolhaGateway = NLFolhaGateway(pathing_gw)
-
         pagamento_uc: PagamentoUseCase = self.create_pagamento_use_case(fundo)
-
-        use_case = GerarConferenciaUseCase(pagamento_uc, nl_folha_gw)
-
+        use_case = GerarConferenciaUseCase(pagamento_uc)
         return use_case
 
-    def create_preenchimento_folha_use_case(self, fundo: str, run=True) -> PreenchimentoFolhaUseCase:
-        pathing_gw: IPathingGateway = PathingGateway()
-        nl_folha_gw: INLFolhaGateway = NLFolhaGateway(pathing_gw)
-
+    def create_preenchimento_folha_use_case(
+        self, fundo: str, run=True
+    ) -> PreenchimentoFolhaUseCase:
         pagamento_uc: PagamentoUseCase = self.create_pagamento_use_case(fundo)
 
         siggo_service: ISiggoService = SiggoService(run)
         preenchedor_gw: IPreenchimentoGateway = PreenchimentoGateway(siggo_service)
 
-        use_case = PreenchimentoFolhaUseCase(
-            pagamento_uc, nl_folha_gw, preenchedor_gw
-        )
+        use_case = PreenchimentoFolhaUseCase(pagamento_uc, preenchedor_gw)
 
         return use_case

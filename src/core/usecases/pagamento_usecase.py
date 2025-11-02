@@ -8,7 +8,8 @@ from src.core.gateways.i_nl_folha_gateway import INLFolhaGateway
 
 
 class PagamentoUseCase:
-    """_summary_ Contém a lógica de negócio para o processamento dos dados de pagamento do Demofin."""
+    """_summary_ Contém a lógica de negócio para o processamento dos dados das folhas pagamento. Processa os dados
+    do demofin e do relatório para gerar a conferência, além de gerar as NLs de folha de pagamento."""
 
     def __init__(
         self, conferencia_gw: IConferenciaGateway, nl_folha_gw: INLFolhaGateway
