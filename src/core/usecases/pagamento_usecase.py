@@ -12,8 +12,6 @@ class PagamentoUseCase:
     def __init__(self, conferencia_gw: IConferenciaGateway):
         self.conferencia_gw = conferencia_gw
 
-    def get_nomes_templates(self, fundo: str):
-        return self.conferencia_gw.get_nomes_templates(fundo)
 
     def get_dados_conferencia(self, fundo, agrupar=True, adiantamento_ferias=False):
         cod_fundos = {

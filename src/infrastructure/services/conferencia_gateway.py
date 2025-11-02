@@ -18,33 +18,6 @@ class ConferenciaGateway(IConferenciaGateway):
     def __init__(self, path_gateway, excel_svc):
         super().__init__(path_gateway, excel_svc)
 
-    def get_nomes_templates(self, fundo: str) -> List[str]:
-        caminho_raiz = (
-            self.pathing_gw.get_root_path()
-            + f"SECON - General\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_{ANO_ATUAL}\\TEMPLATES\\"
-        )
-
-        # Carrega as planilhas de templates
-        excel_rgps = pd.ExcelFile(caminho_raiz + "TEMPLATES_NL_RGPS.xlsx")
-        excel_financeiro = pd.ExcelFile(caminho_raiz + "TEMPLATES_NL_FINANCEIRO.xlsx")
-        excel_capitalizado = pd.ExcelFile(
-            caminho_raiz + "TEMPLATES_NL_CAPITALIZADO.xlsx"
-        )
-
-        # Carrega todos os templates das NLs
-        templates_rgps = excel_rgps.sheet_names
-        templates_financeiro = excel_financeiro.sheet_names
-        templates_capitalizado = excel_capitalizado.sheet_names
-
-        # Categoriza os templates das NLs
-        nomes_templates = {
-            "RGPS": templates_rgps,
-            "FINANCEIRO": templates_financeiro,
-            "CAPITALIZADO": templates_capitalizado,
-        }
-
-        return nomes_templates[fundo]
-
     def get_tabela_demofin(self):
         caminho_completo = self.pathing_gw.get_caminho_tabela_demofin()
         tabela_demofin = pd.read_excel(

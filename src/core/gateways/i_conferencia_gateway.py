@@ -21,9 +21,7 @@ class IConferenciaGateway(ABC):
         self.excel_service = excel_service
         super().__init__()
 
-    @abstractmethod
-    def get_nomes_templates(self, fundo: str) -> List[str]:
-        pass
+
 
     @abstractmethod
     def get_tabela_demofin() -> DataFrame:

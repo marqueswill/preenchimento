@@ -17,7 +17,10 @@ class PreenchimentoFolhaUseCase:
         self.nl_folha_gw = nl_folha_gw
         self.preenchedor_gw = preenchedor_gw
 
-    def preencher_nls_siggo(self, fundo: str, templates: list[str]):
+    def get_nomes_templates(self, fundo: str):
+        return self.nl_folha_gw.get_nomes_templates(fundo)
+
+    def executar(self, fundo: str, templates: list[str]):
         saldos = self.pagamento_uc.gerar_saldos(fundo)
         dados_preenchimento = self._gerar_dados_para_preenchimento(fundo, templates, saldos)
         self.preenchedor_gw.executar(dados_preenchimento)
