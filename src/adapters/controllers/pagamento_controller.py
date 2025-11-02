@@ -45,13 +45,6 @@ def FolhaPagamentoController(test=False, run=True):
                 )
                 use_case.executar(fundo_para_conferencia)
 
-                # nl_folha_gw = NLFolhaGateway()
-                # pathing_gw = PathingGateway()
-                # caminho_planilha_conferencia = pathing_gw.get_caminho_conferencia()
-                # excel_svc = ExcelService(caminho_planilha_conferencia)
-                # conferencia_gw = ConferenciaGateway(nl_folha_gw, pathing_gw, excel_svc)
-                # use_case = GerarConferenciaUseCase(conferencia_gw)
-
                 app_view.show_message("Conferência gerada com sucesso.")
                 continue
 

@@ -1,6 +1,7 @@
 from typing import Dict, List
 from pandas import DataFrame
-from src.core.gateways.i_conferencia_gateway import IConferenciaGateway
+from core.gateways.i_conferencia_gateway import IConferenciaGateway
+from core.usecases.pagamento_usecase import PagamentoUseCase
 from src.core.gateways.i_nl_folha_gateway import INLFolhaGateway
 
 
@@ -8,34 +9,32 @@ class GerarConferenciaUseCase:
 
     def __init__(
         self,
-        conferencia_gw: IConferenciaGateway,
+        pagamento_uc: PagamentoUseCase,
         nl_folha_gw: INLFolhaGateway,
     ):
-        self.conferencia_gw = conferencia_gw
+        self.pagamento_uc = pagamento_uc
         self.nl_folha_gw = nl_folha_gw
 
     def executar(self, fundo):
-        conferencia_completa = self.conferencia_gw.get_dados_conferencia(fundo)
-        conferencia_ferias = self.conferencia_gw.get_dados_conferencia(
+        conferencia_completa = self.pagamento_uc.get_dados_conferencia(fundo)
+        conferencia_ferias = self.pagamento_uc.get_dados_conferencia(
             fundo, adiantamento_ferias=True
         )
 
-        proventos = self.conferencia_gw.separar_proventos(conferencia_completa)
-        descontos = self.conferencia_gw.separar_descontos(conferencia_completa)
-
-        saldos = self.conferencia_gw.get_saldos(
+        proventos = self.pagamento_uc.separar_proventos(conferencia_completa)
+        descontos = self.pagamento_uc.separar_descontos(conferencia_completa)
+        saldos = self.pagamento_uc.gerar_saldos(
             conferencia_ferias, proventos, descontos
         )
-
         nls_fundo = self._gerar_nls_folha(fundo, saldos)
-
         totais = self._calcular_totais(nls_fundo, proventos, descontos)
+        dados_relatorio = self.pagamento_uc.extrair_dados_relatorio(fundo)
 
-        dados_relatorio = self.conferencia_gw.extrair_dados_relatorio(fundo)
-
-        self.conferencia_gw.salvar_dados_conferencia(proventos, descontos, totais)
-        self.conferencia_gw.salvar_dados_relatorio(dados_relatorio)
-        self.conferencia_gw.salvar_nls_conferencia(nls_fundo)
+        self.pagamento_uc.conferencia_gw.salvar_dados_conferencia(
+            proventos, descontos, totais
+        )
+        self.pagamento_uc.conferencia_gw.salvar_dados_relatorio(dados_relatorio)
+        self.pagamento_uc.conferencia_gw.salvar_nls_conferencia(nls_fundo)
 
     def _calcular_totais(
         self,
@@ -83,7 +82,7 @@ class GerarConferenciaUseCase:
         return totais
 
     def _gerar_nls_folha(self, fundo: str, saldos: dict):
-        nomes_templates = self.conferencia_gw.get_nomes_templates(fundo)
+        nomes_templates = self.pagamento_uc.conferencia_gw.get_nomes_templates(fundo)
         nls = {}
         for template in nomes_templates:
             nls[template] = self.nl_folha_gw.gerar_nl_folha(fundo, template, saldos)

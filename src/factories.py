@@ -1,4 +1,5 @@
 # Importe as classes CONCRETAS de infrastructure
+from src.core.usecases.pagamento_usecase import PagamentoUseCase
 from src.infrastructure.services.preenchimento_gateway import PreenchimentoGateway
 from src.infrastructure.web.siggo_service import SiggoService
 from src.infrastructure.services.nl_folha_gateway import NLFolhaGateway
@@ -24,47 +25,43 @@ class UseCaseFactory:
     com todas as suas dependências.
     """
 
-    def create_gerar_conferencia_use_case(self, fundo: str) -> GerarConferenciaUseCase:
-        """Cria o use case de Geração de Conferência pronto para usar."""
-
-        # 1. Criar dependências de nível mais baixo
+    def create_pagamento_use_case(self, fundo:str) -> PagamentoUseCase:
         pathing_gw: IPathingGateway = PathingGateway()
-        nl_folha_gw: INLFolhaGateway = NLFolhaGateway(pathing_gw)
 
-        # 2. Lógica de configuração
         caminho_planilha_conferencia = pathing_gw.get_caminho_conferencia(fundo)
         excel_svc: IExcelService = ExcelService(caminho_planilha_conferencia)
 
-        # 3. Injetar tudo no ConferenciaGateway
         conferencia_gw: IConferenciaGateway = ConferenciaGateway(
             path_gateway=pathing_gw, excel_svc=excel_svc
         )
 
-        # 4. Montar o Use Case final
-        use_case = GerarConferenciaUseCase(conferencia_gw, nl_folha_gw)
+        use_case = PagamentoUseCase(conferencia_gw)
 
         return use_case
 
-    def create_preenchimento_folha_use_case(self, fundo: str, run=True):
-        # 1. Criar dependências de nível mais baixo
+    def create_gerar_conferencia_use_case(self, fundo: str) -> GerarConferenciaUseCase:
+        """Cria o use case de Geração de Conferência pronto para usar."""
+
         pathing_gw: IPathingGateway = PathingGateway()
         nl_folha_gw: INLFolhaGateway = NLFolhaGateway(pathing_gw)
 
-        # 2. Lógica de configuração
-        caminho_planilha_conferencia = pathing_gw.get_caminho_conferencia(fundo)
-        excel_svc: IExcelService = ExcelService(caminho_planilha_conferencia)
+        pagamento_uc: PagamentoUseCase = self.create_pagamento_use_case(fundo)
 
-        # 3. Injetar tudo no ConferenciaGateway
-        conferencia_gw: IConferenciaGateway = ConferenciaGateway(
-            path_gateway=pathing_gw, excel_svc=excel_svc
-        )
+        use_case = GerarConferenciaUseCase(pagamento_uc, nl_folha_gw)
 
-        # Lógica preenchedor
+        return use_case
+
+    def create_preenchimento_folha_use_case(self, fundo: str, run=True) -> PreenchimentoFolhaUseCase:
+        pathing_gw: IPathingGateway = PathingGateway()
+        nl_folha_gw: INLFolhaGateway = NLFolhaGateway(pathing_gw)
+
+        pagamento_uc: PagamentoUseCase = self.create_pagamento_use_case(fundo)
+
         siggo_service: ISiggoService = SiggoService(run)
         preenchedor_gw: IPreenchimentoGateway = PreenchimentoGateway(siggo_service)
 
         use_case = PreenchimentoFolhaUseCase(
-            conferencia_gw, nl_folha_gw, preenchedor_gw
+            pagamento_uc, nl_folha_gw, preenchedor_gw
         )
 
         return use_case

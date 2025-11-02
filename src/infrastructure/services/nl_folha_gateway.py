@@ -13,7 +13,7 @@ class NLFolhaGateway(INLFolhaGateway):
         """_summary_ Recebe um fundo e o nome de um nome de uma nl e preenche o template encontrado
         com os valores de saldo passados.
         """
-        folha_pagamento = self.carregar_template_nl(fundo, template)
+        folha_pagamento = self._carregar_template_nl(fundo, template)
 
         # Calcula o valor para cada linha
         for idx, row in folha_pagamento.iterrows():
@@ -39,7 +39,7 @@ class NLFolhaGateway(INLFolhaGateway):
 
         return folha_pagamento
 
-    def carregar_template_nl(self, nome_fundo: str, template: str) -> DataFrame:
+    def _carregar_template_nl(self, nome_fundo: str, template: str) -> DataFrame:
         try:
             caminho_completo = self.pathing.get_template_paths(nome_fundo)
             dataframe = pd.read_excel(

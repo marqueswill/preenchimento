@@ -26,44 +26,21 @@ class IConferenciaGateway(ABC):
         pass
 
     @abstractmethod
+    def get_tabela_demofin() -> DataFrame:
+        pass
+
+    @abstractmethod
+    def parse_relatorio(self, fundo: str) -> str:
+        pass
+
+    @abstractmethod
     def salvar_nls_conferencia(self, nls: List[DataFrame]):
-        pass
-
-    @abstractmethod
-    def get_dados_conferencia(
-        self, fundo: str, agrupar=True, adiantamento_ferias=False
-    ):
-        pass
-
-    @abstractmethod
-    def separar_proventos(self, conferencia_rgps_final: DataFrame) -> DataFrame:
-        pass
-
-    @abstractmethod
-    def separar_descontos(self, conferencia_rgps_final: DataFrame) -> DataFrame:
-        pass
-
-    @abstractmethod
-    def get_saldos(
-        self,
-        dados_conferencia_ferias: DataFrame,
-        dados_proventos: DataFrame,
-        dados_descontos: DataFrame,
-    ) -> dict[str, dict]:
-        pass
-
-    @abstractmethod
-    def gerar_saldos(fundo: str) -> dict[str, dict]:
         pass
 
     @abstractmethod
     def salvar_dados_conferencia(
         self, proventos: DataFrame, descontos: DataFrame, totais: DataFrame
     ):
-        pass
-
-    @abstractmethod
-    def extrair_dados_relatorio(self, fundo: str) -> DataFrame:
         pass
 
     @abstractmethod

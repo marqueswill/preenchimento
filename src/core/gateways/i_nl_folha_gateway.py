@@ -17,9 +17,5 @@ class INLFolhaGateway:
         pass
 
     @abstractmethod
-    def carregar_template_nl(self, nome_fundo: str, template: str) -> DataFrame:
-        pass
-
-    @abstractmethod
     def carregar_cabecalho(self, nome_fundo, template) -> DataFrame:
         pass
