@@ -1,18 +1,16 @@
 import pytest
-import pandas as pd
-from pandas.testing import assert_frame_equal
-from unittest.mock import MagicMock
 import os
 
 # Importações das suas classes
 from src.infrastructure.services.conferencia_gateway import ConferenciaGateway
 from src.core.gateways.i_pathing_gateway import IPathingGateway
 from src.core.gateways.i_excel_service import IExcelService
+from tests.mocks.excel_service_mock import ExcelServiceMock
 from tests.mocks.pathing_gateway_mock import PathingGatewayMock
 
 
 @pytest.fixture
-def gateway_com_mocks(mocker) -> tuple[ConferenciaGateway, IPathingGateway, MagicMock]:
+def gateway_com_mocks(mocker) -> tuple[ConferenciaGateway, IPathingGateway, IExcelService]:
     """
     Cria uma instância real do ConferenciaGateway, 
     injetando mocks para suas dependências de construtor.
@@ -20,7 +18,7 @@ def gateway_com_mocks(mocker) -> tuple[ConferenciaGateway, IPathingGateway, Magi
     # 1. Cria os mocks para as interfaces
     # pathing_gw_mock = mocker.MagicMock(spec=IPathingGateway)
     pathing_gw_mock = PathingGatewayMock()
-    excel_svc_mock = mocker.MagicMock(spec=IExcelService)
+    excel_svc_mock = ExcelServiceMock(pathing_gw_mock.get_caminho_conferencia("RGPS"))
 
     # 2. Cria a instância real do Gateway com os mocks injetados
     gateway = ConferenciaGateway(

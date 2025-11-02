@@ -19,7 +19,11 @@ class PathingGatewayMock(IPathingGateway):
         )
 
     def get_caminho_conferencia(self, fundo: str):
-        pass
+        return os.path.join(
+            self.get_secon_root_path(),
+            "CONFERÊNCIAS",
+            f"CONFERÊNCIA_{fundo.upper()}.xlsx",
+        )
 
     def get_caminho_pasta_folha(self):
         pass
@@ -35,4 +39,3 @@ class PathingGatewayMock(IPathingGateway):
             self.get_secon_root_path(),
             "RELATÓRIOS - ATIVOS.pdf",
         )
-

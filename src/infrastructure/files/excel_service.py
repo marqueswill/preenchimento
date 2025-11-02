@@ -9,8 +9,10 @@ from openpyxl import Workbook, load_workbook
 from openpyxl.utils import column_index_from_string, get_column_letter
 from openpyxl.styles import PatternFill, Font, Border, Side
 
+from src.core.gateways.i_excel_service import IExcelService
 
-class ExcelService:
+
+class ExcelService(IExcelService):
     def __init__(self, caminho_arquivo):
         self.caminho_arquivo = caminho_arquivo
         self.workbook = self._get_workbook()
