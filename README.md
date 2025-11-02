@@ -1,5 +1,5 @@
 ### Venv
-`python3 -m venv venv`
+`python -m venv venv`
 
 windows:
 `venv\Scripts\Activate.ps1`
@@ -7,7 +7,7 @@ windows:
 ### Dependências
 
 Dev and client:
-`pip install selenium pandas openpyxl PyPDF2 pywin32 pyinstaller`
+`pip install -r requirements.txt`
 
 
 ### Gerando executável
