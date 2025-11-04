@@ -9,7 +9,7 @@ class IPathingGateway(ABC):
         pass
 
     @abstractmethod
-    def get_template_paths(self, tipo_folha: str) -> str:
+    def get_caminho_template(self, tipo_folha: str) -> str:
         pass
 
     @abstractmethod

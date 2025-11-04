@@ -9,35 +9,15 @@ from src.core.gateways.i_nl_folha_gateway import INLFolhaGateway
 class NLFolhaGateway(INLFolhaGateway):
 
     def get_nomes_templates(self, fundo: str) -> List[str]:
-        caminho_raiz = (
-            self.pathing_gw.get_root_path()
-            + f"SECON - General\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_{ANO_ATUAL}\\TEMPLATES\\"
-        )
+        caminho_template = self.pathing_gw.get_caminho_template(fundo)
+        template_excel = pd.ExcelFile(caminho_template)
+        nomes_nls = template_excel.sheet_names
 
-        # Carrega as planilhas de templates
-        excel_rgps = pd.ExcelFile(caminho_raiz + "TEMPLATES_NL_RGPS.xlsx")
-        excel_financeiro = pd.ExcelFile(caminho_raiz + "TEMPLATES_NL_FINANCEIRO.xlsx")
-        excel_capitalizado = pd.ExcelFile(
-            caminho_raiz + "TEMPLATES_NL_CAPITALIZADO.xlsx"
-        )
-
-        # Carrega todos os templates das NLs
-        templates_rgps = excel_rgps.sheet_names
-        templates_financeiro = excel_financeiro.sheet_names
-        templates_capitalizado = excel_capitalizado.sheet_names
-
-        # Categoriza os templates das NLs
-        nomes_templates = {
-            "RGPS": templates_rgps,
-            "FINANCEIRO": templates_financeiro,
-            "CAPITALIZADO": templates_capitalizado,
-        }
-
-        return nomes_templates[fundo]
+        return nomes_nls
 
     def carregar_template_nl(self, nome_fundo: str, template: str) -> DataFrame:
         try:
-            caminho_completo = self.pathing_gw.get_template_paths(nome_fundo)
+            caminho_completo = self.pathing_gw.get_caminho_template(nome_fundo)
             dataframe = pd.read_excel(
                 caminho_completo,
                 header=6,
@@ -58,7 +38,7 @@ class NLFolhaGateway(INLFolhaGateway):
 
     def carregar_cabecalho(self, nome_fundo, template) -> DataFrame:
         try:
-            caminho_completo = self.pathing_gw.get_template_paths(nome_fundo)
+            caminho_completo = self.pathing_gw.get_caminho_template(nome_fundo)
             dataframe = pd.read_excel(
                 caminho_completo,
                 header=None,

@@ -11,8 +11,6 @@ from src.config import *
 from src.core.gateways.i_conferencia_gateway import IConferenciaGateway
 
 
-# TODO: Emburrecer o gateway:
-# mover processamento, lógica de negócio e orquestrações para usecase, manter somente I/O
 class ConferenciaGateway(IConferenciaGateway):
 
     def get_tabela_demofin(self):
@@ -33,7 +31,7 @@ class ConferenciaGateway(IConferenciaGateway):
                     text += extracted_text.replace("\n", " ").replace("  ", " ")
                 else:
                     break
-        print(text)
+
         file.close()
         return text
 

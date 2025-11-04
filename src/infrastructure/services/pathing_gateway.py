@@ -25,7 +25,7 @@ class PathingGateway(IPathingGateway):
             )
         return caminho_raiz
 
-    def get_template_paths(self, tipo_folha: str) -> str:
+    def get_caminho_template(self, tipo_folha: str) -> str:
         return (
             self.get_secon_root_path()
             + f"SECON - General\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_{ANO_ATUAL}\\TEMPLATES\\TEMPLATES_NL_{tipo_folha.upper()}.xlsx"

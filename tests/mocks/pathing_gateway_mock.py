@@ -11,18 +11,18 @@ class PathingGatewayMock(IPathingGateway):
 
         return fixtures_path
 
-    def get_template_paths(self, tipo_folha: str) -> str:
+    def get_caminho_template(self, fundo: str) -> str:
         return os.path.join(
             self.get_secon_root_path(),
             "TEMPLATES",
-            f"TEMPLATES_NL_{tipo_folha.upper()}.xlsx",
+            f"TEMPLATES_NL_{fundo.upper()}.xlsx",
         )
 
     def get_caminho_conferencia(self, fundo: str):
         return os.path.join(
             self.get_secon_root_path(),
             "CONFERÊNCIAS",
-            f"CONFERÊNCIA_{fundo.upper()}.xlsx",
+            f"CONFERÊNCIA_{fundo.upper()}_TEST.xlsx",
         )
 
     def get_caminho_pasta_folha(self):
@@ -39,3 +39,12 @@ class PathingGatewayMock(IPathingGateway):
             self.get_secon_root_path(),
             "RELATÓRIOS - ATIVOS.pdf",
         )
+
+    def get_caminho_conferencia_esperada(self, fundo: str) -> str:
+        return os.path.join(
+            self.get_secon_root_path(),
+            "expected",
+            f"CONFERÊNCIA_{fundo.upper()}.xlsx",
+        )
+
+    
