@@ -99,20 +99,48 @@ class PreenchimentoGateway(IPreenchimentoGateway):
     def extrair_dados_preenchidos(self) -> list[dict[str, DataFrame]]:
         """
         Orquestra a extração de dados do cabeçalho e da tabela de lançamentos
-        da página de NL.
+        de TODAS AS ABAS de NL abertas.
 
-        Retorna um dicionário contendo os dados do cabeçalho e um
-        DataFrame com os lançamentos.
+        Retorna uma LISTA, onde cada item é um dicionário contendo
+        'cabecalho' (Dict[str, str]) e 'lancamentos' (DataFrame) de uma aba.
         """
-        # TODO: modificar para iterar sobre abas e retornar um dicionário com todos os dados
+        driver = self.siggo_driver.driver
+        todos_os_dados_abas = []
 
-        nl_data_df = self._extrair_dados_nl()
-        cabecalho_data = self._extrair_dados_cabecalho()
-        print("\n\n")
-        print(nl_data_df)
-        print("\n\n")
-        print(cabecalho_data)
-        return
+        try:
+            handles_abas = driver.window_handles
+            print(f"Encontradas {len(handles_abas)} abas para extração.")
+
+            # O método 'executar' pode ter fechado a primeira aba.
+            # Este loop itera sobre todas as abas restantes.
+            for i, handle in enumerate(handles_abas):
+                driver.switch_to.window(handle)
+                print(f"Mudando para aba {i+1}/{len(handles_abas)} (Handle: {handle})")
+
+                # Extrai os dados da aba atual
+                cabecalho_data = self._extrair_dados_cabecalho()
+                nl_data_df = self._extrair_dados_nl()
+
+                dados_da_aba = {
+                    "cabecalho": cabecalho_data,
+                    "lancamentos": nl_data_df,
+                }
+
+                todos_os_dados_abas.append(dados_da_aba)
+
+                # Prints de depuração para cada aba
+                print(f"\n--- Dados Extraídos (Aba {i+1}) ---")
+                print("Cabeçalho:", cabecalho_data)
+                print("Lançamentos (DataFrame):")
+                print(nl_data_df)
+                print("----------------------------------\n")
+
+        except Exception as e:
+            print(f"Erro ao iterar sobre as abas e extrair dados: {e}")
+            # Retorna o que foi coletado até agora
+            return todos_os_dados_abas
+
+        return todos_os_dados_abas
 
     def _extrair_dados_cabecalho(self) -> Dict[str, str]:
         """

@@ -18,16 +18,14 @@ def test_preenchimento_folha_usecase(mocker, nome_fundo):
 
     dados_gerados = preenchimento_uc.executar(nome_fundo, templates)
     dados_preenchidos = preenchimento_uc.get_dados_preenchidos()
-    # print(dados_preenchidos["SUBSTITUICOES"]["folha"])
-    # try:
-    #     for template in dados_gerados.keys():
-    #         nl_gerada = dados_gerados[template]["folha"]
-    #         nl_preenchida = dados_preenchidos[template]["folha"]
-    #         cabecalho_gerado = dados_gerados[template]["cabecalho"]
-    #         cabecalho_preenchido = dados_preenchidos[template]["cabecalho"]
 
-    #         pd_testing.assert_frame_equal(nl_gerada, nl_preenchida)
-    #         pd_testing.assert_frame_equal(cabecalho_gerado, cabecalho_preenchido)
+    try:
+        for dados in dados_gerados.values():
+            nl_gerada = dados["folha"]
+            cabecalho_gerado = dados_gerados["cabecalho"]
 
-    # except AssertionError as e:
-    #     pytest.fail(f"DataFrame comparison failed:\n{e}")
+            # TODO: verificar se os dataframes gerados batem com algum dos que foram preenchidos
+            # Retirar da lista dos preenchidos se houver match
+
+    except AssertionError as e:
+        pytest.fail(f"DataFrame comparison failed:\n{e}")

@@ -30,7 +30,7 @@ class IPreenchimentoGateway(ABC):
     def preparar_preenchimento_nl(self, dados):
         pass
 
-    def extrair_dados_preenchidos(self) -> dict[str, dict[str, DataFrame]]:
+    def extrair_dados_preenchidos(self) -> list[dict[str, DataFrame]]:
         pass
         # Iterar sobre as abas abertas no navegador
         # Extrair os dados preenchidos de cada aba

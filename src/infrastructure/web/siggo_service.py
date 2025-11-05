@@ -121,6 +121,7 @@ class SiggoService(ISiggoService):
         self.driver.execute_script("window.open('');")
         abas = self.driver.window_handles
         self.driver.switch_to.window(abas[-1])
+        time.sleep(1)
 
     def acessar_link(self, link):
         self.driver.get(link)

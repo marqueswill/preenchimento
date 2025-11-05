@@ -16,7 +16,7 @@ class PreenchimentoFolhaUseCase:
     def get_nomes_templates(self, fundo: str):
         return self.pagamento_uc.nl_folha_gw.get_nomes_templates(fundo)
 
-    def get_dados_preenchidos(self) -> dict[str, dict[str, DataFrame]]:
+    def get_dados_preenchidos(self) -> list[dict[str, DataFrame]]:
         return self.preenchedor_gw.extrair_dados_preenchidos()
 
     def executar(
