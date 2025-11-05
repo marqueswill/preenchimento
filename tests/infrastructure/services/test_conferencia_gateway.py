@@ -11,7 +11,7 @@ def test_get_tabela_demofin_deve_ler_excel_corretamente(mocker):
     e se os cabeçalhos (headers) estão corretos.
     """
 
-    factory = GatewayFactoryMock()
+    factory = GatewayFactoryMock(mocker)
     gateway = factory.create_conferecia_gateway()
 
     expected_headers = [
@@ -34,13 +34,12 @@ def test_get_tabela_demofin_deve_ler_excel_corretamente(mocker):
     assert actual_headers == expected_headers
 
 
-
 def test_parse_relatorio_deve_ler_pdf_corretamente(mocker):
     """
     Testa (Integração) se o gateway consegue ler um arquivo PDF real.
     """
     # Arrange
-    factory = GatewayFactoryMock()
+    factory = GatewayFactoryMock(mocker)
     conferencia_gw = factory.create_conferecia_gateway()
     pathing_gw = factory.create_pathing_gateway()
 

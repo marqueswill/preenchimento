@@ -33,7 +33,7 @@ class UseCaseFactory:
         excel_svc: IExcelService = ExcelService(caminho_planilha_conferencia)
 
         conferencia_gw: IConferenciaGateway = ConferenciaGateway(
-            path_gateway=pathing_gw, excel_svc=excel_svc
+            pathing_gw=pathing_gw, excel_svc=excel_svc
         )
         nl_folha_gw: INLFolhaGateway = NLFolhaGateway(pathing_gw)
 
@@ -49,11 +49,11 @@ class UseCaseFactory:
         return use_case
 
     def create_preenchimento_folha_use_case(
-        self, fundo: str, run=True
+        self, fundo: str
     ) -> PreenchimentoFolhaUseCase:
         pagamento_uc: PagamentoUseCase = self.create_pagamento_use_case(fundo)
 
-        siggo_service: ISiggoService = SiggoService(run)
+        siggo_service: ISiggoService = SiggoService()
         preenchedor_gw: IPreenchimentoGateway = PreenchimentoGateway(siggo_service)
 
         use_case = PreenchimentoFolhaUseCase(pagamento_uc, preenchedor_gw)

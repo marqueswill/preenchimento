@@ -50,7 +50,7 @@ def FolhaPagamentoController(test=False, run=True):
 
             # Model: Obtém os caminhos dos templates
             use_case = factory.create_preenchimento_folha_use_case(
-                tipo_folha_selecionado, run=True
+                tipo_folha_selecionado
             )
             nomes_templates = use_case.get_nomes_templates(tipo_folha_selecionado)
 
@@ -74,7 +74,7 @@ def FolhaPagamentoController(test=False, run=True):
 
             app_view.show_processing_message("Iniciando o processamento")
 
-            use_case.preencher_nls_siggo(tipo_folha_selecionado, templates_selecionados)
+            use_case.executar(tipo_folha_selecionado, templates_selecionados)
 
             app_view.show_message("Processamento concluído.")
             sys.exit()
@@ -85,5 +85,3 @@ def FolhaPagamentoController(test=False, run=True):
             continue
 
 
-if __name__ == "__main__":
-    FolhaPagamentoController()

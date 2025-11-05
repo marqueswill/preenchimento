@@ -15,9 +15,10 @@ DATA_METHODS_TO_TEST = [
 
 FUNDOS_TO_TEST = ["RGPS", "FINANCEIRO", "CAPITALIZADO"]
 
+
 def get_data_for_comparison(excel_svc, excel_svc_gabarito, method_name):
     """
-    Chama os métodos forncidos para planilha excel gerada e para a planilha
+    Chama os métodos fornecidos para planilha excel gerada e para a planilha
     de gabarito
     """
 
@@ -32,11 +33,9 @@ def get_data_for_comparison(excel_svc, excel_svc_gabarito, method_name):
 
 @pytest.mark.parametrize("method_name", DATA_METHODS_TO_TEST)
 @pytest.mark.parametrize("nome_fundo", FUNDOS_TO_TEST)
-
-
-def test_gerar_conferencia_rgps_usecase(mocker, method_name, nome_fundo):
-    factory_uc = UseCaseFactoryMock()
-    factory_gw = GatewayFactoryMock()
+def test_gerar_conferencia_usecase(mocker, method_name, nome_fundo):
+    factory_uc = UseCaseFactoryMock(mocker)
+    factory_gw = GatewayFactoryMock(mocker)
     conferencia_uc = factory_uc.create_gerar_conferencia_use_case(nome_fundo)
     pathing_gw = factory_gw.create_pathing_gateway()
 
@@ -53,6 +52,6 @@ def test_gerar_conferencia_rgps_usecase(mocker, method_name, nome_fundo):
 
     try:
         pd_testing.assert_frame_equal(actual_df, expected_df)
-        
+
     except AssertionError as e:
         pytest.fail(f"DataFrame comparison failed for {method_name}:\n{e}")

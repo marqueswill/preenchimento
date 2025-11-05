@@ -4,7 +4,6 @@ from pandas import DataFrame
 
 from src.core.gateways.i_excel_service import IExcelService
 from src.core.gateways.i_pathing_gateway import IPathingGateway
-from src.core.gateways.i_nl_folha_gateway import INLFolhaGateway
 
 
 class IConferenciaGateway(ABC):

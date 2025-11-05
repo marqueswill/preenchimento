@@ -1,13 +1,15 @@
 from abc import ABC, abstractmethod
 
 
-# Fiz isso pra conseguir personalizar os caminhos durante os testes
 class ISiggoService(ABC):
-    def __init__(self):
-        super().__init__()
+    """_summary_ Faz a interação com o sistema Siggo.
+
+    Args:
+        ABC (_type_): _description_
+    """
 
     @abstractmethod
-    def start(self, run=True, test=False):
+    def start(self):
         pass
 
     @abstractmethod

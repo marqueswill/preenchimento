@@ -20,15 +20,10 @@ class SiggoService(ISiggoService):
     Driver para automação e interação com o SIGGO
     """
 
-    def __init__(self, run = True):
-        self.run = run
-        super().__init__()
-
-    def start(self, run=True, test=False):
+    def start(self):
         self.setup_pandas()
         self.setup_driver()
-        if run:
-            self.esperar_login()
+        self.esperar_login()
 
     def setup_pandas(self):
         pd.set_option("display.max_rows", None)
@@ -51,9 +46,6 @@ class SiggoService(ISiggoService):
 
     # Métodos controle de login
     def login_siggo(self, cpf, password):
-        if not self.run:
-            return
-
         url = "https://siggo.fazenda.df.gov.br/Account/Login"
         self.driver.get(url)
 
@@ -68,6 +60,7 @@ class SiggoService(ISiggoService):
             password,
         )
         self.driver.find_element(By.XPATH, button_selector).click()
+        time.sleep(2)
 
     def esperar_login(self, timeout=300):
         url = "https://siggo.fazenda.df.gov.br/Account/Login"
