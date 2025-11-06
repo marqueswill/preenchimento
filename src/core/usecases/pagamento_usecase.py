@@ -353,7 +353,7 @@ class PagamentoUseCase:
             somar = row.get("SOMAR", [])
             subtrair = row.get("SUBTRAIR", [])
             tipo = (
-                "ATIVO" if row.get("TIPO", "") in {"", "nan"} else row.get("TIPO", "")
+                "ATIVO" if row.get("TIPO", "") in {"", "nan","."} else row.get("TIPO", "")
             )
 
             if tipo == "MANUAL":

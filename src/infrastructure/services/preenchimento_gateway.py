@@ -71,7 +71,7 @@ class PreenchimentoGateway(IPreenchimentoGateway):
         delete_button = '//*[@id="ui-fieldset-0-content"]/div/div/div[1]/div/table/tbody/tr/td[7]/button'
         driver = self.siggo_driver.driver
         try:
-            wait = WebDriverWait(driver, 5)
+            wait = WebDriverWait(driver, 2)
             botao_remover = wait.until(
                 EC.element_to_be_clickable((By.XPATH, delete_button))
             )
@@ -228,7 +228,7 @@ class PreenchimentoGateway(IPreenchimentoGateway):
 
                     # Usa os nomes das colunas para popular o dicionário
                     nome_coluna = colunas[j - 1]
-                    linha_dados[nome_coluna] = valor
+                    linha_dados[nome_coluna] = valor if valor not in [None, ""] else "."
 
                 dados_coletados.append(linha_dados)
 
@@ -248,6 +248,7 @@ class PreenchimentoGateway(IPreenchimentoGateway):
                 .str.replace(".", "", regex=False)
                 .str.replace(",", ".")
                 .astype(float)
+                .replace(0.0, 0.000001)
             )
 
         return df
