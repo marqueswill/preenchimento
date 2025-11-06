@@ -27,12 +27,12 @@ class SiggoServiceMock(SiggoService):
     def setup_driver(self):
         options = webdriver.ChromeOptions()
         options.add_argument("--start-maximized")
+        options.add_argument("--headless")
         options.add_experimental_option("detach", True)
         options.add_argument("--log-level=3")  # Suppress Chrome logs
         options.add_argument("--silent")
 
         self.driver = webdriver.Chrome(options=options)
-
 
     def get_siggo_credentials(self) -> tuple[str, str]:
         try:

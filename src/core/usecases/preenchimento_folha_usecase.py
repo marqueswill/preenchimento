@@ -19,25 +19,29 @@ class PreenchimentoFolhaUseCase:
     def get_dados_preenchidos(self) -> list[dict[str, DataFrame]]:
         return self.preenchedor_gw.extrair_dados_preenchidos()
 
-    def executar(
-        self, fundo: str, templates: list[str]
-    ) -> dict[str, dict[str, DataFrame]]:
+    def executar(self, fundo: str, templates: list[str]) -> list[dict[str, DataFrame]]:
         saldos = self.pagamento_uc.get_saldos(fundo)
-        dados_gerados = self._gerar_dados_para_preenchimento(
-            fundo, templates, saldos
-        )
+        dados_gerados = self._gerar_dados_para_preenchimento(fundo, templates, saldos)
         self.preenchedor_gw.executar(dados_gerados)
         return dados_gerados
 
     def _gerar_dados_para_preenchimento(
         self, fundo: str, nomes_templates: list[str], saldos: dict
-    ) -> dict[str, dict[str, DataFrame]]:
-        folhas = {}
+    ) -> list[dict[str, DataFrame]]:
+        folhas = []
         for template in nomes_templates:
-            folhas[template] = {
-                "cabecalho": self.pagamento_uc.nl_folha_gw.carregar_cabecalho(
-                    fundo, template
-                ),
-                "folha": self.pagamento_uc.gerar_nl_folha(fundo, template, saldos),
-            }
+            cabecalho = self.pagamento_uc.nl_folha_gw.carregar_cabecalho(
+                fundo, template
+            )
+            folha = self.pagamento_uc.gerar_nl_folha(fundo, template, saldos)
+
+            if folha.empty:
+                continue
+
+            folhas.append(
+                {
+                    "cabecalho": cabecalho,
+                    "folha": folha,
+                }
+            )
         return folhas

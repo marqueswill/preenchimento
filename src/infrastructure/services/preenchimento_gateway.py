@@ -3,6 +3,9 @@ from pandas import DataFrame
 import pandas as pd
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
 
 from src.core.gateways.i_preenchimento_gateway import IPreenchimentoGateway
 from src.config import *
@@ -10,12 +13,12 @@ from src.config import *
 
 class PreenchimentoGateway(IPreenchimentoGateway):
 
-    def executar(self, dados: dict[str, dict[str, DataFrame]]):
+    def executar(self, dados: list[dict[str, DataFrame]]):
         self.siggo_driver.start()
         link_lancamento_nl = (
             f"https://siggo.fazenda.df.gov.br/{ANO_ATUAL}/afc/nota-de-lancamento"
         )
-        for dado in dados.values():
+        for dado in dados:
             # feito assim para não ter que fazer login para cada folha
             folha = dado["folha"]
             template = dado["cabecalho"]
@@ -27,6 +30,7 @@ class PreenchimentoGateway(IPreenchimentoGateway):
             for dados_lancamentos in dados_por_pagina:
                 self.siggo_driver.nova_aba()
                 self.siggo_driver.acessar_link(link_lancamento_nl)
+                self._remove_first_row()
 
                 campos_cabecalho = self.preparar_preechimento_cabecalho(template)
                 self.siggo_driver.selecionar_opcoes(campos_cabecalho["opcoes"])
@@ -63,15 +67,28 @@ class PreenchimentoGateway(IPreenchimentoGateway):
             },
         }
 
-    def preparar_preenchimento_nl(self, dados):
+    def _remove_first_row(self):
         delete_button = '//*[@id="ui-fieldset-0-content"]/div/div/div[1]/div/table/tbody/tr/td[7]/button'
-        self.siggo_driver.driver.find_element(By.XPATH, delete_button).click()
+        driver = self.siggo_driver.driver
+        try:
+            wait = WebDriverWait(driver, 5)
+            botao_remover = wait.until(
+                EC.element_to_be_clickable((By.XPATH, delete_button))
+            )
+            botao_remover.click()
 
+        except TimeoutException:
+            print(
+                f"ERRO: O botão 'Remover' ({delete_button}) não ficou clicável a tempo."
+            )
+            raise
+
+    def preparar_preenchimento_nl(self, dados):
         linhas = dados.shape[0]
         campos = {}
-
+        driver = self.siggo_driver.driver
         for i in range(linhas):
-            self.siggo_driver.driver.find_element(
+            driver.find_element(
                 By.XPATH, '//*[@id="incluirCampoLancamentos"]'
             ).click()
 
@@ -100,44 +117,28 @@ class PreenchimentoGateway(IPreenchimentoGateway):
         """
         Orquestra a extração de dados do cabeçalho e da tabela de lançamentos
         de TODAS AS ABAS de NL abertas.
-
-        Retorna uma LISTA, onde cada item é um dicionário contendo
-        'cabecalho' (Dict[str, str]) e 'lancamentos' (DataFrame) de uma aba.
         """
         driver = self.siggo_driver.driver
         todos_os_dados_abas = []
 
         try:
             handles_abas = driver.window_handles
-            print(f"Encontradas {len(handles_abas)} abas para extração.")
 
-            # O método 'executar' pode ter fechado a primeira aba.
-            # Este loop itera sobre todas as abas restantes.
             for i, handle in enumerate(handles_abas):
                 driver.switch_to.window(handle)
-                print(f"Mudando para aba {i+1}/{len(handles_abas)} (Handle: {handle})")
 
-                # Extrai os dados da aba atual
                 cabecalho_data = self._extrair_dados_cabecalho()
                 nl_data_df = self._extrair_dados_nl()
 
                 dados_da_aba = {
                     "cabecalho": cabecalho_data,
-                    "lancamentos": nl_data_df,
+                    "folha": nl_data_df,
                 }
 
                 todos_os_dados_abas.append(dados_da_aba)
 
-                # Prints de depuração para cada aba
-                print(f"\n--- Dados Extraídos (Aba {i+1}) ---")
-                print("Cabeçalho:", cabecalho_data)
-                print("Lançamentos (DataFrame):")
-                print(nl_data_df)
-                print("----------------------------------\n")
-
         except Exception as e:
             print(f"Erro ao iterar sobre as abas e extrair dados: {e}")
-            # Retorna o que foi coletado até agora
             return todos_os_dados_abas
 
         return todos_os_dados_abas
@@ -232,11 +233,6 @@ class PreenchimentoGateway(IPreenchimentoGateway):
                 dados_coletados.append(linha_dados)
 
             except Exception as e:
-                # Pode falhar se a linha não tiver 6 inputs (ex: linha de delete)
-                # O `preparar_preenchimento_nl` clica no delete, então a primeira
-                # linha pode não existir mais no formato esperado.
-                # A extração assume que a linha 1 foi deletada e a nova linha 1 é a primeira
-                # de dados.
                 print(f"Aviso: Não foi possível ler a linha {i} da tabela. Erro: {e}")
                 continue
 
