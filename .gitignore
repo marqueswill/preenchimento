@@ -9,3 +9,6 @@ __pycache__/
 
 venv/
 .env
+
+secret.key
+credentials.enc
