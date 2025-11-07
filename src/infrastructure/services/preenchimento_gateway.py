@@ -68,10 +68,16 @@ class PreenchimentoGateway(IPreenchimentoGateway):
         }
 
     def _remove_first_row(self):
+
         delete_button = '//*[@id="ui-fieldset-0-content"]/div/div/div[1]/div/table/tbody/tr/td[7]/button'
         driver = self.siggo_driver.driver
         try:
             wait = WebDriverWait(driver, 2)
+            wait.until(
+                EC.invisibility_of_element_located(
+                    (By.CLASS_NAME, "preloader-backdrop")
+                )
+            )
             botao_remover = wait.until(
                 EC.element_to_be_clickable((By.XPATH, delete_button))
             )
@@ -88,9 +94,13 @@ class PreenchimentoGateway(IPreenchimentoGateway):
         campos = {}
         driver = self.siggo_driver.driver
         for i in range(linhas):
-            driver.find_element(
-                By.XPATH, '//*[@id="incluirCampoLancamentos"]'
-            ).click()
+            include_button = '//*[@id="incluirCampoLancamentos"]'
+
+            wait = WebDriverWait(driver, 2)
+            botao_incluir = wait.until(
+                EC.element_to_be_clickable((By.XPATH, include_button))
+            )
+            botao_incluir.click()
 
             evento = dados.iloc[i]["EVENTO"]
             inscricao = dados.iloc[i]["INSCRIÇÃO"]

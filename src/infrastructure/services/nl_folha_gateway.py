@@ -25,7 +25,9 @@ class NLFolhaGateway(INLFolhaGateway):
                 usecols="A:I",
                 dtype=str,
             ).astype(str)
-            dataframe = dataframe.replace(r"\s+", "", regex=True)
+            
+            # dataframe = dataframe.replace(r"\s+", "", regex=True)
+
             dataframe.replace(["nan",""], ".", inplace=True)
             dataframe["CLASS. ORC"] = (
                 dataframe["CLASS. ORC"]
