@@ -15,40 +15,50 @@ class NLFolhaGateway(INLFolhaGateway):
 
         return nomes_nls
 
-    def carregar_template_nl(self, nome_fundo: str, template: str) -> DataFrame:
+    def carregar_template_nl(
+        self, caminho_completo: str, template: str, incluir_calculos=True
+    ) -> DataFrame:
         try:
-            caminho_completo = self.pathing_gw.get_caminho_template(nome_fundo)
+
             dataframe = pd.read_excel(
                 caminho_completo,
                 header=6,
                 sheet_name=template,
-                usecols="A:I",
+                usecols="A:I" if incluir_calculos else "A:F",
                 dtype=str,
             ).astype(str)
-            
+
             # dataframe = dataframe.replace(r"\s+", "", regex=True)
 
-            dataframe.replace(["nan",""], ".", inplace=True)
+            dataframe.replace(["nan", ""], ".", inplace=True)
             dataframe["CLASS. ORC"] = (
                 dataframe["CLASS. ORC"]
                 .apply(lambda x: x[1:] if len(x) == 9 else x)
                 .astype(str)
             )
-            dataframe["VALOR"] = 0.0
+            # dataframe["VALOR"] = 0.0
             return dataframe
         except Exception as e:
-            print("Feche todas planilhas de template e tente novamente.")
+            print("Feche todas planilhas de template e tente novamente.", e)
 
-    def carregar_cabecalho(self, nome_fundo, template) -> DataFrame:
+    def carregar_cabecalho(self, caminho_completo: str, template: str) -> DataFrame:
         try:
-            caminho_completo = self.pathing_gw.get_caminho_template(nome_fundo)
+            # dataframe = pd.read_excel(
+            #     caminho_completo,
+            #     header=None,
+            #     sheet_name=template,
+            #     usecols="A:I",
+            # ).astype(str)
             dataframe = pd.read_excel(
                 caminho_completo,
-                header=None,
                 sheet_name=template,
-                usecols="A:I",
+                dtype=str,
+                header=None,
             ).astype(str)
-
             return dataframe
-        except:
-            print("Feche as planilhas de template e tente novamente.")
+        except Exception as e:
+            print("Feche as planilhas de template e tente novamente.", e)
+
+    def listar_abas(self, caminho_arquivo: str) -> List[str]:
+        xls = pd.ExcelFile(caminho_arquivo)
+        return xls.sheet_names

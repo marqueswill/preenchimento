@@ -1,4 +1,6 @@
 # Use Cases
+from src.infrastructure.web.siggo_service import SiggoService
+from src.core.usecases.preenchimento_nl_usecase import PreenchimentoNLUseCase
 from src.core.usecases.gerar_conferencia_usecase import GerarConferenciaUseCase
 from src.core.usecases.preenchimento_folha_usecase import PreenchimentoFolhaUseCase
 from src.core.usecases.pagamento_usecase import PagamentoUseCase
@@ -65,6 +67,17 @@ class UseCaseFactoryMock:
         preenchedor_gw = PreenchimentoGatewayMock(siggo_service)
 
         use_case = PreenchimentoFolhaUseCase(pagamento_uc, preenchedor_gw)
+
+        return use_case
+
+    def create_preenchimento_nl_use_case(self) -> PreenchimentoNLUseCase:
+        pathing_gw: IPathingGateway = PathingGatewayMock()
+        nl_folha_gw: INLFolhaGateway = NLFolhaGatewayMock(pathing_gw)
+
+        siggo_service: ISiggoService = SiggoServiceMock()
+        preenchedor_gw: IPreenchimentoGateway = PreenchimentoGatewayMock(siggo_service)
+
+        use_case = PreenchimentoNLUseCase(nl_folha_gw, preenchedor_gw)
 
         return use_case
 

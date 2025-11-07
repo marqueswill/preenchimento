@@ -1,4 +1,5 @@
 import re
+import sys
 from src.config import *
 from src.core.gateways.i_pathing_gateway import IPathingGateway
 
@@ -94,3 +95,14 @@ class PathingGateway(IPathingGateway):
             raise FileNotFoundError(
                 "Nenhum arquivo PDF começando com 'RELATÓRIOS' foi encontrado."
             )
+
+    def get_current_file_path(self) -> str:
+        diretorio_atual = os.path.dirname(os.path.abspath(sys.argv[0]))
+        return diretorio_atual
+
+    def listar_arquivos(self, caminho: str) -> list[str]:
+        try:
+            arquivos = os.listdir(caminho)
+            return arquivos
+        except FileNotFoundError:
+            raise FileNotFoundError(f"O caminho especificado '{caminho}' não foi encontrado.")

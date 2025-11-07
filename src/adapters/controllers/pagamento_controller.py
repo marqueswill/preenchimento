@@ -85,3 +85,5 @@ def FolhaPagamentoController(test=False, run=True):
             continue
 
 
+if __name__ == "__main__":
+    FolhaPagamentoController()
