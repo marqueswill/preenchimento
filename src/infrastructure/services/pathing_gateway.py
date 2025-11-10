@@ -105,4 +105,19 @@ class PathingGateway(IPathingGateway):
             arquivos = os.listdir(caminho)
             return arquivos
         except FileNotFoundError:
-            raise FileNotFoundError(f"O caminho especificado '{caminho}' não foi encontrado.")
+            raise FileNotFoundError(
+                f"O caminho especificado '{caminho}' não foi encontrado."
+            )
+
+    def get_caminhos_nes_diaria(self, arquivos_selecionados: list[str]) -> list[str]:
+        dir_path = os.path.join(
+            self.get_secon_root_path(),
+            "SECON - General",
+            "ANO_ATUAL",
+            "NL_AUTOMATICA",
+            "NE_DIÁRIAS",
+        )
+
+        caminhos = [os.path.join(dir_path, pdf) for pdf in arquivos_selecionados]
+
+        return caminhos

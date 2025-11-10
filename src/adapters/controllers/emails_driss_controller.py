@@ -1,6 +1,6 @@
 import os, re, sys
 import time
-import PyPDF2
+import pypdf
 import pandas as pd
 import win32com.client as win32
 
@@ -9,31 +9,6 @@ from typing import Dict, List
 from pandas import DataFrame
 
 from drivers.view import ConsoleView
-
-TESTE = False
-ANO_ATUAL = datetime.now().year
-MES_REFERENCIA = datetime.now().month - 1 if not TESTE else 0
-MESES = {
-    0: "TESTES",
-    1: "01-JANEIRO",
-    2: "02-FEVEREIRO",
-    3: "03-MARÇO",
-    4: "04-ABRIL",
-    5: "05-MAIO",
-    6: "06-JUNHO",
-    7: "07-JULHO",
-    8: "08-AGOSTO",
-    9: "09-SETEMBRO",
-    10: "10-OUTUBRO",
-    11: "11-NOVEMBRO",
-    12: "12-DEZEMBRO",
-}
-NOME_MES_ATUAL = MESES[MES_REFERENCIA].split("-")[1] if MES_REFERENCIA > 0 else "TESTES"
-
-# Padronizar com orientação objetos? Precisa? Se eu for fazer outro EmailSender eu faço
-# class EmailSenderDRISS:
-#     def __init__(self):
-#         pass
 
 
 def get_root_paths() -> str:
@@ -197,11 +172,11 @@ def enviar_emails_driss(emails_para_enviar: List[Dict], test=True):
 
 
 def exportar_pdf_driss(
-    paginas_driss: List[PyPDF2.PageObject], caminho_saida: str, nome_empresa: str
+    paginas_driss: List[pypdf.PageObject], caminho_saida: str, nome_empresa: str
 ):
 
     try:
-        writer = PyPDF2.PdfWriter()
+        writer = pypdf.PdfWriter()
         for page in paginas_driss:
             writer.add_page(page)
 
@@ -238,9 +213,9 @@ def extrair_emails_empresa(nome_empresa_pdf):
     return None
 
 
-def extrair_paginas_por_empresa(file) -> Dict[str, List[PyPDF2.PageObject]]:
+def extrair_paginas_por_empresa(file) -> Dict[str, List[pypdf.PageObject]]:
     paginas_por_empresa = {}
-    reader = PyPDF2.PdfReader(file)
+    reader = pypdf.PdfReader(file)
     # Identifica a empresa em cada página e agrupa as páginas por empresa
     for page in reader.pages[:-1]:
         text = page.extract_text().replace("\n", " ").replace("  ", " ").strip()

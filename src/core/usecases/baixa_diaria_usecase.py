@@ -1,115 +1,57 @@
 import os
 from pandas import DataFrame
-from tabula import read_pdf
+import pandas as pd
 
-from core.gateways.i_nl_folha_gateway import INLFolhaGateway
-from core.gateways.i_preenchimento_gateway import IPreenchimentoGateway
+from src.core.gateways.i_pdf_service import IPdfService
+from src.core.gateways.i_pathing_gateway import IPathingGateway
+from src.core.gateways.i_preenchimento_gateway import IPreenchimentoGateway
 
 
 class BaixaDiariaUseCase:
-
     def __init__(
         self,
-        nl_folha_gw: INLFolhaGateway,
-        preenchedor_gw: IPreenchimentoGateway,
+        preenchimento_gw: IPreenchimentoGateway,
+        pathing_gw: IPathingGateway,
+        pdf_svc: IPdfService,
     ):
-        self.nl_folha_gw = nl_folha_gw
-        self.preenchedor_gw = preenchedor_gw
+        self.preenchimento_gw = preenchimento_gw
+        self.pathing_gw = pathing_gw
+        self.pdf_svc = pdf_svc
 
-    # TODO: mover para o pathing_gw -> listar_arquivos
-    def listar_pdfs_ne(self):
-        caminho_completo = (
-            self.caminho_raiz + f"SECON - General\\ANO_ATUAL\\NL_AUTOMATICA\\NE_DIÁRIAS"
+    def listar_planilhas(self) -> list[str]:
+        dir_path = os.path.join(
+            self.pathing_gw.get_secon_root_path(),
+            "SECON - General",
+            "ANO_ATUAL",
+            "NL_AUTOMATICA",
+            "NE_DIÁRIAS",
         )
-        nomes_pdfs = [
-            nome
-            for nome in os.listdir(caminho_completo)
-            # ignora arquivos temporários
-            if (nome.endswith((".pdf")) or nome.endswith((".PDF")))
-            and not nome.startswith("~$")
-        ]
-        return nomes_pdfs
+        return self.pathing_gw.listar_arquivos(dir_path)
 
-    # TODO: mover para o usecase
-    def extrair_dados_pdf(self, caminho_pdf: str):
-        """Extrai dados de um PDF de diárias."""
-        # TODO: mover para o gateway
-        tables = read_pdf(
-            caminho_pdf,
-            pages="all",
-            multiple_tables=True,
-            pandas_options={"header": None},
-        )
-
-        processo = tables[0].iloc[3, 2].strip().split(" ")[0]  # linha 3, coluna 2
-        observacao = ""
-        i = 0
-        while True:
-            # append em observacao até achar "Gestor Administrativo"
-            celula1 = str(tables[0].iloc[30 + i, 0]).strip()
-            celula2 = str(tables[0].iloc[30 + i, 1]).strip()
-            if "Gestor Administrativo" in celula1:
-                break
-            observacao += celula1 + celula2
-            i += 1
-        observacao = observacao.split(" ", 2)[2]
-
-        dados: list[dict] = []
-        for table in tables:
-            nune = table.iloc[1, 2]  # linha 1, coluna 2
-            credor = table.iloc[5, 0].split("-")[0].strip()  # linha 5, coluna 0
-            fonte = table.iloc[16, 1].split(".")[1]  # linha 16, coluna 1
-            valor = float(
-                table.iloc[30, 3].replace(".", "").replace(",", ".")
-            )  # linha 13, coluna 3
-            natureza = table.iloc[16, 2].strip().split(" ")[1]  # linha 16, coluna 2
-            subitem = table.iloc[26, 0].strip().split(" ")[0]  # linha 26, coluna 0
-
-            dados.append(
-                {
-                    "credor": credor,
-                    "nune": nune,
-                    "fonte": fonte,
-                    "valor": valor,
-                    "natureza": natureza,
-                    "subitem": subitem,
-                }
+    def gerar_nl_diarias(
+        self, arquivos_selecionados: list[str]
+    ) -> list[dict[str, DataFrame]]:
+        dados_preenchimento: list[dict[str, DataFrame]] = []
+        caminhos_pdf = self.pathing_gw.get_caminhos_nes_diaria(arquivos_selecionados)
+        for i, caminho_pdf in enumerate(caminhos_pdf):
+            nl = DataFrame(
+                columns=[
+                    "EVENTO",
+                    "INSCRIÇÃO",
+                    "CLASS. CONT",
+                    "CLASS. ORC",
+                    "FONTE",
+                    "VALOR",
+                ]
+            )
+            cabecalho = DataFrame(
+                columns=[
+                    "Coluna 1",
+                    "Coluna 2",
+                ],
             )
 
-        return {"processo": processo, "observacao": observacao, "dados": dados}
-
-    # mover para o usecase
-    def gerar_nls(self):
-        """_Gera as NLS de diárias a partir dos PDFs na pasta NE_DIÁRIAS._
-
-        Returns:
-            _type_: _Retorna um DataFrame com as NLS e um DataFrame com o cabeçalho._
-        """
-        nl = DataFrame(
-            columns=[
-                "EVENTO",
-                "INSCRIÇÃO",
-                "CLASS. CONT",
-                "CLASS. ORC",
-                "FONTE",
-                "VALOR",
-            ]
-        )
-        cabecalho = DataFrame(columns=["Coluna 1", "Coluna 2"])
-
-        caminhos_pdf = self.listar_pdfs_ne()
-        for i, pdf in enumerate(caminhos_pdf):
-            # print(pdf)
-            caminho_pdf = os.path.join(
-                self.caminho_raiz,
-                "SECON - General",
-                "ANO_ATUAL",
-                "NL_AUTOMATICA",
-                "NE_DIÁRIAS",
-                pdf,
-            )
-
-            dados_extraidos = self.extrair_dados_pdf(caminho_pdf)
+            dados_extraidos = self.pdf_svc.parse_dados_diaria(caminho_pdf)
 
             if i == 0:
                 processo = dados_extraidos["processo"]
@@ -134,15 +76,16 @@ class BaixaDiariaUseCase:
                 nl.loc[len(nl)] = linha2
 
         nl = nl.sort_values(by=["EVENTO", "INSCRIÇÃO"]).reset_index(drop=True)
-        return nl, cabecalho
 
-    def executar(self):
-        nl, cabecalho = self.gerar_nls()
+        dados_preenchimento.append(
+            {
+                "folha": nl,
+                "cabecalho": cabecalho,
+            }
+        )
 
-        if self.test:
-            print(cabecalho["Coluna 2"])
-            print(nl)
-        if self.run:
-            self.preenchedor.executar({"folha": nl, "cabecalho": cabecalho})
+        return dados_preenchimento
 
-
+    def executar(self, arquivos_selecionados: list[str]):
+        dados_preenchimento = self.gerar_nl_diarias(arquivos_selecionados)
+        self.preenchimento_gw.executar(dados_preenchimento)

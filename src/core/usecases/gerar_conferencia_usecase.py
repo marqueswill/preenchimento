@@ -24,6 +24,7 @@ class GerarConferenciaUseCase:
         saldos = self.pagamento_uc.gerar_saldos(
             conferencia_ferias, proventos, descontos
         )
+
         nls_fundo = self._gerar_nls_folha(fundo, saldos)
         totais = self._calcular_totais(nls_fundo, proventos, descontos)
         dados_relatorio = self.pagamento_uc.extrair_dados_relatorio(fundo)
@@ -80,8 +81,13 @@ class GerarConferenciaUseCase:
         return totais
 
     def _gerar_nls_folha(self, fundo: str, saldos: dict):
-        nomes_templates = self.pagamento_uc.nl_folha_gw.get_nomes_templates(fundo)
+        nomes_nls = self.pagamento_uc.nl_folha_gw.get_nomes_templates(fundo)
+        caminho_planilha_templates = (
+            self.pagamento_uc.conferencia_gw.pathing_gw.get_caminho_template(fundo)
+        )
         nls = {}
-        for template in nomes_templates:
-            nls[template] = self.pagamento_uc.gerar_nl_folha(fundo, template, saldos)
+        for nome_nl in nomes_nls:
+            nls[nome_nl] = self.pagamento_uc.gerar_nl_folha(
+                caminho_planilha_templates, nome_nl, saldos
+            )
         return nls

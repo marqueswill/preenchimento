@@ -13,7 +13,7 @@ class IPreenchimentoGateway(ABC):
         super().__init__()
 
     @abstractmethod
-    def executar(self, dados: list[Dict[str, DataFrame]]):
+    def executar(self, dados: list[dict[str, DataFrame]]):
         pass
 
     @abstractmethod

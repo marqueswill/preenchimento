@@ -31,3 +31,7 @@ class IPathingGateway(ABC):
     @abstractmethod
     def listar_arquivos(self, caminho: str) -> list[str]:
         pass
+    
+    @abstractmethod
+    def get_caminhos_nes_diaria(self) -> list[str]:
+        pass

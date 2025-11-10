@@ -1,7 +1,7 @@
 import os
 import locale
 import re
-import PyPDF2
+import pypdf
 import pandas as pd
 import numpy as np
 from datetime import datetime
@@ -612,7 +612,7 @@ class ConferenciaService:
             print("Nenhum arquivo PDF começando com 'RELATÓRIOS' foi encontrado.")
 
         with open(caminho_pdf_relatorio, "rb") as file:
-            reader = PyPDF2.PdfReader(file)
+            reader = pypdf.PdfReader(file)
             text = ""
             for page in reader.pages:
                 extracted_text = page.extract_text()

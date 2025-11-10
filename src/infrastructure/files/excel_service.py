@@ -11,7 +11,6 @@ from openpyxl.styles import PatternFill, Font, Border, Side
 
 from src.core.gateways.i_excel_service import IExcelService
 
-
 class ExcelService(IExcelService):
     def __init__(self, caminho_arquivo):
         self.caminho_arquivo = caminho_arquivo

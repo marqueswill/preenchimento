@@ -25,10 +25,6 @@ class IConferenciaGateway(ABC):
         pass
 
     @abstractmethod
-    def parse_relatorio(self) -> str:
-        pass
-
-    @abstractmethod
     def salvar_nls_conferencia(self, nls: List[DataFrame]):
         pass
 

@@ -1,13 +1,9 @@
-import os
-import re
-from pypdf import PdfReader
-import numpy as np
 import pandas as pd
 
-from typing import List
 from pandas import DataFrame
 
 from src.config import *
+
 from src.core.gateways.i_conferencia_gateway import IConferenciaGateway
 
 
@@ -19,21 +15,6 @@ class ConferenciaGateway(IConferenciaGateway):
             caminho_completo, sheet_name="DEMOFIN - T", header=1
         )
         return tabela_demofin
-
-    def parse_relatorio(self):
-        caminho_pdf_relatorio = self.pathing_gw.get_caminho_pdf_relatorio()
-        with open(caminho_pdf_relatorio, "rb") as file:
-            reader = PdfReader(file)
-            text = ""
-            for page in reader.pages:
-                extracted_text = page.extract_text()
-                if extracted_text.find("DEMOFIM - ATIVOS") != -1:
-                    text += extracted_text.replace("\n", " ").replace("  ", " ")
-                else:
-                    break
-
-        file.close()
-        return text
 
     def salvar_nls_conferencia(self, nls: dict[str, DataFrame]):
         for sheet_name, table_data in nls.items():
