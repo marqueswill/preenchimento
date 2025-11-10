@@ -8,7 +8,6 @@ from src.infrastructure.web.siggo_service import SiggoService
 from src.config import *
 
 
-# TODO: identificação e tratamento de erros (interface?)
 class SiggoServiceMock(SiggoService):
 
     def start(self):
