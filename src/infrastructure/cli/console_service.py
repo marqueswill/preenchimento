@@ -113,7 +113,6 @@ class ConsoleService:
             print(".", end="", flush=True)
             time.sleep(0.5)
 
-    # TODO: ConsoleView
     def clear_console(self):
         """Limpa a tela do console."""
         if os.name == "nt":
@@ -173,7 +172,3 @@ class ConsoleService:
             for arg in args
         ]
         print(*colored_args, sep=sep, end=end)
-
-
-# TODO: ExcelExporter
-# TODO: Logger para isolar prints de debug

@@ -36,6 +36,3 @@ class DadosDemofin:
     valor_auxiliar: Decimal
     nme_provdesc: str
     cdg_fundo: int
-
-
-# TODO: definir o resto das entidades

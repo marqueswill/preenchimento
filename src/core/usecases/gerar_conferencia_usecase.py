@@ -70,7 +70,7 @@ class GerarConferenciaUseCase:
                     total_proventos,
                     total_descontos,
                     total_liquido,
-                    None,  # FIXME: tirar essa gambiarra aqui
+                    None,  # TODO: tirar essa gambiarra aqui
                     total_saldo,
                     total_liquidado,
                 ],
