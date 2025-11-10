@@ -1,6 +1,6 @@
 import os, re, sys
 import time
-import PyPDF2
+import pypdf
 import pandas as pd
 import win32com.client as win32
 
@@ -101,7 +101,7 @@ def enviar_email(
 
         if not test:
             # pass
-            mail.Send()                    
+            # mail.Send()                    
             ConsoleView.color_print(
                 f"E-mail enviado de '{email_de_origem}' para '{email_empresa}'."
             )
@@ -198,11 +198,11 @@ def enviar_emails_driss(emails_para_enviar: List[Dict], test=True):
 
 
 def exportar_pdf_driss(
-    paginas_driss: List[PyPDF2.PageObject], caminho_saida: str, nome_empresa: str
+    paginas_driss: List[pypdf.PageObject], caminho_saida: str, nome_empresa: str
 ):
 
     try:
-        writer = PyPDF2.PdfWriter()
+        writer = pypdf.PdfWriter()
         for page in paginas_driss:
             writer.add_page(page)
 
@@ -239,9 +239,9 @@ def extrair_emails_empresa(nome_empresa_pdf):
     return None
 
 
-def extrair_paginas_por_empresa(file) -> Dict[str, List[PyPDF2.PageObject]]:
+def extrair_paginas_por_empresa(file) -> Dict[str, List[pypdf.PageObject]]:
     paginas_por_empresa = {}
-    reader = PyPDF2.PdfReader(file)
+    reader = pypdf.PdfReader(file)
     # Identifica a empresa em cada página e agrupa as páginas por empresa
     for page in reader.pages[:-1]:
         text = page.extract_text().replace("\n", " ").replace("  ", " ").strip()
@@ -323,6 +323,7 @@ def main(test=False):
         ConsoleView.color_print(f"Erro: Arquivo não encontrado - {e}", color="red")
         sys.exit(1)
 
+    return
     # Enviar e-mails para todos os endereços encontrados
     ConsoleView.color_print("\nEnviando emails paras empresas".upper(), style="bold")
     enviar_emails_driss(emails_para_enviar, test=TESTE)

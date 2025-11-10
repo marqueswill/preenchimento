@@ -14,7 +14,6 @@ from src.core.gateways.i_siggo_service import ISiggoService
 from src.config import *
 
 
-# TODO: identificação e tratamento de erros (interface?)
 class SiggoService(ISiggoService):
     """_summary_
     Driver para automação e interação com o SIGGO
