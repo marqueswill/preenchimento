@@ -47,4 +47,11 @@ class PathingGatewayMock(IPathingGateway):
             f"CONFERÊNCIA_{fundo.upper()}.xlsx",
         )
 
-    
+    def get_current_file_path(self) -> str:
+        return os.path.join(
+            self.get_secon_root_path(),
+            "TEMPLATES",
+        )
+
+    def listar_arquivos(self, caminho: str) -> list[str]:
+        return os.listdir(caminho)

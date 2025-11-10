@@ -29,11 +29,19 @@ class PreenchimentoFolhaUseCase:
         self, fundo: str, nomes_templates: list[str], saldos: dict
     ) -> list[dict[str, DataFrame]]:
         folhas = []
+        caminho_template = (
+            self.pagamento_uc.nl_folha_gw.pathing_gw.get_caminho_template(fundo)
+        )
         for template in nomes_templates:
             cabecalho = self.pagamento_uc.nl_folha_gw.carregar_cabecalho(
-                fundo, template
+                caminho_template,
+                template,
             )
-            folha = self.pagamento_uc.gerar_nl_folha(fundo, template, saldos)
+            folha = self.pagamento_uc.gerar_nl_folha(
+                caminho_template,
+                template,
+                saldos,
+            )
 
             if folha.empty:
                 continue

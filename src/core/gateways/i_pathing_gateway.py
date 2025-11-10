@@ -23,3 +23,11 @@ class IPathingGateway(ABC):
     @abstractmethod
     def get_caminho_pdf_relatorio() -> str:
         pass
+
+    @abstractmethod
+    def get_current_file_path(self) -> str:
+        pass
+    
+    @abstractmethod
+    def listar_arquivos(self, caminho: str) -> list[str]:
+        pass

@@ -1,5 +1,4 @@
 # Importe as classes CONCRETAS de infrastructure
-from src.core.usecases.pagamento_usecase import PagamentoUseCase
 from src.infrastructure.services.preenchimento_gateway import PreenchimentoGateway
 from src.infrastructure.web.siggo_service import SiggoService
 from src.infrastructure.services.nl_folha_gateway import NLFolhaGateway
@@ -10,6 +9,8 @@ from src.infrastructure.services.conferencia_gateway import ConferenciaGateway
 # Importe o Use Case de core
 from src.core.usecases.gerar_conferencia_usecase import GerarConferenciaUseCase
 from src.core.usecases.preenchimento_folha_usecase import PreenchimentoFolhaUseCase
+from src.core.usecases.pagamento_usecase import PagamentoUseCase
+from src.core.usecases.preenchimento_nl_usecase import PreenchimentoNLUseCase
 
 # Importe as INTERFACES (opcional, mas bom para type hints)
 from src.core.gateways.i_nl_folha_gateway import INLFolhaGateway
@@ -57,5 +58,16 @@ class UseCaseFactory:
         preenchedor_gw: IPreenchimentoGateway = PreenchimentoGateway(siggo_service)
 
         use_case = PreenchimentoFolhaUseCase(pagamento_uc, preenchedor_gw)
+
+        return use_case
+
+    def create_preenchimento_nl_use_case(self) -> PreenchimentoNLUseCase:
+        pathing_gw: IPathingGateway = PathingGateway()
+        nl_folha_gw: INLFolhaGateway = NLFolhaGateway(pathing_gw)
+
+        siggo_service: ISiggoService = SiggoService()
+        preenchedor_gw: IPreenchimentoGateway = PreenchimentoGateway(siggo_service)
+
+        use_case = PreenchimentoNLUseCase(nl_folha_gw, preenchedor_gw)
 
         return use_case

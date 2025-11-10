@@ -18,10 +18,16 @@ class INLFolhaGateway(ABC):
     def get_nomes_templates(self, fundo: str) -> List[str]:
         pass
 
+    # TODO: renomear pra um nome menos confuso
     @abstractmethod
-    def carregar_template_nl(self, nome_fundo: str, template: str) -> DataFrame:
+    def carregar_template_nl(
+        self, caminho_completo: str, template: str, incluir_calculos=True
+    ) -> DataFrame:
         pass
 
     @abstractmethod
-    def carregar_cabecalho(self, nome_fundo, template) -> DataFrame:
+    def carregar_cabecalho(self, caminho_completo, template) -> DataFrame:
+        pass
+
+    def listar_abas(self, caminho_arquivo: str) -> List[str]:
         pass

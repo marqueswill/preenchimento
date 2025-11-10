@@ -340,12 +340,17 @@ class PagamentoUseCase:
                 "DESCONTOS": df_descontos,
             }
 
-    def gerar_nl_folha(self, fundo: str, template: str, saldos: dict) -> DataFrame:
+    def gerar_nl_folha(
+        self, caminho_template: str, template: str, saldos: dict
+    ) -> DataFrame:
         """_summary_ Recebe um fundo e o nome de um nome de uma nl e preenche o template encontrado
         com os valores de saldo passados.
         """
-        folha_pagamento = self.nl_folha_gw.carregar_template_nl(fundo, template)
-
+        folha_pagamento = self.nl_folha_gw.carregar_template_nl(
+            caminho_template, template
+        )
+        folha_pagamento["VALOR"] = 0.0
+        
         # Calcula o valor para cada linha
         for idx, row in folha_pagamento.iterrows():
             class_orc = row.get("CLASS. ORC", "")
