@@ -9,7 +9,7 @@ from openpyxl import Workbook, load_workbook
 from openpyxl.utils import column_index_from_string, get_column_letter
 from openpyxl.styles import PatternFill, Font, Border, Side
 
-from src.core.gateways.i_excel_service import IExcelService
+from src.app.gateways.i_excel_service import IExcelService
 
 class ExcelService(IExcelService):
     def __init__(self, caminho_arquivo):

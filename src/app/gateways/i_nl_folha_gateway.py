@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List
 from pandas import DataFrame
 
-from src.core.gateways.i_pathing_gateway import IPathingGateway
+from src.app.gateways.i_pathing_gateway import IPathingGateway
 
 
 class INLFolhaGateway(ABC):
@@ -15,19 +15,15 @@ class INLFolhaGateway(ABC):
         super().__init__()
 
     @abstractmethod
-    def get_nomes_templates(self, fundo: str) -> List[str]:
-        pass
+    def get_nomes_templates(self, fundo: str) -> List[str]: ...
 
     # TODO: renomear pra um nome menos confuso
     @abstractmethod
     def carregar_template_nl(
         self, caminho_completo: str, template: str, incluir_calculos=True
-    ) -> DataFrame:
-        pass
+    ) -> DataFrame: ...
 
     @abstractmethod
-    def carregar_cabecalho(self, caminho_completo, template) -> DataFrame:
-        pass
+    def carregar_cabecalho(self, caminho_completo, template) -> DataFrame: ...
 
-    def listar_abas(self, caminho_arquivo: str) -> List[str]:
-        pass
+    def listar_abas(self, caminho_arquivo: str) -> List[str]: ...

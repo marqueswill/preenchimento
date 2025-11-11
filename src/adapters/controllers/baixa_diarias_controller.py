@@ -1,6 +1,6 @@
 from src.infrastructure.cli.console_service import ConsoleService
-from src.core.gateways.i_nl_folha_gateway import INLFolhaGateway
-from src.core.gateways.i_preenchimento_gateway import IPreenchimentoGateway
+from src.app.gateways.i_nl_folha_gateway import INLFolhaGateway
+from src.app.gateways.i_preenchimento_gateway import IPreenchimentoGateway
 from src.factories import UseCaseFactory
 
 

@@ -7,7 +7,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 
-from src.core.gateways.i_preenchimento_gateway import IPreenchimentoGateway
+from src.app.gateways.i_preenchimento_gateway import IPreenchimentoGateway
 from src.config import *
 
 

@@ -18,26 +18,13 @@ class IExcelService(ABC):
         as_dataframe: bool = False,
         header_row: int = 1,
         columns: Optional[List[str]] = None,
-    ) -> DataFrame | Any:
-        """
-        Retorna uma aba específica do arquivo Excel,
-        seja como um objeto de planilha ou um DataFrame pandas.
-        """
-        pass
+    ) -> DataFrame | Any: ...
 
     @abstractmethod
-    def delete_sheet(self, sheet_name: str) -> None:
-        """
-        Deleta uma planilha do arquivo Excel.
-        """
-        pass
+    def delete_sheet(self, sheet_name: str) -> None: ...
 
     @abstractmethod
-    def move_to_first(self, sheet_name: str) -> None:
-        """
-        Move uma planilha específica para a primeira posição (mais à esquerda).
-        """
-        pass
+    def move_to_first(self, sheet_name: str) -> None: ...
 
     @abstractmethod
     def exportar_para_planilha(
@@ -50,11 +37,7 @@ class IExcelService(ABC):
         sum_numeric: bool = False,
         fit_columns: bool = True,
         write_headers: bool = True,
-    ) -> None:
-        """
-        Escreve o conteúdo de um DataFrame em uma planilha específica.
-        """
-        pass
+    ) -> None: ...
 
     @abstractmethod
     def destacar_linhas(
@@ -65,9 +48,4 @@ class IExcelService(ABC):
         coluna_alvo: str = None,
         valor_alvo: Any = None,
         header_row: int = 1,
-    ) -> None:
-        """
-        Aplica formatação (cor, negrito) em linhas que
-        correspondem a um critério.
-        """
-        pass
+    ) -> None: ...

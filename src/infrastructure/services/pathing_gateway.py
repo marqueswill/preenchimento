@@ -1,7 +1,7 @@
 import re
 import sys
 from src.config import *
-from src.core.gateways.i_pathing_gateway import IPathingGateway
+from src.app.gateways.i_pathing_gateway import IPathingGateway
 
 
 class PathingGateway(IPathingGateway):
@@ -121,3 +121,26 @@ class PathingGateway(IPathingGateway):
         caminhos = [os.path.join(dir_path, pdf) for pdf in arquivos_selecionados]
 
         return caminhos
+
+    def get_caminhos_demonstrativos(self, pasta_mes: str):
+        dir_path = os.path.join(
+            self.get_secon_root_path(),
+            "SECON - General",
+            "ANO_ATUAL",
+            "LIQ_DESPESA",
+            pasta_mes,
+        )
+        arquivos = os.listdir(dir_path)
+        caminhos = [os.path.join(dir_path, pdf) for pdf in arquivos]
+
+        return caminhos
+
+    def get_caminho_reinf(self, pasta_mes: str) -> str:
+        return os.path.join(
+            self.get_secon_root_path(),
+            "SECON - General",
+            "ANO_ATUAL",
+            "EFD-REINF",
+            pasta_mes,
+            "Preenchimento Reinf.xlsx",
+        )

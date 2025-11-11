@@ -8,21 +8,23 @@ from src.infrastructure.files.excel_service import ExcelService
 from src.infrastructure.services.conferencia_gateway import ConferenciaGateway
 
 # Importe o Use Case de core
-from src.core.usecases.gerar_conferencia_usecase import GerarConferenciaUseCase
-from src.core.usecases.preenchimento_folha_usecase import PreenchimentoFolhaUseCase
-from src.core.usecases.pagamento_usecase import PagamentoUseCase
-from src.core.usecases.preenchimento_nl_usecase import PreenchimentoNLUseCase
-from src.core.usecases.baixa_diaria_usecase import BaixaDiariaUseCase
+from src.app.usecases.gerar_conferencia_usecase import GerarConferenciaUseCase
+from src.app.usecases.preenchimento_folha_usecase import PreenchimentoFolhaUseCase
+from src.app.usecases.pagamento_usecase import PagamentoUseCase
+from src.app.usecases.preenchimento_nl_usecase import PreenchimentoNLUseCase
+from src.app.usecases.baixa_diaria_usecase import BaixaDiariaUseCase
+from src.app.usecases.extrair_dados_r2000_usecase import ExtrairDadosR2000UseCase
 
 # Importe as INTERFACES (opcional, mas bom para type hints)
-from src.core.gateways.i_nl_folha_gateway import INLFolhaGateway
-from src.core.gateways.i_pathing_gateway import IPathingGateway
-from src.core.gateways.i_excel_service import IExcelService
-from src.core.gateways.i_conferencia_gateway import IConferenciaGateway
-from src.core.gateways.i_preenchimento_gateway import IPreenchimentoGateway
-from src.core.gateways.i_siggo_service import ISiggoService
-from src.core.gateways.i_pdf_service import IPdfService
+from src.app.gateways.i_nl_folha_gateway import INLFolhaGateway
+from src.app.gateways.i_pathing_gateway import IPathingGateway
+from src.app.gateways.i_excel_service import IExcelService
+from src.app.gateways.i_conferencia_gateway import IConferenciaGateway
+from src.app.gateways.i_preenchimento_gateway import IPreenchimentoGateway
+from src.app.gateways.i_siggo_service import ISiggoService
+from src.app.gateways.i_pdf_service import IPdfService
 
+from src.config import *
 
 class UseCaseFactory:
     """
@@ -83,4 +85,15 @@ class UseCaseFactory:
         pdf_svc: IPdfService = PdfService(pathing_gw)
 
         use_case = BaixaDiariaUseCase(preenchedor_gw, pathing_gw, pdf_svc)
+        return use_case
+
+    def create_extrair_dados_r2000_usecase(self) -> ExtrairDadosR2000UseCase:
+        pathing_gw: IPathingGateway = PathingGateway()
+        pdf_svc: IPdfService = PdfService(pathing_gw)
+
+        caminho_planilha_reinf = pathing_gw.get_caminho_reinf(PASTA_MES_ANTERIOR)
+        excel_svc: IExcelService = ExcelService(caminho_planilha_reinf)
+
+        use_case = ExtrairDadosR2000UseCase(excel_svc, pdf_svc, pathing_gw)
+
         return use_case
