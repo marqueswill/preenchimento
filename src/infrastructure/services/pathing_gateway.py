@@ -144,3 +144,12 @@ class PathingGateway(IPathingGateway):
             pasta_mes,
             "Preenchimento Reinf.xlsx",
         )
+
+    def get_caminho_valores_pagos(self):
+        return os.path.join(
+            self.get_secon_root_path(),
+            "SECON - General",
+            "ANO_ATUAL",
+            "EFD-REINF",
+            "VALORES_PAGOS.xlsx"
+        )

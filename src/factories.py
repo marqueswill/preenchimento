@@ -97,3 +97,14 @@ class UseCaseFactory:
         use_case = ExtrairDadosR2000UseCase(excel_svc, pdf_svc, pathing_gw)
 
         return use_case
+    
+    def create_exportar_valores_pagos(self) -> ExtrairDadosR2000UseCase:
+        pathing_gw: IPathingGateway = PathingGateway()
+        pdf_svc: IPdfService = PdfService(pathing_gw)
+
+        caminho_planilha_reinf = pathing_gw.get_caminho_valores_pagos()
+        excel_svc: IExcelService = ExcelService(caminho_planilha_reinf)
+
+        use_case = ExtrairDadosR2000UseCase(excel_svc, pdf_svc, pathing_gw)
+
+        return use_case

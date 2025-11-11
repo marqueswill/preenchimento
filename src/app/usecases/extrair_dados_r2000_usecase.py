@@ -49,11 +49,6 @@ class ExtrairDadosR2000UseCase:
         return df
 
     def gerar_dataframe_valores_pagos(self, df_principal):
-        if not df_principal.empty:
-            df_principal = df_principal.sort_values(by=["CNPJ", "NUM_NF"])
-        else:
-            print("O DataFrame principal está vazio, não há dados para preencher.")
-            return None, None
 
         df_valores_pagos = DataFrame(
             columns=[
