@@ -3,7 +3,7 @@ from pandas import DataFrame
 import pandas as pd
 
 from src.config import *
-from src.app.gateways.i_nl_folha_gateway import INLFolhaGateway
+from src.core.gateways.i_nl_folha_gateway import INLFolhaGateway
 
 
 class NLFolhaGateway(INLFolhaGateway):

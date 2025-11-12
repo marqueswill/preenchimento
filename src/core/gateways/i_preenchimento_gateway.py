@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Dict
 from pandas import DataFrame
 
-from src.app.gateways.i_siggo_service import ISiggoService
+from src.core.gateways.i_siggo_service import ISiggoService
 
 
 class IPreenchimentoGateway(ABC):

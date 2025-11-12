@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 from typing import Dict, List, Tuple
 from pandas import DataFrame
 
-from src.app.gateways.i_excel_service import IExcelService
-from src.app.gateways.i_pathing_gateway import IPathingGateway
+from src.core.gateways.i_excel_service import IExcelService
+from src.core.gateways.i_pathing_gateway import IPathingGateway
 
 
 class IConferenciaGateway(ABC):

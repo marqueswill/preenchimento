@@ -1,9 +1,9 @@
 from pandas import DataFrame
 import pandas as pd
 
-from src.app.gateways.i_pathing_gateway import IPathingGateway
-from src.app.gateways.i_excel_service import IExcelService
-from src.app.gateways.i_pdf_service import IPdfService
+from src.core.gateways.i_pathing_gateway import IPathingGateway
+from src.core.gateways.i_excel_service import IExcelService
+from src.core.gateways.i_pdf_service import IPdfService
 from src.config import *
 
 

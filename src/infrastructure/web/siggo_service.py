@@ -10,7 +10,7 @@ import subprocess
 import sys, time, os, locale
 from datetime import datetime
 
-from src.app.gateways.i_siggo_service import ISiggoService
+from src.core.gateways.i_siggo_service import ISiggoService
 from src.config import *
 
 

@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List
 from pandas import DataFrame
 
-from src.app.gateways.i_pathing_gateway import IPathingGateway
+from src.core.gateways.i_pathing_gateway import IPathingGateway
 
 
 class INLFolhaGateway(ABC):

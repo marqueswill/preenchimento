@@ -4,7 +4,7 @@ from pandas import DataFrame
 
 from src.config import *
 
-from src.app.gateways.i_conferencia_gateway import IConferenciaGateway
+from src.core.gateways.i_conferencia_gateway import IConferenciaGateway
 
 
 class ConferenciaGateway(IConferenciaGateway):

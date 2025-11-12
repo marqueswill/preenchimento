@@ -2,9 +2,9 @@ import os
 from pandas import DataFrame
 import pandas as pd
 
-from src.app.gateways.i_pdf_service import IPdfService
-from src.app.gateways.i_pathing_gateway import IPathingGateway
-from src.app.gateways.i_preenchimento_gateway import IPreenchimentoGateway
+from src.core.gateways.i_pdf_service import IPdfService
+from src.core.gateways.i_pathing_gateway import IPathingGateway
+from src.core.gateways.i_preenchimento_gateway import IPreenchimentoGateway
 
 
 class BaixaDiariaUseCase:

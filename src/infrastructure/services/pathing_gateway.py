@@ -1,7 +1,7 @@
 import re
 import sys
 from src.config import *
-from src.app.gateways.i_pathing_gateway import IPathingGateway
+from src.core.gateways.i_pathing_gateway import IPathingGateway
 
 
 class PathingGateway(IPathingGateway):

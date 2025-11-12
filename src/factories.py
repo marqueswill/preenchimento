@@ -8,21 +8,21 @@ from src.infrastructure.files.excel_service import ExcelService
 from src.infrastructure.services.conferencia_gateway import ConferenciaGateway
 
 # Importe o Use Case de core
-from src.app.usecases.gerar_conferencia_usecase import GerarConferenciaUseCase
-from src.app.usecases.preenchimento_folha_usecase import PreenchimentoFolhaUseCase
-from src.app.usecases.pagamento_usecase import PagamentoUseCase
-from src.app.usecases.preenchimento_nl_usecase import PreenchimentoNLUseCase
-from src.app.usecases.baixa_diaria_usecase import BaixaDiariaUseCase
-from src.app.usecases.extrair_dados_r2000_usecase import ExtrairDadosR2000UseCase
+from src.core.usecases.gerar_conferencia_usecase import GerarConferenciaUseCase
+from src.core.usecases.preenchimento_folha_usecase import PreenchimentoFolhaUseCase
+from src.core.usecases.pagamento_usecase import PagamentoUseCase
+from src.core.usecases.preenchimento_nl_usecase import PreenchimentoNLUseCase
+from src.core.usecases.baixa_diaria_usecase import BaixaDiariaUseCase
+from src.core.usecases.extrair_dados_r2000_usecase import ExtrairDadosR2000UseCase
 
 # Importe as INTERFACES (opcional, mas bom para type hints)
-from src.app.gateways.i_nl_folha_gateway import INLFolhaGateway
-from src.app.gateways.i_pathing_gateway import IPathingGateway
-from src.app.gateways.i_excel_service import IExcelService
-from src.app.gateways.i_conferencia_gateway import IConferenciaGateway
-from src.app.gateways.i_preenchimento_gateway import IPreenchimentoGateway
-from src.app.gateways.i_siggo_service import ISiggoService
-from src.app.gateways.i_pdf_service import IPdfService
+from src.core.gateways.i_nl_folha_gateway import INLFolhaGateway
+from src.core.gateways.i_pathing_gateway import IPathingGateway
+from src.core.gateways.i_excel_service import IExcelService
+from src.core.gateways.i_conferencia_gateway import IConferenciaGateway
+from src.core.gateways.i_preenchimento_gateway import IPreenchimentoGateway
+from src.core.gateways.i_siggo_service import ISiggoService
+from src.core.gateways.i_pdf_service import IPdfService
 
 from src.config import *
 

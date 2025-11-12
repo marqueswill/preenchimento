@@ -1,9 +1,9 @@
 # Use Cases
 from src.infrastructure.web.siggo_service import SiggoService
-from src.app.usecases.preenchimento_nl_usecase import PreenchimentoNLUseCase
-from src.app.usecases.gerar_conferencia_usecase import GerarConferenciaUseCase
-from src.app.usecases.preenchimento_folha_usecase import PreenchimentoFolhaUseCase
-from src.app.usecases.pagamento_usecase import PagamentoUseCase
+from src.core.usecases.preenchimento_nl_usecase import PreenchimentoNLUseCase
+from src.core.usecases.gerar_conferencia_usecase import GerarConferenciaUseCase
+from src.core.usecases.preenchimento_folha_usecase import PreenchimentoFolhaUseCase
+from src.core.usecases.pagamento_usecase import PagamentoUseCase
 
 # Services
 from src.infrastructure.services.preenchimento_gateway import PreenchimentoGateway
@@ -11,12 +11,12 @@ from src.infrastructure.services.conferencia_gateway import ConferenciaGateway
 
 
 # Interfaces
-from src.app.gateways.i_nl_folha_gateway import INLFolhaGateway
-from src.app.gateways.i_pathing_gateway import IPathingGateway
-from src.app.gateways.i_excel_service import IExcelService
-from src.app.gateways.i_conferencia_gateway import IConferenciaGateway
-from src.app.gateways.i_preenchimento_gateway import IPreenchimentoGateway
-from src.app.gateways.i_siggo_service import ISiggoService
+from src.core.gateways.i_nl_folha_gateway import INLFolhaGateway
+from src.core.gateways.i_pathing_gateway import IPathingGateway
+from src.core.gateways.i_excel_service import IExcelService
+from src.core.gateways.i_conferencia_gateway import IConferenciaGateway
+from src.core.gateways.i_preenchimento_gateway import IPreenchimentoGateway
+from src.core.gateways.i_siggo_service import ISiggoService
 
 # Mocks
 from tests.mocks.conferencia_gateway_mock import ConferenciaGatewayMock

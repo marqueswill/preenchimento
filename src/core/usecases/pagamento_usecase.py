@@ -2,9 +2,9 @@ import re
 import numpy as np
 import pandas as pd
 from pandas import DataFrame
-from src.app.gateways.i_pdf_service import IPdfService
-from src.app.gateways.i_conferencia_gateway import IConferenciaGateway
-from src.app.gateways.i_nl_folha_gateway import INLFolhaGateway
+from src.core.gateways.i_pdf_service import IPdfService
+from src.core.gateways.i_conferencia_gateway import IConferenciaGateway
+from src.core.gateways.i_nl_folha_gateway import INLFolhaGateway
 
 
 class PagamentoUseCase:
