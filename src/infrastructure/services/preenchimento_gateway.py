@@ -41,6 +41,7 @@ class PreenchimentoGateway(IPreenchimentoGateway):
 
         self.siggo_driver.fechar_primeira_aba()
 
+    # TODO: carregar cabeçalho dinamicamente
     def preparar_preechimento_cabecalho(self, template: DataFrame):
         prioridade: str = template.iloc[0, 1]  # B1
         credor: str = template.iloc[1, 1]  # B2
