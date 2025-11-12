@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-
+from pypdf import PageObject
 from src.core.gateways.i_pathing_gateway import IPathingGateway
 
 
@@ -16,4 +16,10 @@ class IPdfService(ABC):
     def parse_relatorio_folha(self): ...
 
     @abstractmethod
-    def parse_dados_inss(self):...
+    def parse_dados_inss(self): ...
+
+    @abstractmethod
+    def parse_pdf_driss(self, file) -> dict[str, list[PageObject]]: ...
+
+    @abstractmethod
+    def export_pages(self, pages: list[PageObject], path: str): ...

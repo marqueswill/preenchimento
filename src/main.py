@@ -1,3 +1,4 @@
+from src.adapters.controllers.emails_driss_controller import EmailsDrissController
 from src.adapters.controllers.exportar_valores_pagos import (
     ExportarValoresPagosController,
 )
@@ -11,4 +12,5 @@ from src.adapters.controllers.pagamento_controller import FolhaPagamentoControll
 # NLAutomaticaController()
 # BaixaDiariaController()
 # ExtrairDadosR2000Controller()
-ExportarValoresPagosController()
+# ExportarValoresPagosController()
+EmailsDrissController()

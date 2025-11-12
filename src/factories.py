@@ -1,4 +1,5 @@
 # Importe as classes CONCRETAS de infrastructure
+from src.infrastructure.email.email_service import EmailService
 from src.infrastructure.files.pdf_service import PdfService
 from src.infrastructure.services.preenchimento_gateway import PreenchimentoGateway
 from src.infrastructure.web.siggo_service import SiggoService
@@ -8,6 +9,7 @@ from src.infrastructure.files.excel_service import ExcelService
 from src.infrastructure.services.conferencia_gateway import ConferenciaGateway
 
 # Importe o Use Case de core
+from src.core.usecases.emails_driss_usecase import EmailsDrissUseCase
 from src.core.usecases.gerar_conferencia_usecase import GerarConferenciaUseCase
 from src.core.usecases.preenchimento_folha_usecase import PreenchimentoFolhaUseCase
 from src.core.usecases.pagamento_usecase import PagamentoUseCase
@@ -23,8 +25,10 @@ from src.core.gateways.i_conferencia_gateway import IConferenciaGateway
 from src.core.gateways.i_preenchimento_gateway import IPreenchimentoGateway
 from src.core.gateways.i_siggo_service import ISiggoService
 from src.core.gateways.i_pdf_service import IPdfService
+from src.core.gateways.i_email_service import IEmailService
 
 from src.config import *
+
 
 class UseCaseFactory:
     """
@@ -97,8 +101,8 @@ class UseCaseFactory:
         use_case = ExtrairDadosR2000UseCase(excel_svc, pdf_svc, pathing_gw)
 
         return use_case
-    
-    def create_exportar_valores_pagos(self) -> ExtrairDadosR2000UseCase:
+
+    def create_exportar_valores_pagos_usecase(self) -> ExtrairDadosR2000UseCase:
         pathing_gw: IPathingGateway = PathingGateway()
         pdf_svc: IPdfService = PdfService(pathing_gw)
 
@@ -107,4 +111,17 @@ class UseCaseFactory:
 
         use_case = ExtrairDadosR2000UseCase(excel_svc, pdf_svc, pathing_gw)
 
+        return use_case
+
+    def create_emails_driss_usecase(self) -> EmailsDrissUseCase:
+        pathing_gw: IPathingGateway = PathingGateway()
+        pdf_svc: IPdfService = PdfService(pathing_gw)
+
+        caminho_planilha_emails = (
+            pathing_gw.get_secon_root_path()
+            + f"SECON - General\\ANO_ATUAL\\DRISS_{ANO_ATUAL}\\EMAIL_EMPRESAS.xlsx"
+        )
+        excel_svc: IExcelService = ExcelService(caminho_planilha_emails)
+        email_svc: IEmailService = EmailService()
+        use_case = EmailsDrissUseCase(pathing_gw, pdf_svc, excel_svc, email_svc)
         return use_case

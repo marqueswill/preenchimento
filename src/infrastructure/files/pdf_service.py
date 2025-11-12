@@ -1,12 +1,13 @@
-from datetime import datetime
+import io
+import os
 import re
-import pypdf
-from pypdf import PdfReader, PdfWriter
-import tabula
 import pandas as pd
+from pypdf import PdfReader, PdfWriter, PageObject
+from pandas import DataFrame
+from datetime import datetime
+
 from src.core.gateways.i_pathing_gateway import IPathingGateway
 from src.core.gateways.i_pdf_service import IPdfService
-from pandas import DataFrame
 
 
 class PdfService(IPdfService):
@@ -273,3 +274,39 @@ class PdfService(IPdfService):
             return dados_pdf
         else:
             return None
+
+    def parse_pdf_driss(self, caminho_pdf: str) -> dict[str, list[PageObject]]:
+        with open(caminho_pdf, "rb") as file:
+            stream_bytes = file.read()
+
+        stream_em_memoria = io.BytesIO(stream_bytes)
+
+        paginas_por_empresa = {}
+        reader = PdfReader(stream_em_memoria)
+        # Identifica a empresa em cada página e agrupa as páginas por empresa
+        for page in reader.pages[:-1]:
+            text = page.extract_text().replace("\n", " ").replace("  ", " ").strip()
+            # nome da empresa sempre vem nesse padrão: relativo ao ISS proveniente dos serviços prestados por WINDOC GESTÃO DE DOCUMENTOS LTDA, com endereço:
+            padrao = r"relativo ao ISS proveniente dos serviços prestados por (.*?), com endereço:"
+            nome_empresa_match = re.search(padrao, text)
+            if nome_empresa_match:
+                nome_empresa = nome_empresa_match.group(1).strip()
+                paginas_por_empresa[nome_empresa] = paginas_por_empresa.get(
+                    nome_empresa, []
+                ) + [page]
+
+        return paginas_por_empresa
+
+    def export_pages(self, pages: list[PageObject], path: str):
+        try:    
+            # diretorio_de_saida = os.path.dirname(path)
+            # os.makedirs(diretorio_de_saida, exist_ok=True)
+            writer = PdfWriter()
+            for page in pages:
+                writer.add_page(page)
+
+            with open(path, "wb") as saida:
+                writer.write(saida)
+
+        except Exception as e:
+            raise Exception(f"Erro ao exportar páginas: {e}")
