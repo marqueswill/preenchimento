@@ -2,6 +2,7 @@ import re
 import numpy as np
 import pandas as pd
 from pandas import DataFrame
+from src.core.gateways.i_pdf_service import IPdfService
 from src.core.gateways.i_conferencia_gateway import IConferenciaGateway
 from src.core.gateways.i_nl_folha_gateway import INLFolhaGateway
 
@@ -12,10 +13,11 @@ class PagamentoUseCase:
     """
 
     def __init__(
-        self, conferencia_gw: IConferenciaGateway, nl_folha_gw: INLFolhaGateway
+        self, conferencia_gw: IConferenciaGateway, nl_folha_gw: INLFolhaGateway, pdf_svc:IPdfService
     ):
         self.conferencia_gw = conferencia_gw
         self.nl_folha_gw = nl_folha_gw
+        self.pdf_svc = pdf_svc
 
     def get_dados_conferencia(self, fundo, agrupar=True, adiantamento_ferias=False):
         cod_fundos = {
@@ -269,76 +271,7 @@ class PagamentoUseCase:
         return saldos
 
     def extrair_dados_relatorio(self, fundo_escolhido: str):
-        text = self.conferencia_gw.parse_relatorio()
-        relatorios = {
-            "RGPS": {"PROVENTOS": None, "DESCONTOS": None},
-            "FINANCEIRO": {"PROVENTOS": None, "DESCONTOS": None},
-            "CAPITALIZADO": {"PROVENTOS": None, "DESCONTOS": None},
-        }
-
-        dados_brutos = text.split("Total por Fundo de Previdência:")
-        for fundo, relatorio in zip(relatorios.keys(), dados_brutos[:3]):
-            inicio_proventos = relatorio.find("Proventos")
-            inicio_descontos = relatorio.find("Descontos Elem. Despesa:")
-
-            relatorios[fundo]["PROVENTOS"] = relatorio[
-                inicio_proventos:inicio_descontos
-            ]
-            relatorios[fundo]["DESCONTOS"] = relatorio[inicio_descontos:]
-
-        for nome_fundo, relatorio_fundo in relatorios.items():
-            if (
-                nome_fundo != fundo_escolhido
-            ):  # Pulo extração se não for do fundo que escolhi
-                continue
-
-            padrao = re.compile(
-                r"(\d{1,2}\.\d{1,2}\.\d{1,2}\.\d{1,2}\.\d{1,2})\s-\s(.*?)\sRubrica.*?Total por Natureza:\s([\d\.,]+)"
-            )
-
-            dados_proventos = []
-            for item in relatorio_fundo["PROVENTOS"].split("Elem. Despesa:"):
-                correspondencia = padrao.search(item)
-                if correspondencia:
-                    cod_nat = correspondencia.group(1).replace(".", "")
-                    cod_nat = (
-                        cod_nat[1:]
-                        if cod_nat.startswith("3") and len(cod_nat) == 9
-                        else cod_nat
-                    )
-                    nome_nat = correspondencia.group(2).strip()
-                    total_natureza = float(
-                        correspondencia.group(3).replace(".", "").replace(",", ".")
-                    )
-                    dados_proventos.append([nome_nat, cod_nat, total_natureza])
-
-            dados_descontos = []
-            for item in relatorio_fundo["DESCONTOS"].split("Elem. Despesa:"):
-                correspondencia = padrao.search(item)
-                if correspondencia:
-                    cod_nat = correspondencia.group(1).replace(".", "")
-                    cod_nat = (
-                        cod_nat[1:]
-                        if cod_nat.startswith("3") and len(cod_nat) == 9
-                        else cod_nat
-                    )
-
-                    nome_nat = correspondencia.group(2).strip()
-                    total_natureza = float(
-                        correspondencia.group(3).replace(".", "").replace(",", ".")
-                    )
-                    dados_descontos.append([nome_nat, cod_nat, total_natureza])
-
-            colunas_p = ["NOME NAT", "COD NAT", "PROVENTO"]
-            df_proventos = pd.DataFrame(dados_proventos, columns=colunas_p)
-
-            colunas_d = ["NOME NAT", "COD NAT", "DESCONTO"]
-            df_descontos = pd.DataFrame(dados_descontos, columns=colunas_d)
-
-            return {
-                "PROVENTOS": df_proventos,
-                "DESCONTOS": df_descontos,
-            }
+        return self.pdf_svc.parse_relatorio_folha(fundo_escolhido)
 
     def gerar_nl_folha(
         self, caminho_template: str, template: str, saldos: dict
@@ -350,7 +283,7 @@ class PagamentoUseCase:
             caminho_template, template
         )
         folha_pagamento["VALOR"] = 0.0
-        
+
         # Calcula o valor para cada linha
         for idx, row in folha_pagamento.iterrows():
             class_orc = row.get("CLASS. ORC", "")

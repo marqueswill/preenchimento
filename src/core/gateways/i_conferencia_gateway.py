@@ -21,23 +21,15 @@ class IConferenciaGateway(ABC):
         super().__init__()
 
     @abstractmethod
-    def get_tabela_demofin() -> DataFrame:
-        pass
+    def get_tabela_demofin() -> DataFrame: ...
 
     @abstractmethod
-    def parse_relatorio(self) -> str:
-        pass
-
-    @abstractmethod
-    def salvar_nls_conferencia(self, nls: List[DataFrame]):
-        pass
+    def salvar_nls_conferencia(self, nls: List[DataFrame]): ...
 
     @abstractmethod
     def salvar_dados_conferencia(
         self, proventos: DataFrame, descontos: DataFrame, totais: DataFrame
-    ):
-        pass
+    ): ...
 
     @abstractmethod
-    def salvar_dados_relatorio(self, dados_relatorio: DataFrame):
-        pass
+    def salvar_dados_relatorio(self, dados_relatorio: DataFrame): ...

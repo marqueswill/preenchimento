@@ -19,7 +19,6 @@ class NLFolhaGateway(INLFolhaGateway):
         self, caminho_completo: str, template: str, incluir_calculos=True
     ) -> DataFrame:
         try:
-
             dataframe = pd.read_excel(
                 caminho_completo,
                 header=6,
@@ -28,15 +27,12 @@ class NLFolhaGateway(INLFolhaGateway):
                 dtype=str,
             ).astype(str)
 
-            # dataframe = dataframe.replace(r"\s+", "", regex=True)
-
             dataframe.replace(["nan", ""], ".", inplace=True)
             dataframe["CLASS. ORC"] = (
                 dataframe["CLASS. ORC"]
                 .apply(lambda x: x[1:] if len(x) == 9 else x)
                 .astype(str)
             )
-            # dataframe["VALOR"] = 0.0
             return dataframe
         except Exception as e:
             print("Feche todas planilhas de template e tente novamente.", e)

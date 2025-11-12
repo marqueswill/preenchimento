@@ -18,6 +18,3 @@ Acesse a pasta pelo terminal e execute conforme o exemplo:
 se quiser ocultar o console, use
 `python -m PyInstaller --onefile --noconsole --name "APP FOLHA DE PAGAMENTO" .\drivers\pagamento\controller.py`
 
-Ou execute o comando na pasta raiz (deprecated, but useful?):
-`./build_rgps.bat`
-

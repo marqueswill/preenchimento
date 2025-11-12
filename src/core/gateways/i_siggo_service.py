@@ -9,53 +9,40 @@ class ISiggoService(ABC):
     """
 
     @abstractmethod
-    def start(self):
-        pass
+    def start(self): ...
 
     @abstractmethod
-    def setup_pandas(self):
-        pass
+    def setup_pandas(self): ...
 
     @abstractmethod
-    def setup_driver(self):
-        pass
+    def setup_driver(self): ...
 
     @abstractmethod
-    def finalizar(self):
-        pass
+    def finalizar(self): ...
 
     @abstractmethod
-    def login_siggo(self, cpf, password):
-        pass
+    def login_siggo(self, cpf, password): ...
 
     @abstractmethod
-    def esperar_login(self, timeout=60):
-        pass
+    def esperar_login(self, timeout=60): ...
 
     @abstractmethod
-    def esperar_carregamento(self, timeout=60):
-        pass
+    def esperar_carregamento(self, timeout=60): ...
 
     @abstractmethod
-    def preencher_campos(self, campos: dict):
-        pass
+    def preencher_campos(self, campos: dict): ...
 
     @abstractmethod
-    def selecionar_opcoes(self, opcoes: dict):
-        pass
+    def selecionar_opcoes(self, opcoes: dict): ...
 
     @abstractmethod
-    def nova_aba(self):
-        pass
+    def nova_aba(self): ...
 
     @abstractmethod
-    def acessar_link(self, link):
-        pass
+    def acessar_link(self, link): ...
 
     @abstractmethod
-    def fechar_primeira_aba(self):
-        pass
+    def fechar_primeira_aba(self): ...
 
     @abstractmethod
-    def executar(self):
-        pass
+    def executar(self): ...

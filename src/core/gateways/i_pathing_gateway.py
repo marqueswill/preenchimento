@@ -5,29 +5,31 @@ class IPathingGateway(ABC):
     """_summary_ Gateway usado para unificar a personalização de caminhos"""
 
     @abstractmethod
-    def get_secon_root_path(self) -> str:
-        pass
+    def get_secon_root_path(self) -> str: ...
 
     @abstractmethod
-    def get_caminho_template(self, tipo_folha: str) -> str:
-        pass
+    def get_caminho_template(self, tipo_folha: str) -> str: ...
 
     @abstractmethod
-    def get_caminho_conferencia(self, fundo: str):
-        pass
+    def get_caminho_conferencia(self, fundo: str): ...
 
     @abstractmethod
-    def get_caminho_tabela_demofin() -> str:
-        pass
+    def get_caminho_tabela_demofin() -> str: ...
 
     @abstractmethod
-    def get_caminho_pdf_relatorio() -> str:
-        pass
+    def get_caminho_pdf_relatorio() -> str: ...
 
     @abstractmethod
-    def get_current_file_path(self) -> str:
-        pass
-    
+    def get_current_file_path(self) -> str: ...
+
     @abstractmethod
-    def listar_arquivos(self, caminho: str) -> list[str]:
-        pass
+    def listar_arquivos(self, caminho: str) -> list[str]: ...
+
+    @abstractmethod
+    def get_caminhos_nes_diaria(self) -> list[str]: ...
+
+    @abstractmethod
+    def get_caminhos_demonstrativos(self,pasta_mes:str) -> list[str]: ...
+
+    @abstractmethod
+    def get_caminho_reinf(self) -> str: ...

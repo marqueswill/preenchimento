@@ -13,9 +13,9 @@ from excel.excel_service import ExcelService
 ANO_ATUAL = datetime.now().year
 MES_ATUAL = datetime.now().month
 
-TESTE = True
-# MES_REFERENCIA = MES_ATUAL - 1 if MES_ATUAL > 1 else 12 if not TESTE else 0
-MES_REFERENCIA = 0
+TESTE = False
+MES_REFERENCIA = MES_ATUAL - 1 if MES_ATUAL > 1 else 12 if not TESTE else 0
+# MES_REFERENCIA = 0
 
 MESES = {
     0: "TESTES",
@@ -91,8 +91,6 @@ class ExtrairDadosR2000:
             text = ""
             for page in reader.pages:
                 text += page.extract_text()
-
-        # print(text)
 
         # Use a safe way to extract data with regex
         processo_match = re.search(r"PROCESSO Nº : ([\d/]+)", text)

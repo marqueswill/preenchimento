@@ -13,24 +13,17 @@ class IPreenchimentoGateway(ABC):
         super().__init__()
 
     @abstractmethod
-    def executar(self, dados: list[Dict[str, DataFrame]]):
-        pass
+    def executar(self, dados: list[dict[str, DataFrame]]): ...
 
     @abstractmethod
     def separar_por_pagina(
         self, dataframe: DataFrame, tamanho_pagina=24
-    ) -> list[DataFrame]:
-        pass
+    ) -> list[DataFrame]: ...
 
     @abstractmethod
-    def preparar_preechimento_cabecalho(self, template: DataFrame):
-        pass
+    def preparar_preechimento_cabecalho(self, template: DataFrame): ...
 
     @abstractmethod
-    def preparar_preenchimento_nl(self, dados):
-        pass
+    def preparar_preenchimento_nl(self, dados): ...
 
-    def extrair_dados_preenchidos(self) -> list[dict[str, DataFrame]]:
-        pass
-        # Iterar sobre as abas abertas no navegador
-        # Extrair os dados preenchidos de cada aba
+    def extrair_dados_preenchidos(self) -> list[dict[str, DataFrame]]: ...

@@ -1,7 +1,6 @@
 from src.factories import UseCaseFactory
-from src.config import *
 from src.infrastructure.cli.console_service import ConsoleService
-from tests.mock_factories import UseCaseFactoryMock
+from src.config import *
 
 
 def NLAutomaticaController(run=True):

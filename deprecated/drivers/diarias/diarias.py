@@ -5,7 +5,7 @@ from tabula import read_pdf
 from drivers.pagamento.services import get_root_paths
 from drivers.preenchimento_nl import PreenchimentoNL
 
-#TODO: usar PyPDF2 ao inves do tabula
+#TODO: usar pypdf ao inves do tabula
 class BaixaDiaria:
     """Classe para baixar e processar diárias do SIGGO."""
 
