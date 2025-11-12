@@ -8,9 +8,13 @@ from datetime import datetime
 
 from src.core.gateways.i_pathing_gateway import IPathingGateway
 from src.core.gateways.i_pdf_service import IPdfService
+from src.core.gateways.i_pathing_gateway import IPathingGateway
 
 
 class PdfService(IPdfService):
+    def __init__(self, pathing_gw: IPathingGateway):
+        self.pathing_gw = pathing_gw
+        super().__init__()
 
     def parse_relatorio_folha(self, fundo_escolhido) -> dict[str, DataFrame]:
         caminho_pdf_relatorio = self.pathing_gw.get_caminho_pdf_relatorio()
@@ -298,7 +302,7 @@ class PdfService(IPdfService):
         return paginas_por_empresa
 
     def export_pages(self, pages: list[PageObject], path: str):
-        try:    
+        try:
             # diretorio_de_saida = os.path.dirname(path)
             # os.makedirs(diretorio_de_saida, exist_ok=True)
             writer = PdfWriter()

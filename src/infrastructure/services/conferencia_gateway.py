@@ -5,9 +5,19 @@ from pandas import DataFrame
 from src.config import *
 
 from src.core.gateways.i_conferencia_gateway import IConferenciaGateway
-
+from src.core.gateways.i_excel_service import IExcelService
+from src.core.gateways.i_pathing_gateway import IPathingGateway
 
 class ConferenciaGateway(IConferenciaGateway):
+
+    def __init__(
+        self,
+        pathing_gw: IPathingGateway,  # Configuração do pathing
+        excel_svc: IExcelService,  # Exportação e importação
+    ):
+        self.pathing_gw = pathing_gw
+        self.excel_svc = excel_svc
+        super().__init__()
 
     def get_tabela_demofin(self):
         caminho_completo = self.pathing_gw.get_caminho_tabela_demofin()

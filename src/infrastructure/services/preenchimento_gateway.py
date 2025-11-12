@@ -8,10 +8,14 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 
 from src.core.gateways.i_preenchimento_gateway import IPreenchimentoGateway
+from src.core.gateways.i_siggo_service import ISiggoService
 from src.config import *
 
 
 class PreenchimentoGateway(IPreenchimentoGateway):
+    def __init__(self, siggo_service: ISiggoService):
+        self.siggo_driver = siggo_service
+        super().__init__()
 
     def executar(self, dados: list[dict[str, DataFrame]]):
         self.siggo_driver.start()

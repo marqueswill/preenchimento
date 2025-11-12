@@ -2,11 +2,7 @@ from abc import ABC, abstractmethod
 
 
 class ISiggoService(ABC):
-    """_summary_ Faz a interação com o sistema Siggo.
-
-    Args:
-        ABC (_type_): _description_
-    """
+    """_summary_ Faz a interação com o sistema Siggo."""
 
     @abstractmethod
     def start(self): ...
