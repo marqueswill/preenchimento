@@ -32,16 +32,37 @@ class PreenchimentoGateway(IPreenchimentoGateway):
 
             dados_por_pagina = self.separar_por_pagina(folha)
             for dados_lancamentos in dados_por_pagina:
-                self.siggo_driver.nova_aba()
-                self.siggo_driver.acessar_link(link_lancamento_nl)
-                self._remove_first_row()
+                tentativa = 0
+                while True:
+                    tentativa += 1
+                    try:
 
-                campos_cabecalho = self.preparar_preechimento_cabecalho(template)
-                self.siggo_driver.selecionar_opcoes(campos_cabecalho["opcoes"])
-                self.siggo_driver.preencher_campos(campos_cabecalho["campos"])
+                        self.siggo_driver.nova_aba()
+                        self.siggo_driver.acessar_link(link_lancamento_nl)
+                        self._remove_first_row()
 
-                campos_lancamentos = self.preparar_preenchimento_nl(dados_lancamentos)
-                self.siggo_driver.preencher_campos(campos_lancamentos)
+                        campos_cabecalho = self.preparar_preechimento_cabecalho(
+                            template
+                        )
+                        self.siggo_driver.selecionar_opcoes(campos_cabecalho["opcoes"])
+                        self.siggo_driver.preencher_campos(campos_cabecalho["campos"])
+
+                        campos_lancamentos = self.preparar_preenchimento_nl(
+                            dados_lancamentos
+                        )
+                        self.siggo_driver.preencher_campos(campos_lancamentos)
+                        print("Preenchimento feito com sucesso. Indo para próxima NL.")
+                        break
+                    except:
+                        print(f"\nTentativas feitas: {tentativa}")
+                        if tentativa == 3:
+                            print(f"Preenchimento falhou 3 vezes. NL foi ignorada")
+                            break
+                        else:
+                            print(f"Preenchimento falhou, tentando novamente.")
+                            # self.siggo_driver.recarregar_pagina()
+                            self.siggo_driver.fechar_pagina_atual()
+                            continue
 
         self.siggo_driver.fechar_primeira_aba()
 

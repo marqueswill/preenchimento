@@ -28,6 +28,7 @@ from src.core.gateways.i_pdf_service import IPdfService
 from src.core.gateways.i_email_service import IEmailService
 
 from src.config import *
+from tests.mocks.siggo_service_mock import SiggoServiceMock
 
 
 class UseCaseFactory:
@@ -64,7 +65,7 @@ class UseCaseFactory:
     ) -> PreenchimentoFolhaUseCase:
         pagamento_uc: PagamentoUseCase = self.create_pagamento_use_case(fundo)
 
-        siggo_service: ISiggoService = SiggoService()
+        siggo_service: ISiggoService = SiggoServiceMock()
         preenchedor_gw: IPreenchimentoGateway = PreenchimentoGateway(siggo_service)
 
         use_case = PreenchimentoFolhaUseCase(pagamento_uc, preenchedor_gw)

@@ -8,9 +8,9 @@ from src.adapters.controllers.baixa_diarias_controller import BaixaDiariaControl
 from src.adapters.controllers.pagamento_controller import FolhaPagamentoController
 
 
-# FolhaPagamentoController()
+FolhaPagamentoController()
 # NLAutomaticaController()
 # BaixaDiariaController()
 # ExtrairDadosR2000Controller()
 # ExportarValoresPagosController()
-EmailsDrissController()
+# EmailsDrissController()

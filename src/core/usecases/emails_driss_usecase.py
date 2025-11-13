@@ -25,12 +25,11 @@ class EmailsDrissUseCase:
         self.email_svc = email_svc
 
     def executar(self):
-
         caminho_pdf = self.pathing_gw.get_caminho_pdf_driss()
         pdfs_para_enviar = self.pdf_svc.parse_pdf_driss(caminho_pdf)
         emails_para_enviar = self.encontrar_emails_para_enviar(pdfs_para_enviar)
 
-        self.exportar_pdfs_driss(pdfs_para_enviar)
+        # self.exportar_pdfs_driss(pdfs_para_enviar)
         self.preparar_envio_emails_driss(pdfs_para_enviar, emails_para_enviar)
 
     def preparar_envio_emails_driss(
@@ -39,24 +38,42 @@ class EmailsDrissUseCase:
         emails_para_enviar: dict[str, list[str]],
     ):
 
+        empresas_com_email = 0
+        num_pdfs = len(pdfs_para_enviar)
+        empresas_nao_encontradas = []
         for nome_empresa, emails_empresa in emails_para_enviar.items():
+            print()
             email_origem = "secon.gab@tc.df.gov.br"
             body, html = self.gerar_mensagem()
             subject = "Declaração de Retenção do ISS"
             attachments = pdfs_para_enviar[nome_empresa]
-            for email_empresa in emails_empresa:
-                print(f"Preparando envio para {email_empresa}")
-                continue
-                self.email_svc.send_email(
-                    mail_from=email_origem,
-                    mail_to=email_empresa,
-                    html=html,
-                    body=body,
-                    subject=subject,
-                    attachments=attachments,
-                    send=False,
-                    display=True,
+
+            print(nome_empresa, emails_empresa)
+            if emails_empresa is not None:
+                empresas_com_email += 1
+                for email_empresa in emails_empresa:
+                    print(f"Preparando envio para '{email_empresa}'")
+
+                    continue
+                    self.email_svc.send_email(
+                        mail_from=email_origem,
+                        mail_to=email_empresa,
+                        html=html,
+                        body=body,
+                        subject=subject,
+                        attachments=attachments,
+                        send=False,
+                        display=True,
+                    )
+            else:
+                empresas_nao_encontradas.append(nome_empresa)
+                print(
+                    f"A empresa não foi encontrada na planilha de mails: {nome_empresa}"
                 )
+
+        print(f"\nNúmero de empresas com email: {empresas_com_email}")
+        print(f"Número de pdfs para enviar  : {num_pdfs}")
+        print(empresas_nao_encontradas)
 
     def exportar_pdfs_driss(self, pdfs_para_enviar: dict[str, list[PageObject]]):
         for nome_empresa_pdf, paginas in pdfs_para_enviar.items():
@@ -77,13 +94,13 @@ class EmailsDrissUseCase:
             emails_encontrados = self.encontrar_emails_empresa(nome_empresa_pdf)
             emails_para_enviar.update(
                 {
-                    nome_empresa_pdf: emails_encontrados.values(),  # usa o nome do PDF ao invés da planilha
+                    nome_empresa_pdf: emails_encontrados,  # usa o nome do PDF ao invés da planilha
                 }
             )
 
         return emails_para_enviar
 
-    def encontrar_emails_empresa(self, nome_empresa_pdf: str) -> dict[str, list[str]]:
+    def encontrar_emails_empresa(self, nome_empresa_pdf: str) -> list[str]:
         planilha_emails = self.excel_svc.get_sheet(
             sheet_name="E-MAIL", as_dataframe=True, columns="B:C"
         )
@@ -100,7 +117,7 @@ class EmailsDrissUseCase:
                 emails_encontrados += (
                     str(row["E-MAIL"]).strip().replace(" ", "").split(";")
                 )
-                return {nome_empresa_planilha: emails_encontrados}
+                return emails_encontrados
 
     def gerar_mensagem(self) -> tuple[str, str]:
         hora = datetime.now().hour
