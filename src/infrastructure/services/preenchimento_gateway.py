@@ -18,7 +18,7 @@ class PreenchimentoGateway(IPreenchimentoGateway):
         super().__init__()
 
     def executar(self, dados: list[dict[str, DataFrame]]):
-        self.siggo_driver.start()
+        self.siggo_driver.inicializar()
         link_lancamento_nl = (
             f"https://siggo.fazenda.df.gov.br/{ANO_ATUAL}/afc/nota-de-lancamento"
         )

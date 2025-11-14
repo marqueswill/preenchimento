@@ -10,11 +10,12 @@ from src.config import *
 
 class SiggoServiceMock(SiggoService):
 
-    def start(self):
+    def inicializar(self):
         self.setup_pandas()
         self.setup_driver()
         cpf, password = self.get_siggo_credentials()
         self.login_siggo(cpf, password)
+        
 
     def setup_pandas(self):
         pd.set_option("display.max_rows", None)

@@ -3,7 +3,7 @@ import re
 from pandas import DataFrame
 from pypdf import PageObject
 
-from src.core.gateways.i_email_service import IEmailService
+from src.core.gateways.i_outlook_service import IOutlookService
 from src.core.gateways.i_pathing_gateway import IPathingGateway
 from src.core.gateways.i_excel_service import IExcelService
 from src.core.gateways.i_pdf_service import IPdfService
@@ -17,7 +17,7 @@ class EmailsDrissUseCase:
         pathing_gw: IPathingGateway,
         pdf_svc: IPdfService,
         excel_svc: IExcelService,
-        email_svc: IEmailService,
+        email_svc: IOutlookService,
     ):
         self.pdf_svc = pdf_svc
         self.excel_svc = excel_svc
@@ -46,7 +46,9 @@ class EmailsDrissUseCase:
             email_origem = "secon.gab@tc.df.gov.br"
             body, html = self.gerar_mensagem()
             subject = "Declaração de Retenção do ISS"
-            attachments = pdfs_para_enviar[nome_empresa]
+            # attachments = pdfs_para_enviar[nome_empresa]
+            attachments = self.pathing_gw.get_caminhos_pdfs_envio_driss()
+            inbox_mail = "secon.gab@tc.df.gov.br"
 
             print(nome_empresa, emails_empresa)
             if emails_empresa is not None:
@@ -54,22 +56,25 @@ class EmailsDrissUseCase:
                 for email_empresa in emails_empresa:
                     print(f"Preparando envio para '{email_empresa}'")
 
-                    continue
                     self.email_svc.send_email(
                         mail_from=email_origem,
-                        mail_to=email_empresa,
+                        # mail_to=email_empresa,
+                        mail_to="willyanmarques@tc.df.gov.br",
                         html=html,
                         body=body,
                         subject=subject,
-                        attachments=attachments,
+                        # attachments=attachments,
+                        attachments=attachments[0],
                         send=False,
                         display=True,
+                        # inbox_mail=inbox_mail,
                     )
             else:
                 empresas_nao_encontradas.append(nome_empresa)
                 print(
                     f"A empresa não foi encontrada na planilha de mails: {nome_empresa}"
                 )
+            break
 
         print(f"\nNúmero de empresas com email: {empresas_com_email}")
         print(f"Número de pdfs para enviar  : {num_pdfs}")

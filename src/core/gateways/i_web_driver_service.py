@@ -1,19 +1,20 @@
 from abc import ABC, abstractmethod
+from selenium.webdriver.remote.webdriver import WebDriver as SeleniumWebDriver
 
 
 class IWebDriverService(ABC):
 
     @abstractmethod
-    def start(self): ...
+    def inicializar(self) -> SeleniumWebDriver: ...
+    
+    @abstractmethod
+    def finalizar(self): ...
 
     @abstractmethod
     def setup_pandas(self): ...
 
     @abstractmethod
     def setup_driver(self): ...
-
-    @abstractmethod
-    def finalizar(self): ...
 
     @abstractmethod
     def nova_aba(self): ...

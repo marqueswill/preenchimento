@@ -1,5 +1,5 @@
 # Importe as classes CONCRETAS de infrastructure
-from src.infrastructure.email.email_service import EmailService
+from src.infrastructure.web.outlook_service import OutlookService
 from src.infrastructure.files.pdf_service import PdfService
 from src.infrastructure.services.preenchimento_gateway import PreenchimentoGateway
 from src.infrastructure.web.siggo_service import SiggoService
@@ -25,7 +25,7 @@ from src.core.gateways.i_conferencia_gateway import IConferenciaGateway
 from src.core.gateways.i_preenchimento_gateway import IPreenchimentoGateway
 from src.core.gateways.i_siggo_service import ISiggoService
 from src.core.gateways.i_pdf_service import IPdfService
-from src.core.gateways.i_email_service import IEmailService
+from src.core.gateways.i_outlook_service import IOutlookService
 
 from src.config import *
 from tests.mocks.siggo_service_mock import SiggoServiceMock
@@ -123,6 +123,6 @@ class UseCaseFactory:
             + f"SECON - General\\ANO_ATUAL\\DRISS_{ANO_ATUAL}\\EMAIL_EMPRESAS.xlsx"
         )
         excel_svc: IExcelService = ExcelService(caminho_planilha_emails)
-        email_svc: IEmailService = EmailService()
+        email_svc: IOutlookService = OutlookService()
         use_case = EmailsDrissUseCase(pathing_gw, pdf_svc, excel_svc, email_svc)
         return use_case

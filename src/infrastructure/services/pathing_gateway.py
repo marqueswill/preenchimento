@@ -171,3 +171,16 @@ class PathingGateway(IPathingGateway):
             PASTA_MES_ANTERIOR,
             arquivo_driss,
         )
+
+    def get_caminhos_pdfs_envio_driss(self) -> str:
+        dir_path = os.path.join(
+            self.get_secon_root_path(),
+            "SECON - General",
+            "ANO_ATUAL",
+            f"DRISS_{ANO_ATUAL}",
+            PASTA_MES_ANTERIOR,
+        )
+        arquivos = os.listdir(dir_path)
+        caminhos = [os.path.join(dir_path, pdf) for pdf in arquivos]
+
+        return caminhos

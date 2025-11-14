@@ -12,10 +12,11 @@ class SiggoService(WebDriver):
     Driver para automação e interação com o SIGGO
     """
 
-    def start(self):
+    def inicializar(self):
         self.setup_pandas()
         self.setup_driver()
         self.esperar_login()
+        
 
     # Métodos controle de login
     def login_siggo(self, cpf, password):
