@@ -8,10 +8,10 @@ except locale.Error:
     # TODO: refatorar essa classe pra um serviço genérico de Excel
     locale.setlocale(locale.LC_ALL, "Portuguese_Brazil.1252")
 
-TESTE = True
+TESTE = False
 
 ANO_ATUAL = datetime.now().year
-MES_ATUAL = datetime.now().month
+MES_ATUAL = datetime.now().month - 1
 MES_ANTERIOR = MES_ATUAL - 1 if MES_ATUAL > 1 else 11
 
 NOMES_MESES = [
@@ -48,7 +48,6 @@ PASTAS_MESES = [
 if not TESTE:
     PASTA_MES_ATUAL = PASTAS_MESES[MES_ATUAL]
     PASTA_MES_ANTERIOR = PASTAS_MESES[MES_ANTERIOR]
-    
 
     NOME_MES_ATUAL = NOMES_MESES[MES_ATUAL]
     NOME_MES_ANTERIOR = NOMES_MESES[MES_ANTERIOR]
