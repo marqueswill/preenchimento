@@ -183,5 +183,5 @@ class PathingGateway(IPathingGateway):
         )
         arquivos = os.listdir(dir_path)
         caminhos = [os.path.join(dir_path, pdf) for pdf in arquivos]
-        print(caminhos)
+
         return caminhos

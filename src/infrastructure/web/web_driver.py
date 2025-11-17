@@ -75,7 +75,6 @@ class WebDriver(IWebDriverService):
         while True:
             try:
                 loading = self.driver.find_element(By.XPATH, xpath)
-                print(loading.text)
 
                 current_time = time.time()
                 if current_time - start_time > timeout:
