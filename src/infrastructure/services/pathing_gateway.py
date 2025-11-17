@@ -179,8 +179,9 @@ class PathingGateway(IPathingGateway):
             "ANO_ATUAL",
             f"DRISS_{ANO_ATUAL}",
             PASTA_MES_ANTERIOR,
+            "ENVIADOS",
         )
         arquivos = os.listdir(dir_path)
         caminhos = [os.path.join(dir_path, pdf) for pdf in arquivos]
-
+        print(caminhos)
         return caminhos
