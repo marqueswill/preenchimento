@@ -9,11 +9,11 @@ class IOutlookService(WebDriver):
         self,
         mail_from,
         mail_to,
-        inbox,
         subject,
         body,
         html,
         attachments,
+        inbox=None,
         send=True,
         display=False,
     ): ...

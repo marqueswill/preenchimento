@@ -61,3 +61,7 @@ def NLAutomaticaController(run=True):
 
     if run:
         preenchimento_uc.executar(templates_selecionados)
+
+
+if __name__ == "__main__":
+    NLAutomaticaController()

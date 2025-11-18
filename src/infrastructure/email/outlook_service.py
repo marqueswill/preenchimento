@@ -7,13 +7,13 @@ class OutlookService(IOutlookService):
 
     def send_email(
         self,
-        mail_from,
         mail_to,
-        inbox,
         subject,
         body,
         html,
-        attachments,
+        attachments=None,
+        mail_from=None,
+        inbox=None,
         send=True,
         display=False,
     ):
@@ -21,15 +21,32 @@ class OutlookService(IOutlookService):
             outlook = win32.Dispatch("outlook.application")
             mail = outlook.CreateItem(0)
 
-            mail.SentOnBehalfOfName = inbox
-
             mail.To = mail_to
             mail.Subject = subject
             mail.Body = body
             mail.HTMLBody = html
 
-            for att in attachments:
-                mail.Attachments.Add(att)
+            if attachments:
+                for att in attachments:
+                    mail.Attachments.Add(att)
+
+            if mail_from:
+                
+                found_account = False
+
+                for account in outlook.Session.Accounts:
+                    if account.SmtpAddress == mail_from:
+                        mail.SendUsingAccount = account
+                        found_account = True
+                        break
+
+                if not found_account:
+                    raise Exception(
+                        f"O email {mail_from} não está conectado ao Outlook (classic). Verifique se o email está correto ou logado."
+                    )
+
+            if inbox:
+                mail.SentOnBehalfOfName = inbox
 
             if display:
                 mail.Display()
@@ -39,4 +56,4 @@ class OutlookService(IOutlookService):
                 # mail.Send()
 
         except Exception as e:
-            raise (f"Ocorreu um erro inesperado ao enviar o email: {e}\n")
+            raise Exception(f"Ocorreu um erro inesperado ao enviar o email: {e}\n")

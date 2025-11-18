@@ -29,3 +29,7 @@ def BaixaDiariaController(run=True):
 
         if run:
             baixa_diaria_uc.executar(planilhas_selecionadas)
+
+
+if __name__ == "__main__":
+    BaixaDiariaController()
