@@ -83,7 +83,7 @@ def FolhaPagamentoController(test=False, run=True):
             # Em caso de erro, exibe a mensagem de erro e sai
             app_view.show_message(f"Ocorreu um erro: {e}")
             continue
-
+        
 
 if __name__ == "__main__":
     FolhaPagamentoController()

@@ -4,6 +4,11 @@ from src.config import *
 from src.core.gateways.i_pathing_gateway import IPathingGateway
 
 
+# TODO: ajustar métodos que recebem variáveis globais de src.config para receberem parâmetros no lugar
+# TODO: ajustar projeto para se livrar das variáveis globais
+# TODO: modificar pathing gateway para pegar os caminhos dos arquivos salvos em uma DB, de forma
+# que os caminhos possam sejam setados pelo próprio usuário. Os caminhos atuais seriam o "default", mas
+# não seriam fixos
 class PathingGateway(IPathingGateway):
 
     def get_secon_root_path(self) -> str:
@@ -151,5 +156,32 @@ class PathingGateway(IPathingGateway):
             "SECON - General",
             "ANO_ATUAL",
             "EFD-REINF",
-            "VALORES_PAGOS.xlsx"
+            "VALORES_PAGOS.xlsx",
         )
+
+    def get_caminho_pdf_driss(self) -> str:
+        arquivo_driss = (
+            f"DRISS_{f"{MES_ANTERIOR:02d}" if not TESTE else "TESTES"}_{ANO_ATUAL}.pdf"
+        )
+        return os.path.join(
+            self.get_secon_root_path(),
+            "SECON - General",
+            "ANO_ATUAL",
+            f"DRISS_{ANO_ATUAL}",
+            PASTA_MES_ANTERIOR,
+            arquivo_driss,
+        )
+
+    def get_caminhos_pdfs_envio_driss(self) -> str:
+        dir_path = os.path.join(
+            self.get_secon_root_path(),
+            "SECON - General",
+            "ANO_ATUAL",
+            f"DRISS_{ANO_ATUAL}",
+            PASTA_MES_ANTERIOR,
+            "ENVIADOS",
+        )
+        arquivos = os.listdir(dir_path)
+        caminhos = [os.path.join(dir_path, pdf) for pdf in arquivos]
+
+        return caminhos

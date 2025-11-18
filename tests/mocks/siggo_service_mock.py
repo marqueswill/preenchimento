@@ -10,11 +10,12 @@ from src.config import *
 
 class SiggoServiceMock(SiggoService):
 
-    def start(self):
+    def inicializar(self):
         self.setup_pandas()
         self.setup_driver()
         cpf, password = self.get_siggo_credentials()
         self.login_siggo(cpf, password)
+        
 
     def setup_pandas(self):
         pd.set_option("display.max_rows", None)
@@ -26,9 +27,9 @@ class SiggoServiceMock(SiggoService):
     def setup_driver(self):
         options = webdriver.ChromeOptions()
         options.add_argument("--start-maximized")
-        options.add_argument("--headless")
+        # options.add_argument("--headless")
         options.add_argument("--window-size=1920,1080")
-        # options.add_experimental_option("detach", True)
+        options.add_experimental_option("detach", True)
         options.add_argument("--log-level=3")  # Suppress Chrome logs
         options.add_argument("--silent")
 

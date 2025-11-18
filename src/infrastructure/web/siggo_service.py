@@ -1,47 +1,22 @@
-import numpy as np
-from pandas import DataFrame
-from selenium import webdriver
+import time
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
 from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.chrome.service import Service
-import pandas as pd
-import subprocess
-import sys, time, os, locale
-from datetime import datetime
 
-from src.core.gateways.i_siggo_service import ISiggoService
+from src.infrastructure.web.web_driver import WebDriver
 from src.config import *
 
 
-class SiggoService(ISiggoService):
+class SiggoService(WebDriver):
     """_summary_
     Driver para automação e interação com o SIGGO
     """
 
-    def start(self):
+    def inicializar(self):
         self.setup_pandas()
         self.setup_driver()
         self.esperar_login()
-
-    def setup_pandas(self):
-        pd.set_option("display.max_rows", None)
-        pd.set_option("display.max_columns", None)
-        pd.set_option("display.max_colwidth", None)
-        pd.set_option("display.width", 0)
-        pd.set_option("display.expand_frame_repr", False)
-
-    def setup_driver(self):
-        options = webdriver.ChromeOptions()
-        options.add_argument("--start-maximized")
-        options.add_experimental_option("detach", True)
-        options.add_argument("--log-level=3")  # Suppress Chrome logs
-        options.add_argument("--silent")
-
-        self.driver = webdriver.Chrome(options=options)
-
-    def finalizar(self):
-        self.driver.quit()
+        
 
     # Métodos controle de login
     def login_siggo(self, cpf, password):
@@ -83,7 +58,7 @@ class SiggoService(ISiggoService):
                 self.driver.quit()
                 raise TimeoutException("Tempo limite para login excedido.")
 
-    def esperar_carregamento(self, timeout=60):
+    def esperar_carregamento_login(self, timeout=60):
         start_time = time.time()
 
         while True:
@@ -114,24 +89,3 @@ class SiggoService(ISiggoService):
             Select(self.driver.find_element(By.XPATH, campo)).select_by_visible_text(
                 opcao
             )
-
-    # Método controle de páginas
-    def nova_aba(self):
-        self.driver.execute_script("window.open('');")
-        abas = self.driver.window_handles
-        self.driver.switch_to.window(abas[-1])
-        time.sleep(1)
-
-    def acessar_link(self, link):
-        self.driver.get(link)
-        self.esperar_carregamento(timeout=120)
-        time.sleep(1)
-
-    def fechar_primeira_aba(self):
-        abas = self.driver.window_handles
-        self.driver.switch_to.window(abas[0])
-        self.driver.close()
-        self.driver.switch_to.window(abas[1])
-
-    def executar(self):
-        raise NotImplementedError("Método deve ser implementado na subclasse.")

@@ -112,6 +112,7 @@ class ConsoleService:
         for _ in range(3):
             print(".", end="", flush=True)
             time.sleep(0.5)
+        print()
 
     def clear_console(self):
         """Limpa a tela do console."""

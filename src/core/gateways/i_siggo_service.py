@@ -1,24 +1,10 @@
 from abc import ABC, abstractmethod
 
+from src.core.gateways.i_web_driver_service import IWebDriverService
 
-class ISiggoService(ABC):
-    """_summary_ Faz a interação com o sistema Siggo.
 
-    Args:
-        ABC (_type_): _description_
-    """
-
-    @abstractmethod
-    def start(self): ...
-
-    @abstractmethod
-    def setup_pandas(self): ...
-
-    @abstractmethod
-    def setup_driver(self): ...
-
-    @abstractmethod
-    def finalizar(self): ...
+class ISiggoService(IWebDriverService):
+    """_summary_ Faz a interação com o sistema Siggo."""
 
     @abstractmethod
     def login_siggo(self, cpf, password): ...
@@ -27,22 +13,13 @@ class ISiggoService(ABC):
     def esperar_login(self, timeout=60): ...
 
     @abstractmethod
-    def esperar_carregamento(self, timeout=60): ...
+    def esperar_carregamento_login(self, timeout=60): ...
 
     @abstractmethod
     def preencher_campos(self, campos: dict): ...
 
     @abstractmethod
     def selecionar_opcoes(self, opcoes: dict): ...
-
-    @abstractmethod
-    def nova_aba(self): ...
-
-    @abstractmethod
-    def acessar_link(self, link): ...
-
-    @abstractmethod
-    def fechar_primeira_aba(self): ...
 
     @abstractmethod
     def executar(self): ...

@@ -2,8 +2,7 @@ from src.infrastructure.cli.console_service import ConsoleService
 from src.factories import UseCaseFactory
 
 
-
-def BaixaDiariaController( run=True):
+def BaixaDiariaController(run=True):
     app_view = ConsoleService()
     app_view.clear_console()
 
@@ -16,7 +15,7 @@ def BaixaDiariaController( run=True):
             nomes_planilhas,
             "Selecione a planilha:",
             selecionar_todos=True,
-            permitir_voltar=True,
+            # permitir_voltar=True,
         )
         planilhas_selecionadas = app_view.get_user_input(
             nomes_planilhas,
@@ -30,3 +29,7 @@ def BaixaDiariaController( run=True):
 
         if run:
             baixa_diaria_uc.executar(planilhas_selecionadas)
+
+
+if __name__ == "__main__":
+    BaixaDiariaController()

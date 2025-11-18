@@ -59,7 +59,6 @@ def NLAutomaticaController(run=True):
 
         break
 
-    print(templates_selecionados)
     if run:
         preenchimento_uc.executar(templates_selecionados)
 

@@ -4,9 +4,13 @@ import pandas as pd
 
 from src.config import *
 from src.core.gateways.i_nl_folha_gateway import INLFolhaGateway
+from src.core.gateways.i_pathing_gateway import IPathingGateway
 
 
 class NLFolhaGateway(INLFolhaGateway):
+    def __init__(self, pathing_gw: IPathingGateway):
+        self.pathing_gw = pathing_gw
+        super().__init__()
 
     def get_nomes_templates(self, fundo: str) -> List[str]:
         caminho_template = self.pathing_gw.get_caminho_template(fundo)
