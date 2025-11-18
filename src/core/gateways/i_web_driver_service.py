@@ -1,11 +1,10 @@
 from abc import ABC, abstractmethod
-from selenium.webdriver.remote.webdriver import WebDriver as SeleniumWebDriver
 
 
 class IWebDriverService(ABC):
 
     @abstractmethod
-    def inicializar(self) -> SeleniumWebDriver: ...
+    def inicializar(self): ...
     
     @abstractmethod
     def finalizar(self): ...
