@@ -7,7 +7,7 @@ from src.core.gateways.i_pathing_gateway import IPathingGateway
 from src.core.gateways.i_preenchimento_gateway import IPreenchimentoGateway
 
 
-class BaixaDiariaUseCase:
+class PagamentoDiariaUseCase:
     def __init__(
         self,
         preenchimento_gw: IPreenchimentoGateway,
@@ -20,7 +20,7 @@ class BaixaDiariaUseCase:
 
     def listar_planilhas(self) -> list[str]:
         dir_path = os.path.join(
-            self.pathing_gw.get_secon_root_path(),
+            self.pathing_gw.get_caminho_raiz_secon(),
             "SECON - General",
             "ANO_ATUAL",
             "NL_AUTOMATICA",

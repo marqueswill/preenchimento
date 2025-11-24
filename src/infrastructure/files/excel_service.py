@@ -11,8 +11,9 @@ from openpyxl.styles import PatternFill, Font, Border, Side
 
 from src.core.gateways.i_excel_service import IExcelService
 
+
 class ExcelService(IExcelService):
-    def __init__(self, caminho_arquivo):
+    def __init__(self, caminho_arquivo: str):
         self.caminho_arquivo = caminho_arquivo
         self.workbook = self._get_workbook()
 
@@ -26,7 +27,7 @@ class ExcelService(IExcelService):
                 # Tenta criar e salvar o novo workbook
                 wb = Workbook()
                 wb.save(self.caminho_arquivo)
-            
+
             # Tenta carregar o workbook
             return load_workbook(self.caminho_arquivo)
 
@@ -113,9 +114,9 @@ class ExcelService(IExcelService):
         col_idx = column_index_from_string(start_column)
         row_idx = int(start_line)
 
+
         # Escreve cabeçalhos
         thin_border = Side(border_style="thin", color="000000")
-
         for j, column_name in enumerate(table.columns):
             cell = sheet.cell(row=row_idx, column=col_idx + j, value=column_name)
             cell.fill = PatternFill(

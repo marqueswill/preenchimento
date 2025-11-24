@@ -44,7 +44,7 @@ def test_parse_relatorio_deve_ler_pdf_corretamente(mocker):
     pathing_gw = factory.create_pathing_gateway()
 
     caminho_gabarito = os.path.join(
-        pathing_gw.get_secon_root_path(), "expected","relatorio_extraido.txt"
+        pathing_gw.get_caminho_raiz_secon(), "expected","relatorio_extraido.txt"
     )
 
     expected_text = ""

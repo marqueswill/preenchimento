@@ -49,3 +49,6 @@ class IExcelService(ABC):
         valor_alvo: Any = None,
         header_row: int = 1,
     ) -> None: ...
+
+    @abstractmethod
+    def delete_rows(self, sheet_name: str, start_row: int = 1): ...

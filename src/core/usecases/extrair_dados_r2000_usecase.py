@@ -19,20 +19,32 @@ class ExtrairDadosR2000UseCase:
         self.excel_svc = excel_svc
         self.pdf_svc = pdf_svc
 
-    def executar(self):
-        dados_inss = self.extrair_dados_inss()
-        df_r2010_1, df_r2010_2 = self.gerar_dataframes_reinf(dados_inss)
-        self.exportar_planilhas_r2000(df_r2010_1, df_r2010_2)
+    def executar(self, meses_escolhidos: list[str]):
+        for pasta_mes in meses_escolhidos:
+            try:
+                print(pasta_mes)
+                dados_inss = self.extrair_dados_inss(pasta_mes)
+                df_r2010_1, df_r2010_2 = self.gerar_dataframes_reinf(dados_inss)
+                self.exportar_planilhas_r2000(df_r2010_1, df_r2010_2)
+            except Exception as e:
+                print(e)
+            finally:
+                self.excel_svc.__exit__()
 
-    def exportar_valores_pagos(self):
-        dados_inss = self.extrair_dados_inss()
-        valores_pagos = self.gerar_dataframe_valores_pagos(dados_inss)
-        self.excel_svc.exportar_para_planilha(
-            valores_pagos, sheet_name=NOME_MES_ANTERIOR, clear=True
-        )
+    def exportar_valores_pagos(self, meses_escolhidos: list[str]):
+        for pasta_mes in meses_escolhidos:
+            try:
+                dados_inss = self.extrair_dados_inss(pasta_mes)
+                valores_pagos = self.gerar_dataframe_valores_pagos(dados_inss)
+                nome_mes = pasta_mes.split("-")[1].strip() if not TESTE else "TESTES"
+                self.excel_svc.exportar_para_planilha(
+                    valores_pagos, sheet_name=nome_mes, clear=True
+                )
+            except Exception as e:
+                print(e)
 
-    def extrair_dados_inss(self):
-        caminhos_pdf = self.pathing_gw.get_caminhos_demonstrativos(PASTA_MES_ANTERIOR)
+    def extrair_dados_inss(self, pasta_mes: str):
+        caminhos_pdf = self.pathing_gw.get_caminhos_demonstrativos(pasta_mes)
         lista_de_dados_completa = []
         for caminho_pdf in caminhos_pdf:
             dados_extraidos = self.pdf_svc.parse_dados_inss(caminho_pdf)
@@ -112,7 +124,11 @@ class ExtrairDadosR2000UseCase:
                 "INDCPRB": dados["CPRB"],
                 "NUMDOCTO": dados["NUM_NF"],
                 "SERIE": dados["SERIE"],
-                "DTEMISSAONF": dados["DATA_EMISSAO"],
+                "DTEMISSAONF": (
+                    dados["DATA_EMISSAO"].strftime("%Y-%m-%d")
+                    if pd.notnull(dados["DATA_EMISSAO"])
+                    else None
+                ),
                 "VLRBRUTO": dados["VALOR_NF"],
                 "OBS": dados["PROCESSO"],
                 "MÊS": (
@@ -193,14 +209,14 @@ class ExtrairDadosR2000UseCase:
         )
 
         # TODO: adicionar formatação condicional para essa coluna no excel
-        df_r2010_1["CORRESPONDENCIA"] = df_r2010_1["IDENTIFICADOR CNPJ-NF"].isin(
-            planilha_validacao["CHAVE_BUSCA"]
-        )
+        # df_r2010_1["CORRESPONDENCIA"] = df_r2010_1["IDENTIFICADOR CNPJ-NF"].isin(
+        #     planilha_validacao["CHAVE_BUSCA"]
+        # )
 
         return df_r2010_1, df_r2010_2
 
     def exportar_planilhas_r2000(self, df_r2010_1: DataFrame, df_r2010_2: DataFrame):
-        self.excel_svc.delete_rows("R-2010-1", 4)
+        self.excel_svc.delete_rows("R-2010-1", 4,100)
         self.excel_svc.exportar_para_planilha(
             df_r2010_1,
             sheet_name="R-2010-1",
@@ -209,7 +225,7 @@ class ExtrairDadosR2000UseCase:
             fit_columns=False,
         )
 
-        self.excel_svc.delete_rows("R-2010-2", 4)
+        self.excel_svc.delete_rows("R-2010-2", 4, 100)
         self.excel_svc.exportar_para_planilha(
             df_r2010_2,
             sheet_name="R-2010-2",
@@ -217,3 +233,7 @@ class ExtrairDadosR2000UseCase:
             start_line=4,
             fit_columns=False,
         )
+
+    #TODO:
+    def apply_conditional_formating(self):...
+    def remove_conditinal_formating(self):...

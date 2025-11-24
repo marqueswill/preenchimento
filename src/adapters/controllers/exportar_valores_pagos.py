@@ -7,7 +7,23 @@ def ExportarValoresPagosController():
     app_view = ConsoleService()
     factory = UseCaseFactory()
     use_case = factory.create_exportar_valores_pagos_usecase()
-    use_case.exportar_valores_pagos()
+
+    # selecão mês de interesse
+    while True:
+        app_view.display_menu(
+            NOMES_MESES,
+            "Selecione o mês:",
+            selecionar_todos=False,
+        )
+
+        mes_escolhido = app_view.get_user_input(
+            PASTAS_MESES,
+            multipla_escolha=True,
+        )
+
+        if mes_escolhido:
+            use_case.exportar_valores_pagos(mes_escolhido)
+            break
 
 
 if __name__ == "__main__":
