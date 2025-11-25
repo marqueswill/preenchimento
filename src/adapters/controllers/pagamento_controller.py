@@ -68,7 +68,6 @@ def FolhaPagamentoController(test=False, run=True):
                 multipla_escolha=True,
             )
 
-
             if templates_selecionados is None:
                 continue
 
@@ -77,13 +76,12 @@ def FolhaPagamentoController(test=False, run=True):
             use_case.executar(tipo_folha_selecionado, templates_selecionados)
 
             app_view.show_message("Processamento concluído.")
-            sys.exit()
 
         except Exception as e:
             # Em caso de erro, exibe a mensagem de erro e sai
             app_view.show_message(f"Ocorreu um erro: {e}")
             continue
-        
+
 
 if __name__ == "__main__":
     FolhaPagamentoController()

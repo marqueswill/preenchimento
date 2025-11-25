@@ -22,7 +22,6 @@ class ExtrairDadosR2000UseCase:
     def executar(self, meses_escolhidos: list[str]):
         for pasta_mes in meses_escolhidos:
             try:
-                print(pasta_mes)
                 dados_inss = self.extrair_dados_inss(pasta_mes)
                 df_r2010_1, df_r2010_2 = self.gerar_dataframes_reinf(dados_inss)
                 self.exportar_planilhas_r2000(df_r2010_1, df_r2010_2)
@@ -208,15 +207,12 @@ class ExtrairDadosR2000UseCase:
             + df_r2010_1["NUMDOCTO"].astype(str)
         )
 
-        # TODO: adicionar formatação condicional para essa coluna no excel
-        # df_r2010_1["CORRESPONDENCIA"] = df_r2010_1["IDENTIFICADOR CNPJ-NF"].isin(
-        #     planilha_validacao["CHAVE_BUSCA"]
-        # )
-
         return df_r2010_1, df_r2010_2
 
     def exportar_planilhas_r2000(self, df_r2010_1: DataFrame, df_r2010_2: DataFrame):
-        self.excel_svc.delete_rows("R-2010-1", 4,100)
+        #TODO: reset das formatações condicionais
+        
+        self.excel_svc.delete_rows("R-2010-1", 4, 100)
         self.excel_svc.exportar_para_planilha(
             df_r2010_1,
             sheet_name="R-2010-1",
@@ -234,6 +230,4 @@ class ExtrairDadosR2000UseCase:
             fit_columns=False,
         )
 
-    #TODO:
-    def apply_conditional_formating(self):...
-    def remove_conditinal_formating(self):...
+

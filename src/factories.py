@@ -82,7 +82,7 @@ class UseCaseFactory:
         siggo_service: ISiggoService = SiggoService()
         preenchedor_gw: IPreenchimentoGateway = PreenchimentoGateway(siggo_service)
 
-        use_case = PreenchimentoNLUseCase(nl_folha_gw, preenchedor_gw)
+        use_case = PreenchimentoNLUseCase(nl_folha_gw, preenchedor_gw, pathing_gw)
 
         return use_case
 

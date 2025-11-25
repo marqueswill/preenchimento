@@ -5,10 +5,9 @@ try:
     locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
 except locale.Error:
     # Se falhar, tenta uma localidade comum para Windows
-    # TODO: refatorar essa classe pra um serviço genérico de Excel
     locale.setlocale(locale.LC_ALL, "Portuguese_Brazil.1252")
 
-TESTE = True
+TESTE = False
 
 ANO_ATUAL = datetime.now().year
 MES_ATUAL = datetime.now().month

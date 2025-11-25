@@ -7,8 +7,9 @@ from src.core.gateways.i_pathing_gateway import IPathingGateway
 # TODO: ajustar métodos que recebem variáveis globais de src.config para receberem parâmetros no lugar
 # TODO: ajustar projeto para se livrar das variáveis globais
 # TODO: modificar pathing gateway para pegar os caminhos dos arquivos salvos em uma DB, de forma
-# que os caminhos possam sejam setados pelo próprio usuário. Os caminhos atuais seriam o "default", mas
-# não seriam fixos
+# que os caminhos possam ser setados pelo próprio usuário. Os caminhos atuais seriam o "default", mas
+# não seriam fixos. Por exemplo, carreguei o template e deixo ele salvo. Fazer uma interface para os templates 
+# no próprio app para não depender da planilha?
 class PathingGateway(IPathingGateway):
 
     def get_caminho_raiz_secon(self) -> str:
