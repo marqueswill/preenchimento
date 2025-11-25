@@ -23,7 +23,7 @@ class PreenchimentoGateway(IPreenchimentoGateway):
             f"https://siggo.fazenda.df.gov.br/{ANO_ATUAL}/afc/nota-de-lancamento"
         )
         for dado in dados:
-            # feito assim para não ter que fazer login para cada folha
+            # TODO: melhorar a forma com que os dados são passados
             folha = dado["folha"]
             template = dado["cabecalho"]
 
@@ -110,9 +110,9 @@ class PreenchimentoGateway(IPreenchimentoGateway):
             botao_remover.click()
 
         except TimeoutException:
-            print(
-                f"ERRO: O botão 'Remover' ({delete_button}) não ficou clicável a tempo."
-            )
+            # print(
+            #     f"ERRO: O botão 'Remover' não ficou clicável a tempo."
+            # )
             raise
 
     def preparar_preenchimento_nl(self, dados):

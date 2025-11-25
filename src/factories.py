@@ -2,6 +2,8 @@
 from src.infrastructure.email.outlook_service import OutlookService
 from src.infrastructure.files.pdf_service import PdfService
 from src.infrastructure.files.excel_service import ExcelService
+from src.infrastructure.files.excel_service_win32 import ExcelServiceWin32
+
 from src.infrastructure.services.preenchimento_gateway import PreenchimentoGateway
 from src.infrastructure.services.nl_folha_gateway import NLFolhaGateway
 from src.infrastructure.services.pathing_gateway import PathingGateway
@@ -9,7 +11,7 @@ from src.infrastructure.services.conferencia_gateway import ConferenciaGateway
 from src.infrastructure.web.siggo_service import SiggoService
 
 # Importe o Use Case de core
-from src.core.usecases.baixa_diaria_usecase import BaixaDiariaUseCase
+from src.core.usecases.pagamento_diaria_usecase import PagamentoDiariaUseCase
 from src.core.usecases.emails_driss_usecase import EmailsDrissUseCase
 from src.core.usecases.extrair_dados_r2000_usecase import ExtrairDadosR2000UseCase
 from src.core.usecases.gerar_conferencia_usecase import GerarConferenciaUseCase
@@ -80,26 +82,37 @@ class UseCaseFactory:
         siggo_service: ISiggoService = SiggoService()
         preenchedor_gw: IPreenchimentoGateway = PreenchimentoGateway(siggo_service)
 
-        use_case = PreenchimentoNLUseCase(nl_folha_gw, preenchedor_gw)
+        use_case = PreenchimentoNLUseCase(nl_folha_gw, preenchedor_gw, pathing_gw)
 
         return use_case
 
-    def criar_baixa_diaria_usecase(self) -> BaixaDiariaUseCase:
+    def criar_pagamento_diaria_usecase(self) -> PagamentoDiariaUseCase:
         pathing_gw: IPathingGateway = PathingGateway()
         siggo_service: ISiggoService = SiggoService()
         preenchedor_gw: IPreenchimentoGateway = PreenchimentoGateway(siggo_service)
         pdf_svc: IPdfService = PdfService(pathing_gw)
 
-        use_case = BaixaDiariaUseCase(preenchedor_gw, pathing_gw, pdf_svc)
+        use_case = PagamentoDiariaUseCase(preenchedor_gw, pathing_gw, pdf_svc)
         return use_case
 
-    def create_extrair_dados_r2000_usecase(self) -> ExtrairDadosR2000UseCase:
+    def create_extrair_dados_r2000_usecase(
+        self, pasta_mes_escolhido: str
+    ) -> ExtrairDadosR2000UseCase:
         pathing_gw: IPathingGateway = PathingGateway()
         pdf_svc: IPdfService = PdfService(pathing_gw)
 
-        caminho_planilha_reinf = pathing_gw.get_caminho_reinf(PASTA_MES_ANTERIOR)
-        excel_svc: IExcelService = ExcelService(caminho_planilha_reinf)
+        try:
+            caminho_planilha_reinf = pathing_gw.get_caminho_reinf(pasta_mes_escolhido)
+        except:
+            caminho_reinf_base = pathing_gw.get_caminho_reinf()
+            caminho_completo = (
+                caminho_reinf_base.split("Preenchimento Reinf.xlsx")[0]
+                + pasta_mes_escolhido
+            )
+            ExcelService.copy_to(caminho_reinf_base, caminho_completo)
+            caminho_planilha_reinf = pathing_gw.get_caminho_reinf(pasta_mes_escolhido)
 
+        excel_svc = ExcelServiceWin32(caminho_planilha_reinf)
         use_case = ExtrairDadosR2000UseCase(excel_svc, pdf_svc, pathing_gw)
 
         return use_case
@@ -120,7 +133,7 @@ class UseCaseFactory:
         pdf_svc: IPdfService = PdfService(pathing_gw)
 
         caminho_planilha_emails = (
-            pathing_gw.get_secon_root_path()
+            pathing_gw.get_caminho_raiz_secon()
             + f"SECON - General\\ANO_ATUAL\\DRISS_{ANO_ATUAL}\\EMAIL_EMPRESAS.xlsx"
         )
         excel_svc: IExcelService = ExcelService(caminho_planilha_emails)

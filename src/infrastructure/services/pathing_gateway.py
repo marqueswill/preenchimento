@@ -7,11 +7,12 @@ from src.core.gateways.i_pathing_gateway import IPathingGateway
 # TODO: ajustar métodos que recebem variáveis globais de src.config para receberem parâmetros no lugar
 # TODO: ajustar projeto para se livrar das variáveis globais
 # TODO: modificar pathing gateway para pegar os caminhos dos arquivos salvos em uma DB, de forma
-# que os caminhos possam sejam setados pelo próprio usuário. Os caminhos atuais seriam o "default", mas
-# não seriam fixos
+# que os caminhos possam ser setados pelo próprio usuário. Os caminhos atuais seriam o "default", mas
+# não seriam fixos. Por exemplo, carreguei o template e deixo ele salvo. Fazer uma interface para os templates 
+# no próprio app para não depender da planilha?
 class PathingGateway(IPathingGateway):
 
-    def get_secon_root_path(self) -> str:
+    def get_caminho_raiz_secon(self) -> str:
         """
         Determina o caminho correto para o arquivo de template,
         verificando se o usuário está usando o caminho base ou o do OneDrive.
@@ -32,20 +33,35 @@ class PathingGateway(IPathingGateway):
         return caminho_raiz
 
     def get_caminho_template(self, tipo_folha: str) -> str:
-        return (
-            self.get_secon_root_path()
+        caminho = (
+            self.get_caminho_raiz_secon()
             + f"SECON - General\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_{ANO_ATUAL}\\TEMPLATES\\TEMPLATES_NL_{tipo_folha.upper()}.xlsx"
         )
 
+        if os.path.exists(caminho):
+            return caminho
+        else:
+            raise FileNotFoundError(
+                f"O arquivo especificado '{caminho}' não foi encontrado."
+            )
+
     def get_caminho_conferencia(self, fundo: str):
-        return (
-            self.get_secon_root_path()
+
+        caminho = (
+            self.get_caminho_raiz_secon()
             + f"SECON - General\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_{ANO_ATUAL}\\{PASTA_MES_ATUAL}\\CONFERÊNCIA_{fundo}.xlsx"
         )
 
+        if os.path.exists(caminho):
+            return caminho
+        else:
+            raise FileNotFoundError(
+                f"O arquivo especificado '{caminho}' não foi encontrado."
+            )
+
     def get_caminho_pasta_folha(self):
         return (
-            self.get_secon_root_path()
+            self.get_caminho_raiz_secon()
             + f"SECON - General\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_{ANO_ATUAL}\\{PASTA_MES_ATUAL}"
         )
 
@@ -75,7 +91,7 @@ class PathingGateway(IPathingGateway):
 
     def get_caminho_pdf_relatorio(self):
         diretorio_alvo = os.path.join(
-            self.get_secon_root_path(),
+            self.get_caminho_raiz_secon(),
             "SECON - General",
             "ANO_ATUAL",
             f"FOLHA_DE_PAGAMENTO_{ANO_ATUAL}",
@@ -111,12 +127,12 @@ class PathingGateway(IPathingGateway):
             return arquivos
         except FileNotFoundError:
             raise FileNotFoundError(
-                f"O caminho especificado '{caminho}' não foi encontrado."
+                f"O arquivo especificado '{caminho}' não foi encontrado."
             )
 
     def get_caminhos_nes_diaria(self, arquivos_selecionados: list[str]) -> list[str]:
         dir_path = os.path.join(
-            self.get_secon_root_path(),
+            self.get_caminho_raiz_secon(),
             "SECON - General",
             "ANO_ATUAL",
             "NL_AUTOMATICA",
@@ -129,7 +145,7 @@ class PathingGateway(IPathingGateway):
 
     def get_caminhos_demonstrativos(self, pasta_mes: str):
         dir_path = os.path.join(
-            self.get_secon_root_path(),
+            self.get_caminho_raiz_secon(),
             "SECON - General",
             "ANO_ATUAL",
             "LIQ_DESPESA",
@@ -140,31 +156,47 @@ class PathingGateway(IPathingGateway):
 
         return caminhos
 
-    def get_caminho_reinf(self, pasta_mes: str) -> str:
-        return os.path.join(
-            self.get_secon_root_path(),
+    def get_caminho_reinf(self, pasta_mes: str = None) -> str:
+        pasta_adicional = [] if not pasta_mes else [pasta_mes]
+
+        caminho = os.path.join(
+            self.get_caminho_raiz_secon(),
             "SECON - General",
             "ANO_ATUAL",
             "EFD-REINF",
-            pasta_mes,
+            *pasta_adicional,
             "Preenchimento Reinf.xlsx",
         )
 
+        if os.path.exists(caminho):
+            return caminho
+        else:
+            raise FileNotFoundError(
+                f"O arquivo especificado '{caminho}' não foi encontrado."
+            )
+
     def get_caminho_valores_pagos(self):
-        return os.path.join(
-            self.get_secon_root_path(),
+        caminho = os.path.join(
+            self.get_caminho_raiz_secon(),
             "SECON - General",
             "ANO_ATUAL",
             "EFD-REINF",
             "VALORES_PAGOS.xlsx",
         )
 
+        if os.path.exists(caminho):
+            return caminho
+        else:
+            raise FileNotFoundError(
+                f"O arquivo especificado '{caminho}' não foi encontrado."
+            )
+
     def get_caminho_pdf_driss(self) -> str:
         arquivo_driss = (
             f"DRISS_{f"{MES_ANTERIOR:02d}" if not TESTE else "TESTES"}_{ANO_ATUAL}.pdf"
         )
-        return os.path.join(
-            self.get_secon_root_path(),
+        caminho = os.path.join(
+            self.get_caminho_raiz_secon(),
             "SECON - General",
             "ANO_ATUAL",
             f"DRISS_{ANO_ATUAL}",
@@ -172,9 +204,16 @@ class PathingGateway(IPathingGateway):
             arquivo_driss,
         )
 
+        if os.path.exists(caminho):
+            return caminho
+        else:
+            raise FileNotFoundError(
+                f"O arquivo especificado '{caminho}' não foi encontrado."
+            )
+
     def get_caminhos_pdfs_envio_driss(self) -> str:
         dir_path = os.path.join(
-            self.get_secon_root_path(),
+            self.get_caminho_raiz_secon(),
             "SECON - General",
             "ANO_ATUAL",
             f"DRISS_{ANO_ATUAL}",

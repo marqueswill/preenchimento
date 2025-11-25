@@ -35,7 +35,7 @@ class ConsoleService:
         selecionar_todos=False,
         permitir_voltar=False,
         multipla_escolha=False,
-    ):
+    ) -> list[str] | None:
         """Obtém e valida a entrada do usuário a partir do menu exibido."""
         if not multipla_escolha:
             while True:
@@ -77,7 +77,7 @@ class ConsoleService:
                 # Divide a string em uma lista de strings
                 escolhas_separadas = [e.strip() for e in escolha_bruta.split(" ")]
 
-                opcoes_validas = []
+                opcoes_validas: list[str] = []
                 input_invalido = False
 
                 # Valida cada escolha individualmente

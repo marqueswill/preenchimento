@@ -13,8 +13,8 @@ Dev and client:
 ### Gerando executável
 
 Acesse a pasta pelo terminal e execute conforme o exemplo:
-`python -m PyInstaller --onefile --name "APP FOLHA DE PAGAMENTO" .\drivers\pagamento\controller.py`
+`python -m PyInstaller --onefile --name "NOME DE EXEMPLO" .\src\adapters\controllers\arquivo.py`
 
 se quiser ocultar o console, use
-`python -m PyInstaller --onefile --noconsole --name "APP FOLHA DE PAGAMENTO" .\drivers\pagamento\controller.py`
+`python -m PyInstaller --onefile --noconsole --name "NOME DE EXEMPLO" .\src\adapters\controllers\arquivo.py`
 

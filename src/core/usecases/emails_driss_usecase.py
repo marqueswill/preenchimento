@@ -78,8 +78,8 @@ class EmailsDrissUseCase:
 
         print(f"\nNúmero de empresas com email: {empresas_com_email}")
         print(f"Número de pdfs para enviar  : {num_pdfs}")
-        print("Não foram encontrados emails para empresas seguintes:")
         if len(empresas_nao_encontradas) > 0:
+            print("Não foram encontrados emails para empresas seguintes:")
             for empresa in empresas_nao_encontradas:
                 print(empresa)
 
@@ -91,7 +91,7 @@ class EmailsDrissUseCase:
             print(f"Exportando pdf para empresa {nome_empresa_pdf}")
 
             caminho_saida = (
-                self.pathing_gw.get_secon_root_path()
+                self.pathing_gw.get_caminho_raiz_secon()
                 + f"SECON - General\\ANO_ATUAL\\DRISS_{ANO_ATUAL}\\{PASTA_MES_ANTERIOR}\\ENVIADOS\\DRISS_{NOME_MES_ANTERIOR} - {nome_formatado}.pdf"
             )
             self.pdf_svc.export_pages(paginas, caminho_saida)

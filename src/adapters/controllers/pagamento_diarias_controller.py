@@ -2,13 +2,13 @@ from src.infrastructure.cli.console_service import ConsoleService
 from src.factories import UseCaseFactory
 
 
-def BaixaDiariaController(run=True):
+def PagamentoDiariaController(run=True):
     app_view = ConsoleService()
     app_view.clear_console()
 
     factory = UseCaseFactory()
-    baixa_diaria_uc = factory.criar_baixa_diaria_usecase()
-    nomes_planilhas = baixa_diaria_uc.listar_planilhas()
+    pagamento_diaria_uc = factory.criar_pagamento_diaria_usecase()
+    nomes_planilhas = pagamento_diaria_uc.listar_planilhas()
 
     while True:
         app_view.display_menu(
@@ -28,8 +28,8 @@ def BaixaDiariaController(run=True):
             continue
 
         if run:
-            baixa_diaria_uc.executar(planilhas_selecionadas)
+            pagamento_diaria_uc.executar(planilhas_selecionadas)
 
 
 if __name__ == "__main__":
-    BaixaDiariaController()
+    PagamentoDiariaController()
