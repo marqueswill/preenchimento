@@ -121,8 +121,9 @@ class PdfService(IPdfService):
             processo_match = re.search(r"Número do Processo\s*([\d/-]+)", dados_brutos)
             processo = processo_match.group(1)
 
-            nune_match = re.search(r"Número do Documento\s*([A-Z0-9]+)", dados_brutos)
+            nune_match = re.search(r"Número do Documento\s*(\d{4}NE\d+)", dados_brutos)
             nune = nune_match.group(1) if nune_match else None
+            # print(nune)
 
             credor_match = re.search(r"Credor\s*(\d+)", dados_brutos)
             credor = credor_match.group(1) if credor_match else None
