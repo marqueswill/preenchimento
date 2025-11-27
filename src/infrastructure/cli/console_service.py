@@ -2,8 +2,10 @@ import os
 import sys
 import time
 
+from src.core.gateways.i_view import IView
 
-class ConsoleService:
+
+class ConsoleService(IView):
     """
     Responsável por toda a interação com o usuário via console.
     Agrupa funções de exibição de menus, obtenção de entrada e mensagens.
