@@ -53,11 +53,11 @@ class PagamentoDiariaUseCase:
 
             dados_extraidos = self.pdf_svc.parse_dados_diaria(caminho_pdf)
 
-            if i == 0:
-                processo = dados_extraidos["processo"]
-                observacao = dados_extraidos["observacao"]
-                coluna2 = ["F0", "4 - UG/Gestão", "020101-00001", processo, observacao]
-                cabecalho["Coluna 2"] = coluna2
+
+            processo = dados_extraidos["processo"]
+            observacao = dados_extraidos["observacao"]
+            coluna2 = ["F0", "4 - UG/Gestão", "020101-00001", processo, observacao]
+            cabecalho["Coluna 2"] = coluna2
 
             for dados in dados_extraidos["dados"]:
                 evento1 = "510379"
@@ -75,14 +75,14 @@ class PagamentoDiariaUseCase:
                 nl.loc[len(nl)] = linha1
                 nl.loc[len(nl)] = linha2
 
-        nl = nl.sort_values(by=["EVENTO", "INSCRIÇÃO"]).reset_index(drop=True)
+            nl = nl.sort_values(by=["INSCRIÇÃO", "EVENTO"]).reset_index(drop=True)
 
-        dados_preenchimento.append(
-            {
-                "folha": nl,
-                "cabecalho": cabecalho,
-            }
-        )
+            dados_preenchimento.append(
+                {
+                    "folha": nl,
+                    "cabecalho": cabecalho,
+                }
+            )
 
         return dados_preenchimento
 
