@@ -11,8 +11,13 @@ from src.core.gateways.i_preenchimento_gateway import IPreenchimentoGateway
 from src.core.gateways.i_siggo_service import ISiggoService
 from src.config import *
 
-
+# TODO: verificar formato dos DFs para o preenchimento
 class PreenchimentoGateway(IPreenchimentoGateway):
+    """_summary_ Orquestra o processo de preenchimento automático no sistema web (SIGGO). Ele traduz os dados dos DataFrames (vindos dos casos de uso) em ações de navegação, selecionando opções e preenchendo campos na interface web através do SiggoService. Também possui funcionalidade para extrair dados já preenchidos da tela.
+
+    Args:
+        IPreenchimentoGateway (_type_): _description_
+    """
     def __init__(self, siggo_service: ISiggoService):
         self.siggo_driver = siggo_service
         super().__init__()

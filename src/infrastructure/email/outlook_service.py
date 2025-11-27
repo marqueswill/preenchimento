@@ -4,7 +4,11 @@ from src.core.gateways.i_outlook_service import IOutlookService
 
 
 class OutlookService(IOutlookService):
+    """_summary_ Implementa a automação do envio de e-mails utilizando a aplicação desktop do Microsoft Outlook (via biblioteca win32com). Permite criar e enviar e-mails com destinatário, assunto, corpo (texto ou HTML) e anexos, além de selecionar a conta de envio correta.
 
+    Args:
+        IOutlookService (_type_): _description_
+    """
     def send_email(
         self,
         mail_to,
@@ -31,7 +35,7 @@ class OutlookService(IOutlookService):
                     mail.Attachments.Add(att)
 
             if mail_from:
-                
+
                 found_account = False
 
                 for account in outlook.Session.Accounts:

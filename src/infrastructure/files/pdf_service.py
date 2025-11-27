@@ -12,6 +12,11 @@ from src.core.gateways.i_pathing_gateway import IPathingGateway
 
 
 class PdfService(IPdfService):
+    """Responsável por ler e extrair dados de arquivos PDF. Possui métodos especializados para fazer o parse de diferentes tipos de documentos (Relatórios de Folha, Notas de Empenho de Diárias, guias de INSS) utilizando expressões regulares (Regex) e exportar páginas específicas de PDFs (caso do DRISS).
+
+    Args:
+        IPdfService (_type_): _description_
+    """
     def __init__(self, pathing_gw: IPathingGateway):
         self.pathing_gw = pathing_gw
         super().__init__()

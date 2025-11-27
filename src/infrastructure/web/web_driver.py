@@ -11,16 +11,13 @@ from src.config import *
 
 
 class WebDriver(IWebDriverService):
-    """_summary_
-    Driver para automação e interação com o SIGGO
-    """
+    """_summary_ Um wrapper genérico em torno do Selenium WebDriver. Configura as opções do navegador (Chrome), gerencia a sessão, manipula abas e janelas, e fornece métodos básicos de espera e navegação."""
 
     driver: SeleniumWebDriver
 
     def inicializar(self):
         self.setup_pandas()
         self.setup_driver()
-        
 
     def finalizar(self):
         self.driver.quit()

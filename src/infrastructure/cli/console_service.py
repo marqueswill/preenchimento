@@ -6,9 +6,10 @@ from src.core.gateways.i_view import IView
 
 
 class ConsoleService(IView):
-    """
-    Responsável por toda a interação com o usuário via console.
-    Agrupa funções de exibição de menus, obtenção de entrada e mensagens.
+    """_summary_ Gerencia toda a interação com o usuário através do terminal. É responsável por limpar a tela, exibir menus de opções, capturar e validar a entrada do usuário (seleção única ou múltipla) e exibir mensagens de processamento ou erro com formatação de cores.
+
+    Args:
+        IView (_type_): _description_
     """
 
     def display_menu(

@@ -9,6 +9,11 @@ from src.core.gateways.i_excel_service import IExcelService
 from src.core.gateways.i_pathing_gateway import IPathingGateway
 
 class ConferenciaGateway(IConferenciaGateway):
+    """_summary_ Atua como uma ponte para consolidar os dados da conferência financeira. Ele lê a tabela "Demofin", e utiliza o ExcelService para exportar os resultados processados (proventos, descontos, totais e relatórios) para as planilhas de conferência finais.
+
+    Args:
+        IConferenciaGateway (_type_): _description_
+    """
 
     def __init__(
         self,

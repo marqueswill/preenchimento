@@ -8,15 +8,12 @@ from src.config import *
 
 
 class SiggoService(WebDriver):
-    """_summary_
-    Driver para automação e interação com o SIGGO
-    """
+    """_summary_ Um driver especializado para o sistema SIGGO. Herda de WebDriver e adiciona lógicas específicas de negócio, como o fluxo de login no portal da fazenda, espera por elementos específicos de carregamento do sistema e métodos facilitadores para preencher campos e selecionar itens em menus dropdown."""
 
     def inicializar(self):
         self.setup_pandas()
         self.setup_driver()
         self.esperar_login()
-        
 
     # Métodos controle de login
     def login_siggo(self, cpf, password):

@@ -9,6 +9,12 @@ from pandas import DataFrame
 
 # Assumindo que esta é a nova estrutura para usar o win32com
 class ExcelServiceWin32:
+    """_summary_ Classe para manipulação de arquivos Excel utilizando a biblioteca win32com. Suas funções incluem criar/carregar workbooks, ler abas como DataFrames, exportar dados com formatação (bordas, cores, cabeçalhos), deletar linhas/abas e ajustar largura de colunas.
+    É útil para cenários onde é necessário interagir diretamente com a instância do Excel aberta ou preservar conexões de dados complexas que o openpyxl pode não suportar.
+    Args:
+        IExcelService (_type_): _description_
+    """
+
     excel: Optional[CDispatch] = None
     workbook: Optional[CDispatch] = None
 
