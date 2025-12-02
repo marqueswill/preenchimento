@@ -128,9 +128,13 @@ class ConsoleService(IView):
         """Exibe uma mensagem e espera que o usuário pressione ENTER."""
         input(f"\n{message}\nPressione ENTER para sair.")
 
-    def show_error(self, msg): ...
-    
-    def show_success(self, msg): ...
+    def show_error(self, msg):
+        self.color_print(f"\n{msg}\n", color="red", style="bold")
+        input(f"\nPressione ENTER para sair.")
+
+    def show_success(self, msg):
+        self.color_print(f"\n{msg}\n", color="green", style="bold")
+        input(f"\nPressione ENTER para sair.")
 
     @staticmethod
     def color_text(text, color=None, style=None, background=None):
