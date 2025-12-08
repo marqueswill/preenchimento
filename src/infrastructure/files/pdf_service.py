@@ -194,8 +194,8 @@ class PdfService(IPdfService):
         processo_match = re.search(r"PROCESSO Nº : ([\d/]+)", text)
         processo = processo_match.group(1) if processo_match else None
 
-        cnpj_match1 = re.search(r"CNPJ DO PRESTADOR/FORNCEDOR: ([\d./-]+)", text)
-        cnpj_match2 = re.search(r"CNPJ DA EMPRESA ([\d./-]+)", text)
+        cnpj_match1 = re.search(r"CNPJ DO PRESTADOR/FORNCEDOR:\s*([\d./-]+)", text)
+        cnpj_match2 = re.search(r"CNPJ DA EMPRESA\s*([\d./-]+)", text)
         cnpj = (
             cnpj_match1.group(1)
             if cnpj_match1
