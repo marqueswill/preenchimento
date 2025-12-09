@@ -37,6 +37,7 @@ Esse script utiliza o pyinstaller para gerar executáveis para cada controller a
 
 ### Opção B: Manualmente (PyInstaller)
 Caso você queira gerar apenas parau uma controller específica,acesse a pasta raiz pelo terminal e execute o comando abaixo, substituindo os caminhos conforme necessário:
+
 **Com console (padrão):**
 ```Bash
 python -m PyInstaller --onefile --name "NOME_DO_EXECUTAVEL" .\src\adapters\controllers\arquivo.py
@@ -54,17 +55,19 @@ O projeto **Automação de Processos SECON** foi construído seguindo os princí
 ## 🧅 Camadas da Aplicação
 
 O projeto está estruturado em camadas concêntricas, onde as dependências apontam apenas para dentro (do nível mais externo para o mais interno).
+<img width="969" height="632" alt="830153b2-22ba-4def-8e4e-a3ee63b2ab5d_1938x1246" src="https://github.com/user-attachments/assets/f52de484-1a8f-4071-ae57-058c1170ebe9" />
 
-### 1. Core (O Coração)
+### 1. Core (Domain/Entities e UseCases)
 
 Localização: `src/core/`
 
 Esta é a camada mais interna e não deve ter dependências de bibliotecas externas (como Selenium, Pandas complexo, Win32, etc), exceto tipos de dados básicos.
-
 -   **Use Cases (`src/core/usecases`):** Contém a lógica de negócio pura. Cada classe aqui representa uma ação específica que o usuário deseja realizar (ex: `CancelamentoRPUseCase`, `PagamentoUseCase`). Eles orquestram o fluxo de dados.
     
 -   **Gateways / Interfaces (`src/core/gateways`):** Definem os **contratos** (Classes Abstratas/Interfaces) que a camada de infraestrutura deve cumprir. Por exemplo, o Use Case diz "Preciso de algo que leia Excel" (`IExcelService`), mas ele não sabe _como_ o Excel é lido.
-    
+
+- **Entities / Domain (`src/core/domain`):** Representam os objetos de negócio da aplicação e as regras de negócio mais fundamentais. São as estruturas de dados com comportamento (métodos) que encapsulam o estado e garantem a sua validade (Ex: Proposta, Cliente, Fatura). Elas não dependem de Use Cases ou de qualquer camada externa.
+> Até o presente momento ainda não foram implementadas as entidades/domínios. A maioria dos dados são DataFrames ou dicionários :p
 
 ### 2. Adapters (Controladores)
 
