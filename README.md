@@ -36,7 +36,7 @@ Esse script utiliza o pyinstaller para gerar executáveis para cada controller a
 ```
 
 ### Opção B: Manualmente (PyInstaller)
-Caso você queira gerar apenas parau uma controller específica,acesse a pasta raiz pelo terminal e execute o comando abaixo, substituindo os caminhos conforme necessário:
+Caso você queira gerar apenas para uma controller específica,acesse a pasta raiz pelo terminal e execute o comando abaixo, substituindo os caminhos conforme necessário:
 
 **Com console (padrão):**
 ```Bash
