@@ -16,6 +16,7 @@ class PathingGateway(IPathingGateway):
     Args:
         IPathingGateway (_type_): _description_
     """
+
     def get_caminho_raiz_secon(self) -> str:
         """
         Determina o caminho correto para o arquivo de template,
@@ -56,12 +57,7 @@ class PathingGateway(IPathingGateway):
             + f"SECON - General\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_{ANO_ATUAL}\\{PASTA_MES_ATUAL}\\CONFERÊNCIA_{fundo}.xlsx"
         )
 
-        if os.path.exists(caminho):
-            return caminho
-        else:
-            raise FileNotFoundError(
-                f"O arquivo especificado '{caminho}' não foi encontrado."
-            )
+        return caminho
 
     def get_caminho_pasta_folha(self):
         return (

@@ -8,6 +8,7 @@ from src.core.gateways.i_conferencia_gateway import IConferenciaGateway
 from src.core.gateways.i_excel_service import IExcelService
 from src.core.gateways.i_pathing_gateway import IPathingGateway
 
+
 class ConferenciaGateway(IConferenciaGateway):
     """_summary_ Atua como uma ponte para consolidar os dados da conferência financeira. Ele lê a tabela "Demofin", e utiliza o ExcelService para exportar os resultados processados (proventos, descontos, totais e relatórios) para as planilhas de conferência finais.
 
@@ -53,6 +54,32 @@ class ConferenciaGateway(IConferenciaGateway):
             start_column="H",
             clear=False,
         )
+
+        self.excel_svc.apply_conditional_formatting(
+            formula="=AND($A1<>" ";IFERROR($F1<0;FALSE))",
+            target_range="=$A:$F",
+            filling="#FFD966",
+            sheet_name="CONFERÊNCIA",
+        )
+        self.excel_svc.apply_conditional_formatting(
+            formula="=AND($H1<>" ";IFERROR($M1<0;FALSE))",
+            target_range="=$H:$M",
+            filling="#FFD966",
+            sheet_name="CONFERÊNCIA",
+        )
+
+        # self.excel_svc.apply_conditional_formatting(
+        #     formula="=AND($A1<>"";IFERROR($F1<0;FALSE))",
+        #     target_range="=$F:$F",
+        #     filling="#FF7979",
+        #     sheet_name="CONFERÊNCIA",
+        # )
+        # self.excel_svc.apply_conditional_formatting(
+        #     formula="=AND($H1<>"";IFERROR($M1<0;FALSE))",
+        #     target_range="=$M:$M",
+        #     filling="#FF7979",
+        #     sheet_name="CONFERÊNCIA",
+        # )
 
         # Exporta os totais para coluna H, abaixo dos descontos
         ultima_linha = str(len(descontos_folha) + 3)

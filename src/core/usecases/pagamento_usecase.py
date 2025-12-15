@@ -13,7 +13,10 @@ class PagamentoUseCase:
     """
 
     def __init__(
-        self, conferencia_gw: IConferenciaGateway, nl_folha_gw: INLFolhaGateway, pdf_svc:IPdfService
+        self,
+        conferencia_gw: IConferenciaGateway,
+        nl_folha_gw: INLFolhaGateway,
+        pdf_svc: IPdfService,
     ):
         self.conferencia_gw = conferencia_gw
         self.nl_folha_gw = nl_folha_gw
@@ -291,7 +294,9 @@ class PagamentoUseCase:
             somar = row.get("SOMAR", [])
             subtrair = row.get("SUBTRAIR", [])
             tipo = (
-                "ATIVO" if row.get("TIPO", "") in {"", "nan","."} else row.get("TIPO", "")
+                "ATIVO"
+                if row.get("TIPO", "") in {"", "nan", "."}
+                else row.get("TIPO", "")
             )
 
             if tipo == "MANUAL":

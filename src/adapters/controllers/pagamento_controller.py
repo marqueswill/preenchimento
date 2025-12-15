@@ -43,6 +43,7 @@ def FolhaPagamentoController(test=False, run=True):
                 use_case = factory.create_gerar_conferencia_use_case(
                     fundo_para_conferencia
                 )
+
                 use_case.executar(fundo_para_conferencia)
 
                 app_view.show_message("Conferência gerada com sucesso.")

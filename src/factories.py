@@ -40,11 +40,16 @@ class UseCaseFactory:
     com todas as suas dependências.
     """
 
-    def create_pagamento_use_case(self, fundo: str) -> PagamentoUseCase:
+    def create_pagamento_use_case(self, fundo: str, win32=False) -> PagamentoUseCase:
         pathing_gw: IPathingGateway = PathingGateway()
 
         caminho_planilha_conferencia = pathing_gw.get_caminho_conferencia(fundo)
-        excel_svc: IExcelService = ExcelService(caminho_planilha_conferencia)
+        excel_svc: IExcelService
+        if win32:
+            excel_svc = ExcelService(caminho_planilha_conferencia)
+        else:
+            excel_svc = ExcelServiceWin32(caminho_planilha_conferencia)
+
         pdf_svc: IPdfService = PdfService(pathing_gw)
 
         conferencia_gw: IConferenciaGateway = ConferenciaGateway(
@@ -59,7 +64,9 @@ class UseCaseFactory:
     def create_gerar_conferencia_use_case(self, fundo: str) -> GerarConferenciaUseCase:
         """Cria o use case de Geração de Conferência pronto para usar."""
 
-        pagamento_uc: PagamentoUseCase = self.create_pagamento_use_case(fundo)
+        pagamento_uc: PagamentoUseCase = self.create_pagamento_use_case(
+            fundo, win32=True
+        )
         use_case = GerarConferenciaUseCase(pagamento_uc)
         return use_case
 

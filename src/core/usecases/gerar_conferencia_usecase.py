@@ -21,14 +21,16 @@ class GerarConferenciaUseCase:
 
         proventos = self.pagamento_uc.separar_proventos(conferencia_completa)
         descontos = self.pagamento_uc.separar_descontos(conferencia_completa)
+        dados_relatorio = self.pagamento_uc.extrair_dados_relatorio(fundo)
+
         saldos = self.pagamento_uc.gerar_saldos(
             conferencia_ferias, proventos, descontos
         )
 
         nls_fundo = self._gerar_nls_folha(fundo, saldos)
         totais = self._calcular_totais(nls_fundo, proventos, descontos)
-        dados_relatorio = self.pagamento_uc.extrair_dados_relatorio(fundo)
 
+   
         self.pagamento_uc.conferencia_gw.salvar_dados_conferencia(
             proventos, descontos, totais
         )
