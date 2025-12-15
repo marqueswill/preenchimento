@@ -57,7 +57,7 @@ class EmailsDrissUseCase:
                 print(
                     f"A empresa não foi encontrada na planilha de mails: {nome_empresa}"
                 )
-                break
+                continue
 
             empresas_com_email += 1
             for email_empresa in emails_empresa:
@@ -142,7 +142,7 @@ class EmailsDrissUseCase:
 
         msg_html = f"""
         <p>{saudacao},</p>
-        <p>Segue anexa a Declaração de Retenção do ISS referente ao mês de {NOME_MES_ATUAL}/{ANO_ATUAL}.</p>
+        <p>Segue anexa a Declaração de Retenção do ISS referente ao mês de {NOME_MES_ANTERIOR}/{ANO_ATUAL}.</p>
         <p>Solicito a confirmação de recebimento desta mensagem.</p>
         <br>
         <p>Atenciosamente,</p>
