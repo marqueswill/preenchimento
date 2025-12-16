@@ -18,6 +18,7 @@ from src.core.usecases.gerar_conferencia_usecase import GerarConferenciaUseCase
 from src.core.usecases.pagamento_usecase import PagamentoUseCase
 from src.core.usecases.preenchimento_folha_usecase import PreenchimentoFolhaUseCase
 from src.core.usecases.preenchimento_nl_usecase import PreenchimentoNLUseCase
+from src.core.usecases.cancelamento_rp_usecase import CancelamentoRPUseCase
 
 # Importe as INTERFACES (opcional, mas bom para type hints)
 from src.core.gateways.i_conferencia_gateway import IConferenciaGateway
@@ -29,7 +30,6 @@ from src.core.gateways.i_pdf_service import IPdfService
 from src.core.gateways.i_preenchimento_gateway import IPreenchimentoGateway
 from src.core.gateways.i_siggo_service import ISiggoService
 
-from tests.mocks.siggo_service_mock import SiggoServiceMock
 
 from src.config import *
 
@@ -139,4 +139,18 @@ class UseCaseFactory:
         excel_svc: IExcelService = ExcelService(caminho_planilha_emails)
         email_svc: IOutlookService = OutlookService()
         use_case = EmailsDrissUseCase(pathing_gw, pdf_svc, excel_svc, email_svc)
+        return use_case
+
+    def create_cancelamento_rp_usecase(self) -> CancelamentoRPUseCase:
+        pathing_gw: IPathingGateway = PathingGateway()
+        siggo_service: ISiggoService = SiggoService()
+        preenchedor_gw: IPreenchimentoGateway = PreenchimentoGateway(siggo_service)
+        caminho_planilha = (
+            pathing_gw.get_caminho_raiz_secon()
+            + f"SECON - General\\ANO_ATUAL\\CANCELAMENTO_RP\\CANCELAMENTO_RP_{ANO_ATUAL}.xlsx"
+        )
+        excel_svc: IExcelService = ExcelService(caminho_planilha)
+        use_case: CancelamentoRPUseCase = CancelamentoRPUseCase(
+            pathing_gw, excel_svc, preenchedor_gw
+        )
         return use_case

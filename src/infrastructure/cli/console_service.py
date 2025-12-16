@@ -2,11 +2,14 @@ import os
 import sys
 import time
 
+from src.core.gateways.i_view import IView
 
-class ConsoleService:
-    """
-    Responsável por toda a interação com o usuário via console.
-    Agrupa funções de exibição de menus, obtenção de entrada e mensagens.
+
+class ConsoleService(IView):
+    """_summary_ Gerencia toda a interação com o usuário através do terminal. É responsável por limpar a tela, exibir menus de opções, capturar e validar a entrada do usuário (seleção única ou múltipla) e exibir mensagens de processamento ou erro com formatação de cores.
+
+    Args:
+        IView (_type_): _description_
     """
 
     def display_menu(
@@ -124,6 +127,14 @@ class ConsoleService:
     def show_message(self, message: str):
         """Exibe uma mensagem e espera que o usuário pressione ENTER."""
         input(f"\n{message}\nPressione ENTER para sair.")
+
+    def show_error(self, msg):
+        self.color_print(f"\n{msg}\n", color="red", style="bold")
+        input(f"\nPressione ENTER para sair.")
+
+    def show_success(self, msg):
+        self.color_print(f"\n{msg}\n", color="green", style="bold")
+        input(f"\nPressione ENTER para sair.")
 
     @staticmethod
     def color_text(text, color=None, style=None, background=None):

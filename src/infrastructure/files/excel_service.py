@@ -13,6 +13,11 @@ from src.core.gateways.i_excel_service import IExcelService
 
 
 class ExcelService(IExcelService):
+    """_summary_ Classe para manipulação de arquivos Excel utilizando a biblioteca openpyxl. Suas funções incluem criar/carregar workbooks, ler abas como DataFrames, exportar dados com formatação (bordas, cores, cabeçalhos), deletar linhas/abas e ajustar largura de colunas.
+
+    Args:
+        IExcelService (_type_): _description_
+    """
     def __init__(self, caminho_arquivo: str):
         self.caminho_arquivo = caminho_arquivo
         self.workbook = self._get_workbook()
@@ -113,7 +118,6 @@ class ExcelService(IExcelService):
         # Converte coluna e linha iniciais
         col_idx = column_index_from_string(start_column)
         row_idx = int(start_line)
-
 
         # Escreve cabeçalhos
         thin_border = Side(border_style="thin", color="000000")

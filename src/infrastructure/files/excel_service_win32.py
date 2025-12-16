@@ -6,9 +6,17 @@ from win32com.client import CDispatch
 
 from pandas import DataFrame
 
+from src.core.gateways.i_excel_service import IExcelService
+
 
 # Assumindo que esta é a nova estrutura para usar o win32com
-class ExcelServiceWin32:
+class ExcelServiceWin32(IExcelService):
+    """_summary_ Classe para manipulação de arquivos Excel utilizando a biblioteca win32com. Suas funções incluem criar/carregar workbooks, ler abas como DataFrames, exportar dados com formatação (bordas, cores, cabeçalhos), deletar linhas/abas e ajustar largura de colunas.
+    É útil para cenários onde é necessário interagir diretamente com a instância do Excel aberta ou preservar conexões de dados complexas que o openpyxl pode não suportar.
+    Args:
+        IExcelService (_type_): _description_
+    """
+
     excel: Optional[CDispatch] = None
     workbook: Optional[CDispatch] = None
 
@@ -35,7 +43,10 @@ class ExcelServiceWin32:
             return self
         except Exception as e:
             if self.excel:
-                self.excel.Quit()
+                try:
+                    self.excel.Quit()
+                except:
+                    pass
             raise Exception(f"Erro ao inicializar Excel via win32com: {e}")
 
     def __exit__(self):
@@ -69,8 +80,9 @@ class ExcelServiceWin32:
         try:
             sheet = self.workbook.Sheets(sheet_name)
         except:
-            sheet = self.workbook.Sheets.Add()
-            sheet.Name = sheet_name
+            raise ValueError(
+                f"A aba '{sheet_name}' não foi encontrada no arquivo Excel."
+            )
 
         if write_headers:
             data_to_write = [table.columns.tolist()] + table.values.tolist()

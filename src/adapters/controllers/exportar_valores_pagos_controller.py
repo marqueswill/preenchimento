@@ -23,6 +23,7 @@ def ExportarValoresPagosController():
 
         if mes_escolhido:
             use_case.exportar_valores_pagos(mes_escolhido)
+            app_view.show_success("Valores pagos exportados com sucesso!")
             break
 
 

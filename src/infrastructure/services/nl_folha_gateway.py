@@ -8,6 +8,12 @@ from src.core.gateways.i_pathing_gateway import IPathingGateway
 
 
 class NLFolhaGateway(INLFolhaGateway):
+    """_summary_ Responsável por interagir com os arquivos de Templates das Notas de Lançamento (NL). Ele lista as abas disponíveis (templates), carrega os dados do cabeçalho da NL e os dados das linhas de lançamento para serem usados no preenchimento.
+
+    Args:
+        INLFolhaGateway (_type_): _description_
+    """
+
     def __init__(self, pathing_gw: IPathingGateway):
         self.pathing_gw = pathing_gw
         super().__init__()
@@ -19,6 +25,7 @@ class NLFolhaGateway(INLFolhaGateway):
 
         return nomes_nls
 
+    # TODO: verificação formato template
     def carregar_template_nl(
         self, caminho_completo: str, template: str, incluir_calculos=True
     ) -> DataFrame:
@@ -41,6 +48,7 @@ class NLFolhaGateway(INLFolhaGateway):
         except Exception as e:
             print("Feche todas planilhas de template e tente novamente.", e)
 
+    # TODO: verificação formato cabeçalho
     def carregar_cabecalho(self, caminho_completo: str, template: str) -> DataFrame:
         try:
             # dataframe = pd.read_excel(

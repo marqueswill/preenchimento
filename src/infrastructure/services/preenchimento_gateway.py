@@ -12,7 +12,14 @@ from src.core.gateways.i_siggo_service import ISiggoService
 from src.config import *
 
 
+# TODO: verificar formato dos DFs para o preenchimento
 class PreenchimentoGateway(IPreenchimentoGateway):
+    """_summary_ Orquestra o processo de preenchimento automático no sistema web (SIGGO). Ele traduz os dados dos DataFrames (vindos dos casos de uso) em ações de navegação, selecionando opções e preenchendo campos na interface web através do SiggoService. Também possui funcionalidade para extrair dados já preenchidos da tela.
+
+    Args:
+        IPreenchimentoGateway (_type_): _description_
+    """
+
     def __init__(self, siggo_service: ISiggoService):
         self.siggo_driver = siggo_service
         super().__init__()
@@ -72,7 +79,12 @@ class PreenchimentoGateway(IPreenchimentoGateway):
         credor: str = template.iloc[1, 1]  # B2
         gestao: str = template.iloc[2, 1]  # B3
         processo: str = template.iloc[3, 1]  # B4
-        observacao: str = template.iloc[4, 1]  # B5
+        observacao: str = (
+            template.iloc[4, 1]
+            .replace("<MONTH>", NOME_MES_ATUAL)
+            .replace("<YEAR>", str(ANO_ATUAL))
+        )  # B5
+        contrato: str = template.iloc[5, 1]  # B5
 
         id_campo_gestao = {
             "2 - CNPJ": '//*[@id = "cocredorCNPJ"]/input',
@@ -84,9 +96,8 @@ class PreenchimentoGateway(IPreenchimentoGateway):
                 '//*[@id="prioridadePagamento"]/input': prioridade,
                 id_campo_gestao: gestao,
                 '//*[@id="nuProcesso"]/input': processo,
-                '//*[@id="observacao"]': observacao.replace(
-                    "<MONTH>", NOME_MES_ATUAL
-                ).replace("<YEAR>", str(ANO_ATUAL)),
+                '//*[@id="observacao"]': observacao,
+                '//*[@id="nuContrato"]': contrato,
             },
             "opcoes": {
                 '//*[@id="tipoCredor"]': credor,
