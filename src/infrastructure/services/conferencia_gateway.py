@@ -94,7 +94,7 @@ class ConferenciaGateway(IConferenciaGateway):
         self.excel_svc.delete_sheet("Sheet")
         self.excel_svc.move_to_first("CONFERÊNCIA")
 
-    def salvar_dados_relatorio(self, dados_relatorio):
+    def salvar_dados_relatorio(self, dados_relatorio: dict[str, DataFrame]):
         self.excel_svc.exportar_para_planilha(
             dados_relatorio["PROVENTOS"],
             sheet_name="RELATÓRIO",
