@@ -4,6 +4,8 @@ __pycache__/
 /build
 /dist
 *.spec
+*.xlxs
+
 .vscode
 .mypy_cache/
 
