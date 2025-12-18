@@ -37,7 +37,8 @@ def main():
     }
 
     while True:
-        exibir_menu(opcoes.values())
+        controllers = list(opcoes.values())
+        exibir_menu(controllers)
 
         # Pede a entrada do usuário
         escolha = input("Digite a opção: ").upper()

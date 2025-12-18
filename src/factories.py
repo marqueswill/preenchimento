@@ -73,12 +73,14 @@ class UseCaseFactory:
     def create_preenchimento_folha_use_case(
         self, fundo: str
     ) -> PreenchimentoFolhaUseCase:
+        pathing_gw: IPathingGateway = PathingGateway()
+
         pagamento_uc: PagamentoUseCase = self.create_pagamento_use_case(fundo)
 
         siggo_service: ISiggoService = SiggoService()
         preenchedor_gw: IPreenchimentoGateway = PreenchimentoGateway(siggo_service)
 
-        use_case = PreenchimentoFolhaUseCase(pagamento_uc, preenchedor_gw)
+        use_case = PreenchimentoFolhaUseCase(pagamento_uc, preenchedor_gw,pathing_gw)
 
         return use_case
 

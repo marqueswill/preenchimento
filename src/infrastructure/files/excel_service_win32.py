@@ -131,6 +131,10 @@ class ExcelServiceWin32(IExcelService):
         Retorna uma aba específica do arquivo Excel.
         Se as_dataframe=True, retorna como pandas DataFrame.
         """
+        if self.workbook is None:
+            raise RuntimeError(
+                "O workbook não foi inicializado. Carregue o arquivo antes de prosseguir."
+            )
 
         try:
             sheet = self.workbook.Sheets(sheet_name)

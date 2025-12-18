@@ -278,7 +278,7 @@ class PagamentoUseCase:
 
     def gerar_nl_folha(
         self, caminho_template: str, template: str, saldos: dict
-    ) -> DataFrame:
+    ) -> NotaLancamento:
         """_summary_ Recebe um fundo e o nome de um nome de uma nl e preenche o template encontrado
         com os valores de saldo passados.
         """

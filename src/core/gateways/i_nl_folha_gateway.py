@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List
 from pandas import DataFrame
 
+from src.core.entities.entities import CabecalhoNL, TemplateNotaLancamento
 
 
 class INLFolhaGateway(ABC):
@@ -9,18 +10,17 @@ class INLFolhaGateway(ABC):
     Também interage com as planilhas de template das NLs de folha de pagamento.
     """
 
-
-
-    @abstractmethod
-    def get_nomes_templates(self, fundo: str) -> List[str]: ...
-
     # TODO: renomear pra um nome menos confuso
     @abstractmethod
     def carregar_template_nl(
         self, caminho_completo: str, template: str, incluir_calculos=True
-    ) -> DataFrame: ...
+    ) -> TemplateNotaLancamento: ...
 
     @abstractmethod
-    def carregar_cabecalho(self, caminho_completo, template) -> DataFrame: ...
+    def carregar_cabecalho(self, caminho_completo:str, template:str) -> CabecalhoNL: ...
 
+    @abstractmethod
+    def get_nomes_templates(self, fundo: str) -> List[str]: ...
+
+    @abstractmethod
     def listar_abas(self, caminho_arquivo: str) -> List[str]: ...

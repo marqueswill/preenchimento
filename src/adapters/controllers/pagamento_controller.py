@@ -21,41 +21,38 @@ def FolhaPagamentoController(test=False, run=True):
                 4: "GERAR CONFERÊNCIAS",
             }
 
-            # View: Exibe o menu principal e obtém a seleção do usuário
             app_view.display_menu(list(fundos.values()), "Selecione o tipo de folha:")
-            tipo_folha_selecionado = app_view.get_user_input(list(fundos.values()))[0]
-
+            tipo_folha_selecionado = app_view.get_user_input(list(fundos.values()))
             if tipo_folha_selecionado is None:
                 continue
 
+            tipo_folha_selecionado = tipo_folha_selecionado[0]
+
             if tipo_folha_selecionado == "GERAR CONFERÊNCIAS":
-                # Model: Chama o serviço para geração de conferências
                 app_view.display_menu(
                     list(fundos.values())[:-1],
                     "Selecione o fundo para gerar a sua conferência:",
                 )
-                fundo_para_conferencia = app_view.get_user_input(list(fundos.values()))[
-                    0
-                ]
+
+                fundo_para_conferencia = app_view.get_user_input(list(fundos.values()))
+                if fundo_para_conferencia is None:
+                    continue
+
+                fundo_para_conferencia = fundo_para_conferencia[0]
 
                 # Instanciar usecase de coferencia, passando o fundo escolhido
-
                 use_case = factory.create_gerar_conferencia_use_case(
                     fundo_para_conferencia
                 )
-
                 use_case.executar(fundo_para_conferencia)
-
                 app_view.show_message("Conferência gerada com sucesso.")
                 continue
 
-            # Model: Obtém os caminhos dos templates
             use_case = factory.create_preenchimento_folha_use_case(
                 tipo_folha_selecionado
             )
             nomes_templates = use_case.get_nomes_templates(tipo_folha_selecionado)
 
-            # View: Exibe o menu de templates e obtém a seleção do usuário
             app_view.display_menu(
                 nomes_templates,
                 "Selecione o template:",
@@ -73,9 +70,7 @@ def FolhaPagamentoController(test=False, run=True):
                 continue
 
             app_view.show_processing_message("Iniciando o processamento")
-
             use_case.executar(tipo_folha_selecionado, templates_selecionados)
-
             app_view.show_message("Processamento concluído.")
 
         except Exception as e:

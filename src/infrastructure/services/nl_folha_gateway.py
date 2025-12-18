@@ -1,5 +1,5 @@
 from typing import List
-from pandas import DataFrame
+from pandas import DataFrame # type: ignore
 import pandas as pd
 
 from src.config import *
@@ -30,7 +30,7 @@ class NLFolhaGateway(INLFolhaGateway):
         self, caminho_completo: str, template: str, incluir_calculos=True
     ) -> DataFrame:
         try:
-            dataframe = pd.read_excel(
+            dataframe = pd.read_excel( # pyright: ignore[reportAttributeAccessIssue]
                 caminho_completo,
                 header=6,
                 sheet_name=template,
