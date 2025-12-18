@@ -1,5 +1,6 @@
 import re
 import sys
+from typing import Optional
 from src.config import *
 from src.core.gateways.i_pathing_gateway import IPathingGateway
 
@@ -89,7 +90,7 @@ class PathingGateway(IPathingGateway):
         else:
             raise FileNotFoundError("Nenhum arquivo DEMOFIN_TABELA foi encontrado.")
 
-    def get_caminho_pdf_relatorio(self):
+    def get_caminho_pdf_relatorio(self) -> str | None:
         diretorio_alvo = os.path.join(
             self.get_caminho_raiz_secon(),
             "SECON - General",
@@ -98,7 +99,7 @@ class PathingGateway(IPathingGateway):
             PASTA_MES_ATUAL,
         )
 
-        caminho_pdf_relatorio = None
+        caminho_pdf_relatorio = ""
 
         if os.path.exists(diretorio_alvo):
             for nome_arquivo in os.listdir(diretorio_alvo):
@@ -112,7 +113,7 @@ class PathingGateway(IPathingGateway):
                 f"Atenção: O diretório '{diretorio_alvo}' não foi encontrado."
             )
 
-        if not caminho_pdf_relatorio:
+        if caminho_pdf_relatorio == "":
             raise FileNotFoundError(
                 "Nenhum arquivo PDF começando com 'RELATÓRIOS' foi encontrado."
             )
@@ -156,7 +157,7 @@ class PathingGateway(IPathingGateway):
 
         return caminhos
 
-    def get_caminho_reinf(self, pasta_mes: str = None) -> str:
+    def get_caminho_reinf(self, pasta_mes: Optional[str]) -> str:
         pasta_adicional = [] if not pasta_mes else [pasta_mes]
 
         caminho = os.path.join(
@@ -211,7 +212,7 @@ class PathingGateway(IPathingGateway):
                 f"O arquivo especificado '{caminho}' não foi encontrado."
             )
 
-    def get_caminhos_pdfs_envio_driss(self) -> str:
+    def get_caminhos_pdfs_envio_driss(self) -> list[str]:
         dir_path = os.path.join(
             self.get_caminho_raiz_secon(),
             "SECON - General",

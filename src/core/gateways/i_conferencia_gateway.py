@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Dict, List, Tuple
+from src.core.entities.entities import NotaLancamento
 from pandas import DataFrame
 
 
@@ -9,15 +9,15 @@ class IConferenciaGateway(ABC):
     """
 
     @abstractmethod
-    def get_tabela_demofin() -> DataFrame: ...
+    def get_tabela_demofin(self) -> DataFrame: ...
 
     @abstractmethod
-    def salvar_nls_conferencia(self, nls: List[DataFrame]): ...
+    def salvar_nls_conferencia(self, nls: list[NotaLancamento]): ...
 
     @abstractmethod
     def salvar_dados_conferencia(
-        self, proventos: DataFrame, descontos: DataFrame, totais: DataFrame
+        self, proventos_folha: DataFrame, descontos_folha: DataFrame, totais: DataFrame
     ): ...
 
     @abstractmethod
-    def salvar_dados_relatorio(self, dados_relatorio: DataFrame): ...
+    def salvar_dados_relatorio(self, dados_relatorio: dict[str, DataFrame]): ...

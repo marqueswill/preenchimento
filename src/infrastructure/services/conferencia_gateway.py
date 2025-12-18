@@ -2,6 +2,7 @@ import pandas as pd
 
 from pandas import DataFrame
 
+from src.core.entities.entities import NotaLancamento
 from src.config import *
 
 from src.core.gateways.i_conferencia_gateway import IConferenciaGateway
@@ -32,9 +33,13 @@ class ConferenciaGateway(IConferenciaGateway):
         )
         return tabela_demofin
 
-    def salvar_nls_conferencia(self, nls: dict[str, DataFrame]):
-        for sheet_name, table_data in nls.items():
-            self.excel_svc.exportar_para_planilha(table_data, sheet_name)
+    def salvar_nls_conferencia(self, nls: list[NotaLancamento]):
+        print("_"*50,end="\n\n")
+        for nl in nls:
+            if nl.esta_vazia():
+                print(f"A NL {nl.nome} não tem valor para liquidação.")
+                continue
+            self.excel_svc.exportar_para_planilha(nl.dados, nl.nome)
 
     def salvar_dados_conferencia(
         self, proventos_folha: DataFrame, descontos_folha: DataFrame, totais: DataFrame

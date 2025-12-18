@@ -5,7 +5,7 @@ import pandas as pd
 from src.config import *
 from src.core.gateways.i_nl_folha_gateway import INLFolhaGateway
 from src.core.gateways.i_pathing_gateway import IPathingGateway
-from src.core.entities.entities import CabecalhoNL, TemplateNL
+from src.core.entities.entities import CabecalhoNL, NotaLancamento, TemplateNL
 
 
 class NLFolhaGateway(INLFolhaGateway):
@@ -29,7 +29,7 @@ class NLFolhaGateway(INLFolhaGateway):
     # TODO: verificação formato template
     def carregar_template_nl(
         self, caminho_completo: str, template: str, incluir_calculos=True
-    ) -> TemplateNL:
+    ) -> TemplateNL | NotaLancamento | None:
         try:
 
             df = pd.read_excel(
@@ -40,7 +40,7 @@ class NLFolhaGateway(INLFolhaGateway):
                 dtype=str,
             ).astype(str)
 
-            df.replace(["nan", ""], ".", inplace=True)
+            df.replace(["nan", "", "-"], ".", inplace=True)
 
             if "CLASS. ORC" in df.columns:
                 df["CLASS. ORC"] = (
@@ -49,10 +49,14 @@ class NLFolhaGateway(INLFolhaGateway):
                     .astype(str)
                 )
 
-            return TemplateNL(df)
-        except Exception as e:
+            if incluir_calculos:
+                return TemplateNL(df, template)
+            else:
+                return NotaLancamento(df, template)
+        except PermissionError as e:
             print("Feche todas planilhas de template e tente novamente.", e)
-            return TemplateNL(DataFrame())
+        except Exception as e:
+            raise Exception(e)
 
     # TODO: verificação formato cabeçalho
     def carregar_cabecalho(self, caminho_completo: str, template: str) -> CabecalhoNL:

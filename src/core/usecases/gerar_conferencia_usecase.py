@@ -1,5 +1,6 @@
-from typing import Dict, List
 from pandas import DataFrame
+from src.core.entities.entities import NotaLancamento
+from src.core.gateways.i_pathing_gateway import IPathingGateway
 from src.core.gateways.i_conferencia_gateway import IConferenciaGateway
 from src.core.usecases.pagamento_usecase import PagamentoUseCase
 from src.core.gateways.i_nl_folha_gateway import INLFolhaGateway
@@ -7,11 +8,9 @@ from src.core.gateways.i_nl_folha_gateway import INLFolhaGateway
 
 class GerarConferenciaUseCase:
 
-    def __init__(
-        self,
-        pagamento_uc: PagamentoUseCase,
-    ):
+    def __init__(self, pagamento_uc: PagamentoUseCase, pathing_gw: IPathingGateway):
         self.pagamento_uc = pagamento_uc
+        self.pathing_gw = pathing_gw
 
     def executar(self, fundo):
         conferencia_completa = self.pagamento_uc.get_dados_conferencia(fundo)
@@ -26,11 +25,9 @@ class GerarConferenciaUseCase:
         saldos = self.pagamento_uc.gerar_saldos(
             conferencia_ferias, proventos, descontos
         )
-
         nls_fundo = self._gerar_nls_folha(fundo, saldos)
         totais = self._calcular_totais(nls_fundo, proventos, descontos)
 
-   
         self.pagamento_uc.conferencia_gw.salvar_dados_conferencia(
             proventos, descontos, totais
         )
@@ -39,15 +36,15 @@ class GerarConferenciaUseCase:
 
     def _calcular_totais(
         self,
-        nls: Dict[str, DataFrame],
+        nls: list[NotaLancamento],
         proventos_folha: DataFrame,
         descontos_folha: DataFrame,
     ) -> DataFrame:
 
         total_liquidado = 0
-        for nl in [v for k, v in nls.items() if k != "ADIANTAMENTO_FERIAS"]:
-            total_liquidado += nl.loc[
-                nl["EVENTO"].astype(str).str.startswith("510", na=False), "VALOR"
+        for dados_nl in [nl.dados for nl in nls if nl.nome != "ADIANTAMENTO_FERIAS"]:
+            total_liquidado += dados_nl.loc[
+                dados_nl["EVENTO"].astype(str).str.startswith("510", na=False), "VALOR"
             ].sum()
 
         total_proventos = (
@@ -82,14 +79,14 @@ class GerarConferenciaUseCase:
 
         return totais
 
-    def _gerar_nls_folha(self, fundo: str, saldos: dict):
+    def _gerar_nls_folha(self, fundo: str, saldos: dict) -> list[NotaLancamento]:
         nomes_nls = self.pagamento_uc.nl_folha_gw.get_nomes_templates(fundo)
-        caminho_planilha_templates = (
-            self.pagamento_uc.conferencia_gw.pathing_gw.get_caminho_template(fundo)
-        )
-        nls = {}
+        caminho_planilha_templates = self.pathing_gw.get_caminho_template(fundo)
+        nls: list[NotaLancamento] = []
         for nome_nl in nomes_nls:
-            nls[nome_nl] = self.pagamento_uc.gerar_nl_folha(
+            nl_gerada = self.pagamento_uc.gerar_nl_folha(
                 caminho_planilha_templates, nome_nl, saldos
             )
+            nl_gerada.nome = nome_nl
+            nls.append(nl_gerada)
         return nls

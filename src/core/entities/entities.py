@@ -1,10 +1,12 @@
 from pandas import DataFrame
 from dataclasses import dataclass, asdict
+from typing import Optional
 
 
 @dataclass
 class NotaLancamento:
     dados: DataFrame
+    nome: str = ""
 
     def __post_init__(self):
         self._checar_formato()
@@ -22,23 +24,23 @@ class NotaLancamento:
         if not colunas_obrigatorias.issubset(self.dados.columns):
             faltantes = colunas_obrigatorias - set(self.dados.columns)
             raise ValueError(
-                f"O DataFrame não possui as colunas obrigatórias. Faltando: {faltantes}"
+                f"NL-{self.nome}: O DataFrame não possui as colunas obrigatórias. Faltando: {faltantes}"
             )
 
-        evento = self.dados["CLASS. CONT"].astype(str).str.strip()
-        if not evento.str.match(r"(^\d{9}$|^\.$)").all():
-            raise ValueError("O evento deve conter 8 dígitos.")
+        evento = self.dados["EVENTO"].astype(str).str.strip()
+        if not evento.str.match(r"(^\d{6}$|^\.$)").all():
+            raise ValueError(f"NL-{self.nome}: O evento deve conter 6 dígitos.")
 
         class_cont = self.dados["CLASS. CONT"].astype(str).str.strip()
         if not class_cont.str.match(r"(^\d{9}$|^\.$)").all():
             raise ValueError(
-                "A classificação contábil, caso existir, deve conter 9 dígitos."
+                f"NL-{self.nome}: A classificação contábil, caso existir, deve conter 9 dígitos."
             )
 
         class_orc = self.dados["CLASS. ORC"].astype(str).str.strip()
         if not class_orc.str.match(r"(^\d{8}$|^\.$)").all():
             raise ValueError(
-                "A classificação oraçamentária, caso existir, deve conter 8 dígitos."
+                f"NL-{self.nome}: A classificação oraçamentária, caso existir, deve conter 8 dígitos."
             )
 
     @property
@@ -47,6 +49,7 @@ class NotaLancamento:
 
     def esta_vazia(self) -> bool:
         return self.dados.empty
+
 
 @dataclass
 class TemplateNL(NotaLancamento):
@@ -66,7 +69,7 @@ class TemplateNL(NotaLancamento):
         if not colunas_obrigatorias.issubset(self.dados.columns):
             faltantes = colunas_obrigatorias - set(self.dados.columns)
             raise ValueError(
-                f"O DataFrame não possui as colunas obrigatórias. Faltando: {faltantes}"
+                f"NL-{self.nome}: O DataFrame não possui as colunas obrigatórias. Faltando: {faltantes}"
             )
 
         return super()._checar_formato()

@@ -63,11 +63,11 @@ class UseCaseFactory:
 
     def create_gerar_conferencia_use_case(self, fundo: str) -> GerarConferenciaUseCase:
         """Cria o use case de Geração de Conferência pronto para usar."""
-
+        pathing_gw = PathingGateway()
         pagamento_uc: PagamentoUseCase = self.create_pagamento_use_case(
             fundo, win32=True
         )
-        use_case = GerarConferenciaUseCase(pagamento_uc)
+        use_case = GerarConferenciaUseCase(pagamento_uc, pathing_gw)
         return use_case
 
     def create_preenchimento_folha_use_case(
@@ -80,7 +80,7 @@ class UseCaseFactory:
         siggo_service: ISiggoService = SiggoService()
         preenchedor_gw: IPreenchimentoGateway = PreenchimentoGateway(siggo_service)
 
-        use_case = PreenchimentoFolhaUseCase(pagamento_uc, preenchedor_gw,pathing_gw)
+        use_case = PreenchimentoFolhaUseCase(pagamento_uc, preenchedor_gw, pathing_gw)
 
         return use_case
 

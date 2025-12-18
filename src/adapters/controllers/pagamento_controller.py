@@ -45,7 +45,7 @@ def FolhaPagamentoController(test=False, run=True):
                     fundo_para_conferencia
                 )
                 use_case.executar(fundo_para_conferencia)
-                app_view.show_message("Conferência gerada com sucesso.")
+                app_view.show_success("Conferência gerada com sucesso.")
                 continue
 
             use_case = factory.create_preenchimento_folha_use_case(
