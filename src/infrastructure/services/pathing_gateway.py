@@ -157,7 +157,7 @@ class PathingGateway(IPathingGateway):
 
         return caminhos
 
-    def get_caminho_reinf(self, pasta_mes: Optional[str]) -> str:
+    def get_caminho_reinf(self, pasta_mes: str | None = None) -> str:
         pasta_adicional = [] if not pasta_mes else [pasta_mes]
 
         caminho = os.path.join(

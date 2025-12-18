@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import Optional
 
 
 class IPathingGateway(ABC):
@@ -35,7 +34,7 @@ class IPathingGateway(ABC):
     def get_caminhos_demonstrativos(self, pasta_mes: str) -> list[str]: ...
 
     @abstractmethod
-    def get_caminho_reinf(self, pasta_mes: Optional[str]) -> str: ...
+    def get_caminho_reinf(self, pasta_mes: str | None) -> str: ...
 
     @abstractmethod
     def get_caminho_pdf_driss(self) -> str: ...
