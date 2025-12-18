@@ -3,8 +3,9 @@ from typing import Dict
 from pandas import DataFrame
 
 from src.core.entities.entities import (
+    CabecalhoNL,
     DadosPreenchimento,
-    TemplateNotaLancamento,
+    TemplateNL,
     NotaLancamento,
 )
 
@@ -17,11 +18,13 @@ class IPreenchimentoGateway(ABC):
 
     @abstractmethod
     def separar_por_pagina(
-        self, dataframe: NotaLancamento, tamanho_pagina=24
+        self, dataframe: DataFrame, tamanho_pagina=24
     ) -> list[NotaLancamento]: ...
 
     @abstractmethod
-    def preparar_preechimento_cabecalho(self, template: TemplateNotaLancamento): ...
+    def preparar_preechimento_cabecalho(
+        self, cabecalho: CabecalhoNL
+    ) -> dict[str, dict[str, str]]: ...
 
     @abstractmethod
     def preparar_preenchimento_nl(self, dados): ...

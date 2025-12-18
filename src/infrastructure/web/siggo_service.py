@@ -33,7 +33,13 @@ class SiggoService(WebDriver):
         self.driver.find_element(By.XPATH, button_selector).click()
         time.sleep(2)
 
-    def esperar_login(self, timeout=300):
+    def esperar_login(
+        self,
+        login_page_url="https://siggo.fazenda.df.gov.br/Account/Login",
+        element_xpath='//*[@id="SIAC"]/div/div/div/div[2]/div/a/h4',
+        expected_text="AFC",
+        timeout=300,
+    ):
         url = "https://siggo.fazenda.df.gov.br/Account/Login"
         self.driver.get(url)
 

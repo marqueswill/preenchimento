@@ -30,7 +30,7 @@ class PreenchimentoFolhaUseCase:
         dados_gerados = self._gerar_dados_para_preenchimento(fundo, templates, saldos)
         self.preenchedor_gw.executar(dados_gerados)
         return dados_gerados
- 
+
     def _gerar_dados_para_preenchimento(
         self, fundo: str, nomes_templates: list[str], saldos: dict
     ) -> list[DadosPreenchimento]:
@@ -42,13 +42,16 @@ class PreenchimentoFolhaUseCase:
                 caminho_template,
                 template,
             )
-            folha = self.pagamento_uc.gerar_nl_folha(
+
+            nl = self.pagamento_uc.gerar_nl_folha(
                 caminho_template,
                 template,
                 saldos,
             )
-            if folha.empty:
+            
+            if nl.esta_vazia():
                 continue
 
-            dados_preenchimento.append(DadosPreenchimento(folha, cabecalho))
+            dados_preenchimento.append(DadosPreenchimento(nl, cabecalho))
+
         return dados_preenchimento

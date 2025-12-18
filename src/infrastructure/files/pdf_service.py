@@ -21,7 +21,7 @@ class PdfService(IPdfService):
         self.pathing_gw = pathing_gw
         super().__init__()
 
-    def parse_relatorio_folha(self, fundo_escolhido) -> dict[str, DataFrame]:
+    def parse_relatorio_folha(self, fundo_escolhido:str) -> dict[str, DataFrame]:
         caminho_pdf_relatorio = self.pathing_gw.get_caminho_pdf_relatorio()
         with open(caminho_pdf_relatorio, "rb") as file:
             reader = PdfReader(file)

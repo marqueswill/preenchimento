@@ -3,8 +3,6 @@ from typing import Dict, List, Tuple
 from pandas import DataFrame
 
 
-
-
 class IConferenciaGateway(ABC):
     """_summary_ Extração e transformação dos dados para gerar a conferência da folha de pagamentos.
     Inclui os dados de proventos e descontos do Demofin, os dados do relatório e as NLs geradas.

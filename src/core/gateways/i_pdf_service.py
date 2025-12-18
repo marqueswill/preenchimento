@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from pypdf import PageObject
-
+from pandas import DataFrame
 
 class IPdfService(ABC):
 
@@ -8,7 +8,7 @@ class IPdfService(ABC):
     def parse_dados_diaria(self, caminho_pdf: str) -> dict: ...
 
     @abstractmethod
-    def parse_relatorio_folha(self): ...
+    def parse_relatorio_folha(self, fundo_escolhido: str)->dict[str, DataFrame]: ...
 
     @abstractmethod
     def parse_dados_inss(self): ...

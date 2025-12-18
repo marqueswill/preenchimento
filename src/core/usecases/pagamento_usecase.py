@@ -1,10 +1,11 @@
-import re
+from typing import cast
 import numpy as np
 import pandas as pd
 from pandas import DataFrame
 from src.core.gateways.i_pdf_service import IPdfService
 from src.core.gateways.i_conferencia_gateway import IConferenciaGateway
 from src.core.gateways.i_nl_folha_gateway import INLFolhaGateway
+from src.core.entities.entities import NotaLancamento
 
 
 class PagamentoUseCase:
@@ -277,14 +278,17 @@ class PagamentoUseCase:
         return self.pdf_svc.parse_relatorio_folha(fundo_escolhido)
 
     def gerar_nl_folha(
-        self, caminho_template: str, template: str, saldos: dict
+        self, caminho_template: str, nome_template: str, saldos: dict
     ) -> NotaLancamento:
         """_summary_ Recebe um fundo e o nome de um nome de uma nl e preenche o template encontrado
         com os valores de saldo passados.
         """
-        folha_pagamento = self.nl_folha_gw.carregar_template_nl(
-            caminho_template, template
+        template = self.nl_folha_gw.carregar_template_nl(
+            caminho_template, nome_template
         )
+
+        folha_pagamento = template.dados
+
         folha_pagamento["VALOR"] = 0.0
 
         # Calcula o valor para cada linha
@@ -302,16 +306,17 @@ class PagamentoUseCase:
             if tipo == "MANUAL":
                 folha_pagamento.at[idx, "VALOR"] = 0.000001
             else:
-                valor_somar = self.soma_codigos(somar, saldos[tipo])
-                valor_subtrair = self.soma_codigos(subtrair, saldos[tipo])
+                valor_somar = self.soma_codigos(str(somar), saldos[tipo])
+                valor_subtrair = self.soma_codigos(str(subtrair), saldos[tipo])
                 valor = valor_somar - valor_subtrair
                 folha_pagamento.at[idx, "VALOR"] = valor
 
         folha_pagamento.drop(columns=["SOMAR", "SUBTRAIR", "TIPO"], inplace=True)
         folha_pagamento = folha_pagamento[folha_pagamento["VALOR"] > 0]
-        folha_pagamento = folha_pagamento.sort_values(by="INSCRIÇÃO")
+        folha_pagamento = cast(pd.DataFrame, folha_pagamento)
+        folha_pagamento = folha_pagamento.sort_values(by=["INSCRIÇÃO"])
         folha_pagamento.reset_index(drop=True, inplace=True)
-        return folha_pagamento
+        return NotaLancamento(folha_pagamento)
 
     def soma_codigos(self, codigos: str, dicionario: dict):
         lista_codigos = list(map(str.strip, codigos.split(",")))

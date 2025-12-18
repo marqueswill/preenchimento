@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List
 from pandas import DataFrame
 
-from src.core.entities.entities import CabecalhoNL, TemplateNotaLancamento
+from src.core.entities.entities import CabecalhoNL, TemplateNL
 
 
 class INLFolhaGateway(ABC):
@@ -14,7 +14,7 @@ class INLFolhaGateway(ABC):
     @abstractmethod
     def carregar_template_nl(
         self, caminho_completo: str, template: str, incluir_calculos=True
-    ) -> TemplateNotaLancamento: ...
+    ) -> TemplateNL: ...
 
     @abstractmethod
     def carregar_cabecalho(self, caminho_completo:str, template:str) -> CabecalhoNL: ...

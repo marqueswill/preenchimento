@@ -11,6 +11,8 @@ from src.core.gateways.i_preenchimento_gateway import IPreenchimentoGateway
 from src.core.gateways.i_siggo_service import ISiggoService
 from src.config import *
 
+from src.core.entities.entities import CabecalhoNL, DadosPreenchimento
+
 
 # TODO: verificar formato dos DFs para o preenchimento
 class PreenchimentoGateway(IPreenchimentoGateway):
@@ -24,20 +26,20 @@ class PreenchimentoGateway(IPreenchimentoGateway):
         self.siggo_driver = siggo_service
         super().__init__()
 
-    def executar(self, dados: list[dict[str, DataFrame]]):
+    def executar(self, dados: list[DadosPreenchimento]):
         self.siggo_driver.inicializar()
         link_lancamento_nl = (
             f"https://siggo.fazenda.df.gov.br/{ANO_ATUAL}/afc/nota-de-lancamento"
         )
         for dado in dados:
             # TODO: melhorar a forma com que os dados são passados
-            folha = dado["folha"]
-            template = dado["cabecalho"]
+            lancamento = dado.lancamento
+            caebecalho = dado.cabecalho
 
-            if folha.empty:
+            if lancamento.esta_vazia():
                 continue
 
-            dados_por_pagina = self.separar_por_pagina(folha)
+            dados_por_pagina = self.separar_por_pagina(lancamento.dados)
             for dados_lancamentos in dados_por_pagina:
                 tentativa = 0
                 while True:
@@ -49,7 +51,7 @@ class PreenchimentoGateway(IPreenchimentoGateway):
                         self._remove_first_row()
 
                         campos_cabecalho = self.preparar_preechimento_cabecalho(
-                            template
+                            caebecalho
                         )
                         self.siggo_driver.selecionar_opcoes(campos_cabecalho["opcoes"])
                         self.siggo_driver.preencher_campos(campos_cabecalho["campos"])
@@ -74,33 +76,27 @@ class PreenchimentoGateway(IPreenchimentoGateway):
         self.siggo_driver.fechar_primeira_aba()
 
     # TODO: carregar cabeçalho dinamicamente
-    def preparar_preechimento_cabecalho(self, template: DataFrame):
-        prioridade: str = template.iloc[0, 1]  # B1
-        credor: str = template.iloc[1, 1]  # B2
-        gestao: str = template.iloc[2, 1]  # B3
-        processo: str = template.iloc[3, 1]  # B4
-        observacao: str = (
-            template.iloc[4, 1]
-            .replace("<MONTH>", NOME_MES_ATUAL)
-            .replace("<YEAR>", str(ANO_ATUAL))
-        )  # B5
-        contrato: str = template.iloc[5, 1]  # B5
+    def preparar_preechimento_cabecalho(self, cabecalho: CabecalhoNL):
+
+        cabecalho.observacao = cabecalho.observacao.replace(
+            "<MONTH>", NOME_MES_ATUAL
+        ).replace("<YEAR>", str(ANO_ATUAL))
 
         id_campo_gestao = {
             "2 - CNPJ": '//*[@id = "cocredorCNPJ"]/input',
             "4 - UG/Gestão": '//*[@id="codigoCredor"]/input',
-        }[credor]
+        }[cabecalho.credor]
 
         return {
             "campos": {
-                '//*[@id="prioridadePagamento"]/input': prioridade,
-                id_campo_gestao: gestao,
-                '//*[@id="nuProcesso"]/input': processo,
-                '//*[@id="observacao"]': observacao,
-                '//*[@id="nuContrato"]': contrato,
+                '//*[@id="prioridadePagamento"]/input': cabecalho.prioridade,
+                id_campo_gestao: cabecalho.gestao,
+                '//*[@id="nuProcesso"]/input': cabecalho.processo,
+                '//*[@id="observacao"]': cabecalho.observacao,
+                '//*[@id="nuContrato"]': cabecalho.contrato,
             },
             "opcoes": {
-                '//*[@id="tipoCredor"]': credor,
+                '//*[@id="tipoCredor"]': cabecalho.credor,
             },
         }
 

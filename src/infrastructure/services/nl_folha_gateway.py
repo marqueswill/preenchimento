@@ -1,10 +1,11 @@
 from typing import List
-from pandas import DataFrame # type: ignore
+from pandas import DataFrame  # type: ignore
 import pandas as pd
 
 from src.config import *
 from src.core.gateways.i_nl_folha_gateway import INLFolhaGateway
 from src.core.gateways.i_pathing_gateway import IPathingGateway
+from src.core.entities.entities import CabecalhoNL, TemplateNL
 
 
 class NLFolhaGateway(INLFolhaGateway):
@@ -28,9 +29,10 @@ class NLFolhaGateway(INLFolhaGateway):
     # TODO: verificação formato template
     def carregar_template_nl(
         self, caminho_completo: str, template: str, incluir_calculos=True
-    ) -> DataFrame:
+    ) -> TemplateNL:
         try:
-            dataframe = pd.read_excel( # pyright: ignore[reportAttributeAccessIssue]
+
+            df = pd.read_excel(
                 caminho_completo,
                 header=6,
                 sheet_name=template,
@@ -38,34 +40,53 @@ class NLFolhaGateway(INLFolhaGateway):
                 dtype=str,
             ).astype(str)
 
-            dataframe.replace(["nan", ""], ".", inplace=True)
-            dataframe["CLASS. ORC"] = (
-                dataframe["CLASS. ORC"]
-                .apply(lambda x: x[1:] if len(x) == 9 else x)
-                .astype(str)
-            )
-            return dataframe
+            df.replace(["nan", ""], ".", inplace=True)
+
+            if "CLASS. ORC" in df.columns:
+                df["CLASS. ORC"] = (
+                    df["CLASS. ORC"]
+                    .apply(lambda x: str(x)[1:] if len(str(x)) == 9 else str(x))
+                    .astype(str)
+                )
+
+            return TemplateNL(df)
         except Exception as e:
             print("Feche todas planilhas de template e tente novamente.", e)
+            return TemplateNL(DataFrame())
 
     # TODO: verificação formato cabeçalho
-    def carregar_cabecalho(self, caminho_completo: str, template: str) -> DataFrame:
+    def carregar_cabecalho(self, caminho_completo: str, template: str) -> CabecalhoNL:
+        cabecalho_dict = {}
+
         try:
-            # dataframe = pd.read_excel(
-            #     caminho_completo,
-            #     header=None,
-            #     sheet_name=template,
-            #     usecols="A:I",
-            # ).astype(str)
-            dataframe = pd.read_excel(
-                caminho_completo,
-                sheet_name=template,
-                dtype=str,
-                header=None,
-            ).astype(str)
-            return dataframe
+            df = pd.read_excel(
+                caminho_completo, sheet_name=template, header=None, dtype=str
+            )
+
+            for index, row in df.iterrows():
+                chave = str(row[0]).strip()
+                if chave == "EVENTO":
+                    break
+
+                if chave and chave.lower() != "nan":
+                    chave_limpa = chave.replace(":", "").strip().lower()
+                    valor = str(row[1]).strip() if bool(pd.notna(row[1])) else ""
+                    cabecalho_dict[chave_limpa] = valor
+
+            cabecalho = CabecalhoNL(
+                prioridade=cabecalho_dict.get("prioridade de pagamento", ""),
+                credor=cabecalho_dict.get("credor", ""),
+                gestao=cabecalho_dict.get("ug/gestão", ""),
+                processo=cabecalho_dict.get("processo", ""),
+                observacao=cabecalho_dict.get("observação", ""),
+                contrato=cabecalho_dict.get("contrato", ""),
+            )
+
+            return cabecalho
+
         except Exception as e:
-            print("Feche as planilhas de template e tente novamente.", e)
+            print(f"Erro ao processar o cabeçalho da planilha '{template}': {e}")
+            return CabecalhoNL()
 
     def listar_abas(self, caminho_arquivo: str) -> List[str]:
         xls = pd.ExcelFile(caminho_arquivo)
