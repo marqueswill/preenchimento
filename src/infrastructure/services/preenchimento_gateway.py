@@ -11,7 +11,7 @@ from src.core.gateways.i_preenchimento_gateway import IPreenchimentoGateway
 from src.core.gateways.i_siggo_service import ISiggoService
 from src.config import *
 
-from src.core.entities.entities import CabecalhoNL, DadosPreenchimento
+from src.core.entities.entities import CabecalhoNL, DadosPreenchimento, NotaLancamento
 
 
 # TODO: verificar formato dos DFs para o preenchimento
@@ -103,7 +103,7 @@ class PreenchimentoGateway(IPreenchimentoGateway):
     def _remove_first_row(self):
 
         delete_button = '//*[@id="ui-fieldset-0-content"]/div/div/div[1]/div/table/tbody/tr/td[7]/button'
-        driver = self.siggo_driver.driver
+        driver = self.siggo_driver.get_driver()
         try:
             wait = WebDriverWait(driver, 2)
             wait.until(
@@ -122,10 +122,10 @@ class PreenchimentoGateway(IPreenchimentoGateway):
             # )
             raise
 
-    def preparar_preenchimento_nl(self, dados):
+    def preparar_preenchimento_nl(self, dados) -> dict:
         linhas = dados.shape[0]
         campos = {}
-        driver = self.siggo_driver.driver
+        driver = self.siggo_driver.get_driver()
         for i in range(linhas):
             include_button = '//*[@id="incluirCampoLancamentos"]'
 
@@ -135,11 +135,11 @@ class PreenchimentoGateway(IPreenchimentoGateway):
             )
             botao_incluir.click()
 
-            evento = dados.iloc[i]["EVENTO"]
-            inscricao = dados.iloc[i]["INSCRIÇÃO"]
-            class_cont = dados.iloc[i]["CLASS. CONT"].replace(".", "")
-            class_orc = dados.iloc[i]["CLASS. ORC"].replace(".", "")
-            fonte = dados.iloc[i]["FONTE"]
+            evento = str(dados.iloc[i]["EVENTO"])
+            inscricao = str(dados.iloc[i]["INSCRIÇÃO"])
+            class_cont = str(dados.iloc[i]["CLASS. CONT"]).replace(".", "")
+            class_orc = str(dados.iloc[i]["CLASS. ORC"]).replace(".", "")
+            fonte = str(dados.iloc[i]["FONTE"])
             valor = "{:.2f}".format(round(float(dados.iloc[i]["VALOR"]), 2))
 
             valores = [evento, inscricao, class_cont, class_orc, fonte, valor]
@@ -156,12 +156,12 @@ class PreenchimentoGateway(IPreenchimentoGateway):
             for i in range(0, len(dataframe), tamanho_pagina)
         ]
 
-    def extrair_dados_preenchidos(self) -> list[dict[str, DataFrame]]:
+    def extrair_dados_preenchidos(self) -> list[DadosPreenchimento]:
         """
         Orquestra a extração de dados do cabeçalho e da tabela de lançamentos
         de TODAS AS ABAS de NL abertas.
         """
-        driver = self.siggo_driver.driver
+        driver = self.siggo_driver.get_driver()
         todos_os_dados_abas = []
 
         try:
@@ -173,12 +173,9 @@ class PreenchimentoGateway(IPreenchimentoGateway):
                 cabecalho_data = self._extrair_dados_cabecalho()
                 nl_data_df = self._extrair_dados_nl()
 
-                dados_da_aba = {
-                    "cabecalho": cabecalho_data,
-                    "folha": nl_data_df,
-                }
-
-                todos_os_dados_abas.append(dados_da_aba)
+                todos_os_dados_abas.append(
+                    DadosPreenchimento(nl_data_df, cabecalho_data)
+                )
 
         except Exception as e:
             print(f"Erro ao iterar sobre as abas e extrair dados: {e}")
@@ -186,63 +183,71 @@ class PreenchimentoGateway(IPreenchimentoGateway):
 
         return todos_os_dados_abas
 
-    def _extrair_dados_cabecalho(self) -> Dict[str, str]:
+    def _extrair_dados_cabecalho(self) -> CabecalhoNL:
         """
-        Extrai os dados preenchidos dos campos do cabeçalho da NL.
+        Extrai os dados preenchidos dos campos do cabeçalho da NL
+        e retorna uma instância de CabecalhoNL.
         """
-        driver = self.siggo_driver.driver
-        dados = {}
+        driver = self.siggo_driver.get_driver()
+        # Inicializa a dataclass com os valores padrão
+        cabecalho = CabecalhoNL()
 
         try:
-            # 1. Extrair "Tipo Credor" (Dropdown)
+            # 1. Extrair "Tipo Credor" (Dropdown) -> Mapeia para cabecalho.credor
             seletor_credor = '//*[@id="tipoCredor"]'
             elemento_credor = driver.find_element(By.XPATH, seletor_credor)
             credor_selecionado = Select(elemento_credor).first_selected_option.text
-            dados["tipoCredor"] = credor_selecionado
+            cabecalho.credor = credor_selecionado
 
             # 2. Extrair "Prioridade" (Input)
             seletor_prioridade = '//*[@id="prioridadePagamento"]/input'
-            dados["prioridade"] = driver.find_element(
-                By.XPATH, seletor_prioridade
-            ).get_attribute("value")
+            cabecalho.prioridade = str(
+                driver.find_element(By.XPATH, seletor_prioridade).get_attribute("value")
+            )
 
-            # 3. Extrair "Gestão" (Dinâmico, baseado no Tipo Credor)
+            # 3. Extrair "Gestão" (Dinâmico)
             id_campo_gestao_map = {
                 "2 - CNPJ": '//*[@id = "cocredorCNPJ"]/input',
                 "4 - UG/Gestão": '//*[@id="codigoCredor"]/input',
             }
+
             if credor_selecionado in id_campo_gestao_map:
                 seletor_gestao = id_campo_gestao_map[credor_selecionado]
-                dados["gestao"] = driver.find_element(
-                    By.XPATH, seletor_gestao
-                ).get_attribute("value")
+                cabecalho.gestao = str(
+                    driver.find_element(By.XPATH, seletor_gestao).get_attribute("value")
+                )
             else:
-                dados["gestao"] = None  # Ou algum valor padrão
+                # Mantém o padrão da dataclass ("") ou define outro
+                cabecalho.gestao = ""
 
             # 4. Extrair "Processo" (Input)
             seletor_processo = '//*[@id="nuProcesso"]/input'
-            dados["processo"] = driver.find_element(
-                By.XPATH, seletor_processo
-            ).get_attribute("value")
+            cabecalho.processo = str(
+                driver.find_element(By.XPATH, seletor_processo).get_attribute("value")
+            )
 
             # 5. Extrair "Observação" (Textarea)
             seletor_obs = '//*[@id="observacao"]'
-            dados["observacao"] = driver.find_element(
-                By.XPATH, seletor_obs
-            ).get_attribute("value")
+            cabecalho.observacao = str(
+                driver.find_element(By.XPATH, seletor_obs).get_attribute("value")
+            )
 
-            return dados
+            # Nota: O campo 'contrato' existe na dataclass mas não na extração.
+            # Ele permanecerá com o valor padrão definido na dataclass.
+
+            return cabecalho
 
         except Exception as e:
             print(f"Erro ao extrair dados do cabeçalho: {e}")
-            return dados  # Retorna o que foi coletado
+            # Retorna o objeto parcialmente preenchido ou vazio, respeitando o Type Hint
+            return cabecalho
 
-    def _extrair_dados_nl(self) -> DataFrame:
+    def _extrair_dados_nl(self) -> NotaLancamento:
         """
         Extrai os dados preenchidos da tabela de lançamentos.
         Retorna um DataFrame.
         """
-        driver = self.siggo_driver.driver
+        driver = self.siggo_driver.get_driver()
         colunas = ["EVENTO", "INSCRIÇÃO", "CLASS. CONT", "CLASS. ORC", "FONTE", "VALOR"]
         base_tbody_xpath = (
             '//*[@id="ui-fieldset-0-content"]/div/div/div[1]/div/table/tbody'
@@ -254,7 +259,7 @@ class PreenchimentoGateway(IPreenchimentoGateway):
             linhas_elementos = driver.find_elements(By.XPATH, f"{base_tbody_xpath}/tr")
         except Exception:
             # Tabela não encontrada ou vazia
-            return pd.DataFrame(columns=colunas)
+            return NotaLancamento(DataFrame(columns=pd.Index(colunas)))
 
         # Loop por cada linha <tr> (índice do XPath começa em 1)
         for i in range(1, len(linhas_elementos) + 1):
@@ -280,7 +285,7 @@ class PreenchimentoGateway(IPreenchimentoGateway):
                 continue
 
         if not dados_coletados:
-            return pd.DataFrame(columns=colunas)
+            return NotaLancamento(DataFrame(columns=pd.Index(colunas)))
 
         df = pd.DataFrame(dados_coletados)
 
@@ -294,4 +299,4 @@ class PreenchimentoGateway(IPreenchimentoGateway):
                 .replace(0.0, 0.000001)
             )
 
-        return df
+        return NotaLancamento(df)
