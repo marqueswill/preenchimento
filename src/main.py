@@ -10,7 +10,8 @@ from src.adapters.controllers.pagamento_diarias_controller import (
     PagamentoDiariaController,
 )
 from src.adapters.controllers.pagamento_controller import FolhaPagamentoController
-
+from src.adapters.controllers.cancelamento_rp_controller import CancelamentoRPController
+from src.adapters.controllers.baixa_diarias_controller import BaixaDiariasController
 
 def exibir_menu(opcoes:list):
     """Exibe o menu de opções."""
@@ -34,6 +35,8 @@ def main():
         "4": ExtrairDadosR2000Controller,
         "5": ExportarValoresPagosController,
         "6": EmailsDrissController,
+        "7": CancelamentoRPController,
+        "8": BaixaDiariasController
     }
 
     while True:
@@ -58,6 +61,7 @@ def main():
                 input()
             except Exception as e:
                 print(f"Erro durante a execução de {nome_controller}: {e}")
+                input()
 
             print("\n")
         else:

@@ -29,7 +29,7 @@ class CancelamentoRPUseCase:
 
     def obter_dados_cacelamento(self) -> DataFrame:
         dados_brutos = self.excel_svc.get_sheet(
-            sheet_name="CANCELAMENTO_RP", as_dataframe=True, columns="A:"
+            sheet_name="CANCELAMENTO_RP", as_dataframe=True
         )
 
         dados_brutos.columns = dados_brutos.columns.str.strip()
