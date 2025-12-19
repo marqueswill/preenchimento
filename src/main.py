@@ -61,6 +61,7 @@ def main():
                 input()
             except Exception as e:
                 print(f"Erro durante a execução de {nome_controller}: {e}")
+                input()
 
             print("\n")
         else:

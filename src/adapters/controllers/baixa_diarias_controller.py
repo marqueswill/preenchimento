@@ -1,6 +1,5 @@
 from src.factories import UseCaseFactory
 
-
 def BaixaDiariasController(run=True, test=False):
     factory = UseCaseFactory()
     use_case = factory.create_baixa_diarias_usecase()

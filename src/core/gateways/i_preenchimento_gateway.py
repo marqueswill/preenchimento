@@ -14,7 +14,7 @@ class IPreenchimentoGateway(ABC):
     """_summary_ Preenche os dados de NLs no siggo."""
 
     @abstractmethod
-    def executar(self, dados: list[DadosPreenchimento]): ...
+    def executar(self, dados: list[DadosPreenchimento], divisao_par=True): ...
 
     @abstractmethod
     def separar_por_pagina(

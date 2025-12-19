@@ -32,15 +32,15 @@ class NotaLancamento:
             raise ValueError(f"NL-{self.nome}: O evento deve conter 6 dígitos.")
 
         class_cont = self.dados["CLASS. CONT"].astype(str).str.strip()
-        if not class_cont.str.match(r"(^\d{9}$|^\.$)").all():
+        if not class_cont.str.match(r"(^\d{9}$|^\.$|^$|^nan$)").all():
             raise ValueError(
                 f"NL-{self.nome}: A classificação contábil, caso existir, deve conter 9 dígitos."
             )
 
         class_orc = self.dados["CLASS. ORC"].astype(str).str.strip()
-        if not class_orc.str.match(r"(^\d{8}$|^\.$)").all():
+        if not class_orc.str.match(r"(^\d{8}$|^\.$|^$|^nan$)").all():
             raise ValueError(
-                f"NL-{self.nome}: A classificação oraçamentária, caso existir, deve conter 8 dígitos."
+                f"NL-{self.nome}: A classificação orçamentária, caso existir, deve conter 8 dígitos."
             )
 
     @property
