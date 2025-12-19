@@ -2,7 +2,7 @@ from pandas import DataFrame
 import pandas as pd
 from src.core.gateways.i_preenchimento_gateway import IPreenchimentoGateway
 from src.core.gateways.i_pathing_gateway import IPathingGateway
-from src.core.services.i_excel_service import IExcelService
+from src.core.gateways.i_excel_service import IExcelService
 from src.core.entities.entities import DadosPreenchimento,NotaLancamento,CabecalhoNL
 from src.config import NOME_MES_ATUAL
 

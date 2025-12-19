@@ -10,8 +10,8 @@ from src.adapters.controllers.pagamento_diarias_controller import (
     PagamentoDiariaController,
 )
 from src.adapters.controllers.pagamento_controller import FolhaPagamentoController
-from src.adapters.controller.cancelamento_rp_controller import CancelamentoRPController
-from src.adapters.controller.baixa_diarias_controller import BaixaDiariasController
+from src.adapters.controllers.cancelamento_rp_controller import CancelamentoRPController
+from src.adapters.controllers.baixa_diarias_controller import BaixaDiariasController
 
 def exibir_menu(opcoes:list):
     """Exibe o menu de opções."""
