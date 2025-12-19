@@ -1,4 +1,6 @@
+import pandas as pd
 from pandas import DataFrame
+from typing import cast
 from src.core.entities.entities import NotaLancamento
 from src.core.gateways.i_pathing_gateway import IPathingGateway
 from src.core.gateways.i_conferencia_gateway import IConferenciaGateway
@@ -20,18 +22,20 @@ class GerarConferenciaUseCase:
 
         proventos = self.pagamento_uc.separar_proventos(conferencia_completa)
         descontos = self.pagamento_uc.separar_descontos(conferencia_completa)
-        dados_relatorio = self.pagamento_uc.extrair_dados_relatorio(fundo)
+        # dados_relatorio = self.pagamento_uc.extrair_dados_relatorio(fundo)
 
         saldos = self.pagamento_uc.gerar_saldos(
             conferencia_ferias, proventos, descontos
         )
         nls_fundo = self._gerar_nls_folha(fundo, saldos)
         totais = self._calcular_totais(nls_fundo, proventos, descontos)
+        dados_510 = self._obter_valores_510(nls_fundo)
 
+        # self.pagamento_uc.conferencia_gw.salvar_dados_510(dados_510)
         self.pagamento_uc.conferencia_gw.salvar_dados_conferencia(
             proventos, descontos, totais
         )
-        self.pagamento_uc.conferencia_gw.salvar_dados_relatorio(dados_relatorio)
+        # self.pagamento_uc.conferencia_gw.salvar_dados_relatorio(dados_relatorio)
         self.pagamento_uc.conferencia_gw.salvar_nls_conferencia(nls_fundo)
 
     def _calcular_totais(
@@ -90,3 +94,17 @@ class GerarConferenciaUseCase:
             nl_gerada.nome = nome_nl
             nls.append(nl_gerada)
         return nls
+
+    def _obter_valores_510(self, nls_fundo: list[NotaLancamento]) -> DataFrame:
+        dfs_filtrados = [
+            nl.dados for nl in nls_fundo if nl.nome != "ADIANTAMENTO_FERIAS"
+        ]
+
+        if not dfs_filtrados:
+            return DataFrame()
+
+        df_concat = pd.concat(dfs_filtrados, ignore_index=True)
+
+        resultado = df_concat[df_concat["EVENTO"].astype(str).str.startswith("510")]
+    
+        return cast(DataFrame, resultado)

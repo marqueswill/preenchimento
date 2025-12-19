@@ -40,12 +40,12 @@ Caso você queira gerar apenas para uma controller específica,acesse a pasta ra
 
 **Com console (padrão):**
 ```Bash
-python -m PyInstaller --onefile --name "NOME_DO_EXECUTAVEL" .\src\adapters\controllers\arquivo.py
+python -m PyInstaller --hiddenimport win32timezone --onefile --name "NOME_DO_EXECUTAVEL" .\src\adapters\controllers\arquivo.py
 ```
 
 **Sem console (modo silencioso):** Use a flag `--noconsole` se não quiser que a janela preta do terminal apareça:
 ```Bash
-python -m PyInstaller --onefile --noconsole --name "NOME_DO_EXECUTAVEL" .\src\adapters\controllers\arquivo.py
+python -m PyInstaller --hiddenimport win32timezone --onefile --noconsole --name "NOME_DO_EXECUTAVEL" .\src\adapters\controllers\arquivo.py
 ```
 ___
 # 🏗️ Arquitetura do Projeto

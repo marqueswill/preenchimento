@@ -34,7 +34,7 @@ class ConferenciaGateway(IConferenciaGateway):
         return tabela_demofin
 
     def salvar_nls_conferencia(self, nls: list[NotaLancamento]):
-        print("_"*50,end="\n\n")
+        print("_" * 50, end="\n\n")
         for nl in nls:
             if nl.esta_vazia():
                 print(f"A NL {nl.nome} não tem valor para liquidação.")
@@ -115,3 +115,12 @@ class ConferenciaGateway(IConferenciaGateway):
         )
 
         self.excel_svc.move_to_first("RELATÓRIO")
+
+    def salvar_dados_510(self, dados_510: DataFrame):
+        self.excel_svc.exportar_para_planilha(
+            dados_510,
+            sheet_name="DADOS_510",
+            start_column="A",
+            clear=True,
+        )
+        self.excel_svc.move_to_first("DADOS_510")
