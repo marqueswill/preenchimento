@@ -74,35 +74,40 @@ class PreenchimentoGateway(IPreenchimentoGateway):
         self.siggo_driver.fechar_primeira_aba()
 
     # TODO: carregar cabeçalho dinamicamente
-    def preparar_preechimento_cabecalho(self, template: DataFrame):
-        prioridade: str = template.iloc[0, 1]  # B1
-        credor: str = template.iloc[1, 1]  # B2
-        gestao: str = template.iloc[2, 1]  # B3
-        processo: str = template.iloc[3, 1]  # B4
-        observacao: str = (
-            template.iloc[4, 1]
-            .replace("<MONTH>", NOME_MES_ATUAL)
-            .replace("<YEAR>", str(ANO_ATUAL))
-        )  # B5
-        contrato: str = template.iloc[5, 1]  # B5
+    def preparar_preenchimento_cabecalho(self, cabecalho: dict):
 
-        id_campo_gestao = {
-            "2 - CNPJ": '//*[@id = "cocredorCNPJ"]/input',
-            "4 - UG/Gestão": '//*[@id="codigoCredor"]/input',
-        }[credor]
+    prioridade = cabecalho["prioridade_pagamento"]
+    credor = cabecalho["tipo_credor"]
+    gestao = cabecalho["gestao"]
+    processo = cabecalho["processo"]
+    observacao = (
+        cabecalho["observacao"]
+        .replace("<MONTH>", NOME_MES_ATUAL)
+        .replace("<YEAR>", str(ANO_ATUAL))
+    )
+    contrato = cabecalho.get("contrato")
 
-        return {
-            "campos": {
-                '//*[@id="prioridadePagamento"]/input': prioridade,
-                id_campo_gestao: gestao,
-                '//*[@id="nuProcesso"]/input': processo,
-                '//*[@id="observacao"]': observacao,
-                '//*[@id="nuContrato"]': contrato,
-            },
-            "opcoes": {
-                '//*[@id="tipoCredor"]': credor,
-            },
-        }
+    id_campo_gestao = {
+        "2 - CNPJ": '//*[@id="cocredorCNPJ"]/input',
+        "4 - UG/Gestão": '//*[@id="codigoCredor"]/input',
+    }[credor]
+
+    campos = {
+        '//*[@id="prioridadePagamento"]/input': prioridade,
+        id_campo_gestao: gestao,
+        '//*[@id="nuProcesso"]/input': processo,
+        '//*[@id="observacao"]': observacao,
+    }
+
+    if contrato:
+        campos['//*[@id="nuContrato"]'] = contrato
+
+    return {
+        "campos": campos,
+        "opcoes": {
+            '//*[@id="tipoCredor"]': credor,
+        },
+    }
 
     def _remove_first_row(self):
 
