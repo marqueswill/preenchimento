@@ -1,5 +1,6 @@
 from pandas import DataFrame
 import pandas as pd
+from src.core.entities.entities import CabecalhoNL, DadosPreenchimento, NotaLancamento
 from src.core.gateways.i_excel_service import IExcelService
 from src.core.gateways.i_pathing_gateway import IPathingGateway
 from src.core.gateways.i_preenchimento_gateway import IPreenchimentoGateway
@@ -29,7 +30,7 @@ class CancelamentoRPUseCase:
 
     def obter_dados_cacelamento(self) -> DataFrame:
         dados_brutos = self.excel_svc.get_sheet(
-            sheet_name="CANCELAMENTO_RP", as_dataframe=True, columns="A:"
+            sheet_name="CANCELAMENTO_RP", as_dataframe=True
         )
 
         dados_brutos.columns = dados_brutos.columns.str.strip()
@@ -50,12 +51,15 @@ class CancelamentoRPUseCase:
 
         return dados_brutos
 
-    def _preparar_dados_preenchimento(
+    def preparar_dados_preenchimento(
         self, dados_brutos: DataFrame
-    ) -> list[dict[str, DataFrame]]:
-        # Agrupar por processo e contrato
-        dados_preenchimento =[]
-        grupos = dados_brutos.groupby(["PROCESSO", "CONTRATO", "NE"], dropna=False)
+    ) -> list[DadosPreenchimento]:
+
+        dados_preenchimento = []
+
+        # 1. Agrupamos primeiramente APENAS por PROCESSO
+        grupos_processo = dados_brutos.groupby("PROCESSO", dropna=False)
+
         trocas_digito_fonte = {
             "1": "3",
             "2": "4",
@@ -64,76 +68,6 @@ class CancelamentoRPUseCase:
             "4": "4",
             "8": "8",
         }
-        for (processo, contrato, ne), df in grupos:
-            nl = pd.DataFrame(
-                {
-                    "EVENTO": "540032",  # Valor fixo repetido para todas as linhas
-                    "INSCRIÇÃO": df["NE"],  # Copia a coluna inteira
-                    "CLASS. CONT": "",  # Valor vazio repetido
-                    "CLASS. ORC": df["NATUREZA"],  # Copia a coluna
-                    "FONTE": df["FONTE"],  # Copia a coluna
-                    "VALOR": df["SALDO"],  # Copia a coluna
-                }
-            )
-
-            # Lógica eventos 550
-            total550 = nl["VALOR"].sum()
-            segundo_digito = str(nl["CLASS. ORC"].iloc[0])[1]
-            inscricao_natureza = "02101" + segundo_digito + f"{ANO_ATUAL}{MES_ATUAL}"
-            fonte550 = nl["FONTE"].iloc[0]
-            linha550 = ["570569", inscricao_natureza, "", "", fonte550, total550]
-            nl.loc[len(nl)] = linha550
-
-            # Lógica eventos 570: agrupamento por NE, fonte sempre a mesma
-            total570 = df["SALDO"].sum()
-            digito_fonte = df["FONTE"].iloc[0][0]
-            resto_fonte = df["FONTE"].iloc[0][1:]
-            fonte570 = trocas_digito_fonte[digito_fonte] + resto_fonte
-
-            linha570 = ["570569", "", "", "", fonte570, total570]
-            nl.loc[len(nl)] = linha570
-
-            prioridade = "Z0"
-            credor = "4 - UG/Gestão"
-            gestao = "020101-00001"
-            observacao = f"CANCELAMENTO DO SALDO DE RESTOS A PAGAR NÃO PROCESSADOS RELATIVOS A {ANO_ATUAL-1} PELA NÃO UTILIZAÇÃO."
-            cabecalho = pd.DataFrame(
-                [
-                    ["Prioridade de Pagamento:", prioridade],
-                    ["Credor:", credor],  # Ex: "4 - UG/Gestão"
-                    ["UG/Gestão:", gestao],  # Ex: "020101-00001"
-                    ["Processo:", processo],  # Ex: "00600-0000..."
-                    ["Observação:", observacao],  # Ex: "PROVISÃO..."
-                    ["Observação:", observacao],  # Ex: "PROVISÃO..."
-                    ["Contrato:", contrato],  # Ex: "PROVISÃO..."
-                ],
-                columns=["RÓTULO", "VALOR"],
-            )
-
-            dados_preenchimento.append( {
-                "folha": nl,
-                "cabecalho": cabecalho,
-            })
-
-            print(nl)
-            print(cabecalho)
-            print("\n\n" + "-" * 100)
-
-        return dados_preenchimento
-
-    def preparar_dados_preenchimento(
-            self, dados_brutos: DataFrame
-        ) -> list[dict[str, DataFrame]]:
-
-        dados_preenchimento = []
-
-        # 1. Agrupamos primeiramente APENAS por PROCESSO
-        grupos_processo = dados_brutos.groupby("PROCESSO", dropna=False)
-
-        trocas_digito_fonte = {
-                "1": "3", "2": "4", "7": "8", 
-                "3": "3", "4": "4", "8": "8",
-            }
 
         for processo, df_processo in grupos_processo:
 
@@ -145,14 +79,16 @@ class CancelamentoRPUseCase:
             for (contrato, ne), df in subgrupos:
 
                 # --- Lógica Evento 540032 (Detalhes) ---
-                nl_parcial = pd.DataFrame({
+                nl_parcial = pd.DataFrame(
+                    {
                         "EVENTO": "540032",
                         "INSCRIÇÃO": df["NE"],
                         "CLASS. CONT": "",
                         "CLASS. ORC": df["NATUREZA"],
                         "FONTE": df["FONTE"],
                         "VALOR": df["SALDO"],
-                    })
+                    }
+                )
 
                 # --- Lógica Evento 550 ---
                 total550 = nl_parcial["VALOR"].sum()
@@ -161,31 +97,39 @@ class CancelamentoRPUseCase:
                 inscricao_natureza = f"02101{segundo_digito}{ANO_ATUAL}{MES_ATUAL}"
                 fonte550 = nl_parcial["FONTE"].iloc[0]
 
-                linha550 = pd.DataFrame([{
-                        "EVENTO": "550923", # Assumindo o código do evento
-                        "INSCRIÇÃO": inscricao_natureza,
-                        "CLASS. CONT": "",
-                        "CLASS. ORC": "",
-                        "FONTE": fonte550,
-                        "VALOR": total550
-                    }])
+                linha550 = pd.DataFrame(
+                    [
+                        {
+                            "EVENTO": "550923",  # Assumindo o código do evento
+                            "INSCRIÇÃO": inscricao_natureza,
+                            "CLASS. CONT": "",
+                            "CLASS. ORC": "",
+                            "FONTE": fonte550,
+                            "VALOR": total550,
+                        }
+                    ]
+                )
 
                 # --- Lógica Evento 570 ---
                 total570 = df["SALDO"].sum()
                 fonte_orig = str(df["FONTE"].iloc[0])
                 digito_fonte = fonte_orig[0]
                 resto_fonte = fonte_orig[1:]
-                novo_digito = trocas_digito_fonte.get(digito_fonte, digito_fonte) 
+                novo_digito = trocas_digito_fonte.get(digito_fonte, digito_fonte)
                 fonte570 = novo_digito + resto_fonte
 
-                linha570 = pd.DataFrame([{
-                        "EVENTO": "570569",
-                        "INSCRIÇÃO": "",
-                        "CLASS. CONT": "",
-                        "CLASS. ORC": "",
-                        "FONTE": fonte570,
-                        "VALOR": total570
-                    }])
+                linha570 = pd.DataFrame(
+                    [
+                        {
+                            "EVENTO": "570569",
+                            "INSCRIÇÃO": "",
+                            "CLASS. CONT": "",
+                            "CLASS. ORC": "",
+                            "FONTE": fonte570,
+                            "VALOR": total570,
+                        }
+                    ]
+                )
 
                 # Adiciona tudo na lista deste processo
                 dfs_para_concatenar.extend([nl_parcial, linha550, linha570])
@@ -200,14 +144,14 @@ class CancelamentoRPUseCase:
             # Agrupa por todas as colunas exceto VALOR e soma o VALOR
             colunas_agrupamento = [c for c in df_final_processo.columns if c != "VALOR"]
 
-            df_agrupado = (
-                    df_final_processo
-                    .groupby(colunas_agrupamento, dropna=False, as_index=False)["VALOR"]
-                    .sum()
-                )
+            df_agrupado = df_final_processo.groupby(
+                colunas_agrupamento, dropna=False, as_index=False
+            )["VALOR"].sum()
 
             # Opcional: Ordenar para que 540 venha antes de 550/570 visualmente
-            df_agrupado = df_agrupado.sort_values(by=["EVENTO", "INSCRIÇÃO"]).reset_index(drop=True)
+            df_agrupado = df_agrupado.sort_values(
+                by=["EVENTO", "INSCRIÇÃO"]
+            ).reset_index(drop=True)
 
             # 4. Montagem do Cabeçalho
             prioridade = "Z0"
@@ -215,25 +159,18 @@ class CancelamentoRPUseCase:
             gestao = "130101-00001"
             observacao = f"CANCELAMENTO DO SALDO DE RESTOS A PAGAR NÃO PROCESSADOS RELATIVOS A {ANO_ATUAL-1} PELA NÃO UTILIZAÇÃO."
 
-            dados_cabecalho = [
-                    ["Prioridade de Pagamento:", prioridade],
-                    ["Credor:", credor],
-                    ["UG/Gestão:", gestao],
-                    ["Processo:", processo],
-                    ["Observação:", observacao],
-                    ["Contrato:", contrato]
-                ]
-
-            cabecalho = pd.DataFrame(
-                dados_cabecalho
-            )  # Sem colunas definidas fica índice 0 e 1, ideal para export
-
-            dados_preenchimento.append(
-                {
-                    "folha": df_agrupado,
-                    "cabecalho": cabecalho,
-                }
+            lancamento = NotaLancamento(df_agrupado)
+            cabecalho = CabecalhoNL(
+                prioridade,
+                credor,
+                gestao,
+                str(processo),
+                observacao,
+                contrato,
             )
+
+            dados = DadosPreenchimento(lancamento, cabecalho)
+            dados_preenchimento.append(dados)
 
             print(f"Processo: {processo}")
             print(df_agrupado)
@@ -241,5 +178,5 @@ class CancelamentoRPUseCase:
 
         return dados_preenchimento
 
-    def preencher_dados_siggo(self, dados_preenchimento):
+    def preencher_dados_siggo(self, dados_preenchimento: list[DadosPreenchimento]):
         self.preenchimento_gw.executar(dados_preenchimento)

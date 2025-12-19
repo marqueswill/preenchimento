@@ -1,11 +1,12 @@
 from src.factories import UseCaseFactory
-
+from src.infrastructure.cli.console_service import ConsoleService
 
 def CancelamentoRPController(run=True, test=False):
+    app_view = ConsoleService()
     factory = UseCaseFactory()
     use_case = factory.create_cancelamento_rp_usecase()
     use_case.executar()
-
+    app_view.show_message("Processamento concluído.")
 
 if __name__ == "__main__":
     CancelamentoRPController()

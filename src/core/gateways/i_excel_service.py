@@ -4,7 +4,8 @@ from abc import ABC, abstractmethod
 from typing import Any, List, Optional
 from pandas import DataFrame
 
-#TODO: refatorar para que o usecase inicialize a planilha desejada, e não a factory
+
+# TODO: refatorar para que o usecase inicialize a planilha desejada, e não a factory
 class IExcelService(ABC):
     """
     Define a interface (contrato) para um serviço que
@@ -40,15 +41,16 @@ class IExcelService(ABC):
     ) -> None: ...
 
     @abstractmethod
-    def destacar_linhas(
-        self,
-        sheet_name: str,
-        cor_fundo: str = "FFFF00",
-        negrito: bool = False,
-        coluna_alvo: str = None,
-        valor_alvo: Any = None,
-        header_row: int = 1,
-    ) -> None: ...
+    def delete_rows(self, sheet_name: str, start_row: int = 1): ...
 
     @abstractmethod
-    def delete_rows(self, sheet_name: str, start_row: int = 1): ...
+    def apply_conditional_formatting(
+        self,
+        formula: str,
+        target_range: str,
+        sheet_name: str,
+        color: str = None,
+        filling: str = None,
+        bold: bool = False,
+        underline: bool = False,
+    ): ...

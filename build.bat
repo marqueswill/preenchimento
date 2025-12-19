@@ -20,6 +20,13 @@ echo --> Compilando NL AUTOMATICA...
 echo --> Compilando IMPORTAR VALORES PAGOS...
 %PYINSTALLER_CMD% --name "EXTRAIR VALORES PAGOS" .\src\adapters\controllers\exportar_valores_pagos_controller.py
 
+echo --> Compilando IMPORTAR VALORES PAGOS...
+%PYINSTALLER_CMD% --name "GERAR NLS CANCELAMENTO RP" .\src\adapters\controllers\cancelamento_rp_controller.py
+
+echo --> Compilando IMPORTAR VALORES PAGOS...
+%PYINSTALLER_CMD% --name "GERAR NLS BAIXA DIARIA" .\src\adapters\controllers\baixa_diarias_controller.py
+
+
 echo -----------------------------------------------------------
 echo Todos os executaveis foram compilados com sucesso!
 echo Os arquivos estao disponiveis no diretorio 'dist'.

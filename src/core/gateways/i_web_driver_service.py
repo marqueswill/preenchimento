@@ -1,11 +1,15 @@
 from abc import ABC, abstractmethod
 
+from selenium.webdriver.remote.webdriver import WebDriver as SeleniumWebDriver
+
 
 class IWebDriverService(ABC):
+    @abstractmethod
+    def get_driver(self) -> SeleniumWebDriver: ...
 
     @abstractmethod
     def inicializar(self): ...
-    
+
     @abstractmethod
     def finalizar(self): ...
 
@@ -31,4 +35,4 @@ class IWebDriverService(ABC):
     def recarregar_pagina(self): ...
 
     @abstractmethod
-    def esperar_carregamento(self, timeout=60): ...
+    def esperar_carregamento(self, xpath: str, timeout=60): ...

@@ -21,8 +21,8 @@ class PdfService(IPdfService):
         self.pathing_gw = pathing_gw
         super().__init__()
 
-    def parse_relatorio_folha(self, fundo_escolhido) -> dict[str, DataFrame]:
-        caminho_pdf_relatorio = self.pathing_gw.get_caminho_pdf_relatorio()
+    def parse_relatorio_folha(self, fundo_escolhido:str) -> dict[str, DataFrame]:
+        caminho_pdf_relatorio = str(self.pathing_gw.get_caminho_pdf_relatorio())
         with open(caminho_pdf_relatorio, "rb") as file:
             reader = PdfReader(file)
             text = ""
@@ -62,7 +62,7 @@ class PdfService(IPdfService):
             )
 
             dados_proventos = []
-            for item in relatorio_fundo["PROVENTOS"].split("Elem. Despesa:"):
+            for item in str(relatorio_fundo["PROVENTOS"]).split("Elem. Despesa:"):
                 correspondencia = padrao.search(item)
                 if correspondencia:
                     cod_nat = correspondencia.group(1).replace(".", "")
@@ -78,7 +78,7 @@ class PdfService(IPdfService):
                     dados_proventos.append([nome_nat, cod_nat, total_natureza])
 
             dados_descontos = []
-            for item in relatorio_fundo["DESCONTOS"].split("Elem. Despesa:"):
+            for item in str(relatorio_fundo["DESCONTOS"]).split("Elem. Despesa:"):
                 correspondencia = padrao.search(item)
                 if correspondencia:
                     cod_nat = correspondencia.group(1).replace(".", "")
@@ -95,10 +95,10 @@ class PdfService(IPdfService):
                     dados_descontos.append([nome_nat, cod_nat, total_natureza])
 
             colunas_p = ["NOME NAT", "COD NAT", "PROVENTO"]
-            df_proventos = pd.DataFrame(dados_proventos, columns=colunas_p)
+            df_proventos = pd.DataFrame(dados_proventos, columns=pd.Index(colunas_p))
 
             colunas_d = ["NOME NAT", "COD NAT", "DESCONTO"]
-            df_descontos = pd.DataFrame(dados_descontos, columns=colunas_d)
+            df_descontos = pd.DataFrame(dados_descontos, columns=pd.Index(colunas_d))
 
             return {
                 "PROVENTOS": df_proventos,

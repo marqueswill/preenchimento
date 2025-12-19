@@ -131,6 +131,10 @@ class ExcelServiceWin32(IExcelService):
         Retorna uma aba específica do arquivo Excel.
         Se as_dataframe=True, retorna como pandas DataFrame.
         """
+        if self.workbook is None:
+            raise RuntimeError(
+                "O workbook não foi inicializado. Carregue o arquivo antes de prosseguir."
+            )
 
         try:
             sheet = self.workbook.Sheets(sheet_name)
@@ -231,12 +235,102 @@ class ExcelServiceWin32(IExcelService):
         except Exception:
             raise ValueError(f"Aba '{sheet_name}' não encontrada ou erro ao mover.")
 
-    def destacar_linhas(
+    def _hex_to_excel_color(self, hex_color: str) -> int:
+        """
+        Converte uma cor Hex (#RRGGBB) para o formato inteiro RGB aceito pelo Excel via COM.
+        O Excel usa a ordem BGR (Blue-Green-Red) na construção do inteiro.
+        """
+        if not hex_color:
+            return None
+
+        hex_color = hex_color.lstrip("#")
+        if len(hex_color) != 6:
+            return 0  # Retorna preto ou padrão em caso de erro
+
+        r = int(hex_color[0:2], 16)
+        g = int(hex_color[2:4], 16)
+        b = int(hex_color[4:6], 16)
+
+        # Fórmula para converter RGB para o Long do Excel: R + (G * 256) + (B * 65536)
+        return r + (g * 256) + (b * 65536)
+
+    def apply_conditional_formatting(
         self,
+        formula: str,
+        target_range: str,  # 1. Renomeado para evitar conflito com range()
         sheet_name: str,
-        cor_fundo: str = "FFFF00",  # Cor amarela em Hex (BGR)
-        negrito: bool = False,
-        coluna_alvo: str = None,
-        valor_alvo: Any = None,
-        header_row: int = 1,
-    ) -> None:...
+        color: Optional[str] = None,
+        filling: Optional[str] = None,
+        bold: bool = False,
+        underline: bool = False,
+        clear_existing: bool = True,  # 2. Opção para limpar regras anteriores
+    ):
+        """
+        Aplica formatação condicional baseada em fórmula.
+
+        Args:
+            formula (str): A fórmula em INGLÊS (Ex: '=AND($A1>0, $B1<5)').
+                        Use vírgula ',' como separador de argumentos.
+            target_range (str): O intervalo de células (Ex: 'A1:C10').
+            sheet_name (str): Nome da aba.
+            color (str, optional): Cor da fonte em Hex. Defaults to None.
+            filling (str, optional): Cor de fundo em Hex. Defaults to None.
+            bold (bool, optional): Negrito. Defaults to False.
+            underline (bool, optional): Sublinhado. Defaults to False.
+            clear_existing (bool, optional): Se True, remove formatações condicionais
+                                            anteriores no range. Defaults to True.
+        """
+        if not self.workbook:
+            raise Exception("Workbook não está aberto.")
+
+        try:
+            sheet = self.workbook.Sheets(sheet_name)
+        except Exception:
+            raise ValueError(f"Aba '{sheet_name}' não encontrada.")
+
+        clean_range = target_range.lstrip("=")
+
+        try:
+            excel_range = sheet.Range(clean_range)
+        except Exception as e:
+            print(f"Erro ao selecionar o range '{clean_range}': {e}")
+            return
+
+        # Constante xlExpression = 2
+        xlExpression = 2
+
+        try:
+            # 3. Limpeza preventiva de regras anteriores nesse range específico
+            if clear_existing:
+                excel_range.FormatConditions.Delete()
+
+            # Adiciona a regra
+            fc = excel_range.FormatConditions.Add(Type=xlExpression, Formula1=formula)
+
+            # --- Aplicação de Estilos ---
+
+            # Cor de Fundo (Interior)
+            if filling:
+                fc.Interior.Color = self._hex_to_excel_color(filling)
+
+            # Cor da Fonte
+            if color:
+                fc.Font.Color = self._hex_to_excel_color(color)
+
+            # Negrito
+            if bold:
+                fc.Font.Bold = True
+
+            # Sublinhado (2 = xlUnderlineStyleSingle)
+            if underline:
+                fc.Font.Underline = 2
+
+            # Opcional: Definir 'Parar se Verdadeiro' para evitar conflitos com outras regras fora deste range
+            # fc.StopIfTrue = False
+
+        except Exception as e:
+            print(f"Erro ao aplicar formatação condicional no range {clean_range}: {e}")
+            # Dica de debug para fórmulas
+            print(
+                f"Verifique se a fórmula '{formula}' está em Inglês e usa vírgulas como separador."
+            )

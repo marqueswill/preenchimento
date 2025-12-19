@@ -2,11 +2,13 @@ import pandas as pd
 
 from pandas import DataFrame
 
+from src.core.entities.entities import NotaLancamento
 from src.config import *
 
 from src.core.gateways.i_conferencia_gateway import IConferenciaGateway
 from src.core.gateways.i_excel_service import IExcelService
 from src.core.gateways.i_pathing_gateway import IPathingGateway
+
 
 class ConferenciaGateway(IConferenciaGateway):
     """_summary_ Atua como uma ponte para consolidar os dados da conferência financeira. Ele lê a tabela "Demofin", e utiliza o ExcelService para exportar os resultados processados (proventos, descontos, totais e relatórios) para as planilhas de conferência finais.
@@ -31,9 +33,13 @@ class ConferenciaGateway(IConferenciaGateway):
         )
         return tabela_demofin
 
-    def salvar_nls_conferencia(self, nls: dict[str, DataFrame]):
-        for sheet_name, table_data in nls.items():
-            self.excel_svc.exportar_para_planilha(table_data, sheet_name)
+    def salvar_nls_conferencia(self, nls: list[NotaLancamento]):
+        print("_"*50,end="\n\n")
+        for nl in nls:
+            if nl.esta_vazia():
+                print(f"A NL {nl.nome} não tem valor para liquidação.")
+                continue
+            self.excel_svc.exportar_para_planilha(nl.dados, nl.nome)
 
     def salvar_dados_conferencia(
         self, proventos_folha: DataFrame, descontos_folha: DataFrame, totais: DataFrame
@@ -54,6 +60,32 @@ class ConferenciaGateway(IConferenciaGateway):
             clear=False,
         )
 
+        self.excel_svc.apply_conditional_formatting(
+            formula="=AND($A1<>" ";IFERROR($F1<0;FALSE))",
+            target_range="=$A:$F",
+            filling="#FFD966",
+            sheet_name="CONFERÊNCIA",
+        )
+        self.excel_svc.apply_conditional_formatting(
+            formula="=AND($H1<>" ";IFERROR($M1<0;FALSE))",
+            target_range="=$H:$M",
+            filling="#FFD966",
+            sheet_name="CONFERÊNCIA",
+        )
+
+        # self.excel_svc.apply_conditional_formatting(
+        #     formula="=AND($A1<>"";IFERROR($F1<0;FALSE))",
+        #     target_range="=$F:$F",
+        #     filling="#FF7979",
+        #     sheet_name="CONFERÊNCIA",
+        # )
+        # self.excel_svc.apply_conditional_formatting(
+        #     formula="=AND($H1<>"";IFERROR($M1<0;FALSE))",
+        #     target_range="=$M:$M",
+        #     filling="#FF7979",
+        #     sheet_name="CONFERÊNCIA",
+        # )
+
         # Exporta os totais para coluna H, abaixo dos descontos
         ultima_linha = str(len(descontos_folha) + 3)
         self.excel_svc.exportar_para_planilha(
@@ -67,7 +99,7 @@ class ConferenciaGateway(IConferenciaGateway):
         self.excel_svc.delete_sheet("Sheet")
         self.excel_svc.move_to_first("CONFERÊNCIA")
 
-    def salvar_dados_relatorio(self, dados_relatorio):
+    def salvar_dados_relatorio(self, dados_relatorio: dict[str, DataFrame]):
         self.excel_svc.exportar_para_planilha(
             dados_relatorio["PROVENTOS"],
             sheet_name="RELATÓRIO",

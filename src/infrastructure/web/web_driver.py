@@ -38,6 +38,9 @@ class WebDriver(IWebDriverService):
 
         self.driver = webdriver.Chrome(options=options)
 
+    def get_driver(self):
+        return self.driver
+
     def recarregar_pagina(self):
         self.driver.refresh()
         time.sleep(1)
@@ -84,29 +87,3 @@ class WebDriver(IWebDriverService):
             except:
                 time.sleep(1)
                 break
-
-    def esperar_login(
-        self,
-        login_page_url: str,
-        element_xpath: str,
-        expected_text: str,
-        timeout=300,
-    ):
-
-        self.acessar_link(login_page_url)
-
-        start_time = time.time()
-
-        while True:
-            try:
-                element = self.driver.find_element(By.XPATH, element_xpath)
-                if element.text == expected_text:
-                    break
-            except:
-                pass
-
-            time.sleep(2)
-            current_time = time.time()
-            if current_time - start_time > timeout:
-                self.finalizar()
-                raise TimeoutException("Tempo limite para login excedido.")

@@ -18,6 +18,7 @@ class ExcelService(IExcelService):
     Args:
         IExcelService (_type_): _description_
     """
+
     def __init__(self, caminho_arquivo: str):
         self.caminho_arquivo = caminho_arquivo
         self.workbook = self._get_workbook()
@@ -215,95 +216,20 @@ class ExcelService(IExcelService):
             sheet.delete_rows(start_row, num_rows_to_delete)
             self.save()
 
-    # def apply_formula(self, sheet_name: str, formula: str, range_ref: str):
-    #     """
-    #     Aplica uma fórmula a um intervalo específico de células.
-    #     """
-    #     if sheet_name not in self.workbook.sheetnames:
-    #         raise ValueError(f"Aba '{sheet_name}' não encontrada.")
-
-    #     sheet = self.workbook[sheet_name]
-
-    #     min_col, min_row, max_col, max_row = range_boundaries(range_ref)
-
-    #     for row in sheet.iter_rows(min_row=min_row, max_row=max_row, min_col=min_col, max_col=min_col):
-    #         for cell in row:
-    #             current_row = cell.row
-    #             # Formata a fórmula com a linha atual
-    #             formatted_formula = formula.format(row=current_row)
-    #             cell.value = formatted_formula
-    #     self.save()
-
-    def apply_number_format(self, sheet_name: str, number_format: str, range_ref: str):
-        """
-        Aplica um formato de número a um intervalo específico de células.
-
-        Args:
-            sheet_name (str): O nome da aba.
-            number_format (str): O formato de número a ser aplicado (e.g., '#,##0.00').
-            range_ref (str): O intervalo de células como uma string (e.g., 'A1:B10').
-        """
-        if sheet_name not in self.workbook.sheetnames:
-            raise ValueError(f"Aba '{sheet_name}' não encontrada.")
-
-        sheet = self.workbook[sheet_name]
-
-        # O openpyxl.utils.range_boundaries retorna (min_col, min_row, max_col, max_row)
-        min_col, min_row, max_col, max_row = range_boundaries(range_ref)
-
-        for row in sheet.iter_rows(
-            min_row=min_row, max_row=max_row, min_col=min_col, max_col=max_col
-        ):
-            for cell in row:
-                cell.number_format = number_format
-
-        self.save()
-
-    def destacar_linhas(
-        self,
-        sheet_name: str,
-        cor_fundo="FFFF00",
-        negrito=False,
-        coluna_alvo: str = None,
-        valor_alvo=None,
-        header_row=1,
-    ):
-
-        if sheet_name not in self.workbook.sheetnames:
-            raise ValueError(f"Aba '{sheet_name}' não encontrada.")
-
-        sheet = self.workbook[sheet_name]
-        headers = [cell.value for cell in sheet[header_row]]
-
-        try:
-            idx_nat = headers.index(coluna_alvo)
-        except ValueError:
-            raise ValueError(f"Coluna '{coluna_alvo}' não encontrada na planilha.")
-
-        fill = PatternFill(
-            start_color=cor_fundo,
-            end_color=cor_fundo,
-            fill_type="solid",
-        )
-        font = Font(bold=negrito)
-        thin_border = Side(border_style="thin", color="000000")
-        border = Border(
-            left=thin_border, right=thin_border, top=thin_border, bottom=thin_border
-        )
-
-        for row in sheet.iter_rows(min_row=header_row + 1):
-            valor = row[idx_nat].value
-            if str(valor) == valor_alvo:
-                for cell in row:
-                    cell.fill = fill
-                    cell.border = border
-                    cell.font = font
-
-        self.save()
-
     def save(self):
         """Salva o arquivo Excel."""
         self.workbook.save(self.caminho_arquivo)
+
+    def apply_conditional_formatting(
+        self,
+        formula,
+        target_range,
+        sheet_name,
+        color=None,
+        filling=None,
+        bold=False,
+        underline=False,
+    ): ...
 
     @staticmethod
     def copy_to(caminho_arquivo: str, pasta_destino: str):

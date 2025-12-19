@@ -1,7 +1,8 @@
 import os
-from pandas import DataFrame
+from pandas import DataFrame, Index
 import pandas as pd
 
+from src.core.entities.entities import CabecalhoNL, DadosPreenchimento, NotaLancamento
 from src.core.gateways.i_pdf_service import IPdfService
 from src.core.gateways.i_pathing_gateway import IPathingGateway
 from src.core.gateways.i_preenchimento_gateway import IPreenchimentoGateway
@@ -18,6 +19,10 @@ class PagamentoDiariaUseCase:
         self.pathing_gw = pathing_gw
         self.pdf_svc = pdf_svc
 
+    def executar(self, arquivos_selecionados: list[str]):
+        dados_preenchimento = self.gerar_nl_diarias(arquivos_selecionados)
+        self.preenchimento_gw.executar(dados_preenchimento)
+
     def listar_planilhas(self) -> list[str]:
         dir_path = os.path.join(
             self.pathing_gw.get_caminho_raiz_secon(),
@@ -30,34 +35,34 @@ class PagamentoDiariaUseCase:
 
     def gerar_nl_diarias(
         self, arquivos_selecionados: list[str]
-    ) -> list[dict[str, DataFrame]]:
-        dados_preenchimento: list[dict[str, DataFrame]] = []
+    ) -> list[DadosPreenchimento]:
+        dados_preenchimento: list[DadosPreenchimento] = []
         caminhos_pdf = self.pathing_gw.get_caminhos_nes_diaria(arquivos_selecionados)
         for i, caminho_pdf in enumerate(caminhos_pdf):
             nl = DataFrame(
-                columns=[
-                    "EVENTO",
-                    "INSCRIÇÃO",
-                    "CLASS. CONT",
-                    "CLASS. ORC",
-                    "FONTE",
-                    "VALOR",
-                ]
-            )
-            cabecalho = DataFrame(
-                columns=[
-                    "Coluna 1",
-                    "Coluna 2",
-                ],
+                columns=pd.Index(
+                    [
+                        "EVENTO",
+                        "INSCRIÇÃO",
+                        "CLASS. CONT",
+                        "CLASS. ORC",
+                        "FONTE",
+                        "VALOR",
+                    ]
+                )
             )
 
             dados_extraidos = self.pdf_svc.parse_dados_diaria(caminho_pdf)
-
-
             processo = dados_extraidos["processo"]
             observacao = dados_extraidos["observacao"]
-            coluna2 = ["F0", "4 - UG/Gestão", "020101-00001", processo, observacao]
-            cabecalho["Coluna 2"] = coluna2
+
+            cabecalho = CabecalhoNL(
+                prioridade="F0",
+                credor="4 - UG/Gestão",
+                gestao="020101-00001",
+                processo=processo,
+                observacao=observacao,
+            )
 
             for dados in dados_extraidos["dados"]:
                 evento1 = "510379"
@@ -77,15 +82,8 @@ class PagamentoDiariaUseCase:
 
             nl = nl.sort_values(by=["INSCRIÇÃO", "EVENTO"]).reset_index(drop=True)
 
-            dados_preenchimento.append(
-                {
-                    "folha": nl,
-                    "cabecalho": cabecalho,
-                }
-            )
+            lancamento = NotaLancamento(nl)
+            dados = DadosPreenchimento(lancamento, cabecalho)
+            dados_preenchimento.append(dados)
 
         return dados_preenchimento
-
-    def executar(self, arquivos_selecionados: list[str]):
-        dados_preenchimento = self.gerar_nl_diarias(arquivos_selecionados)
-        self.preenchimento_gw.executar(dados_preenchimento)

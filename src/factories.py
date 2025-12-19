@@ -11,6 +11,7 @@ from src.infrastructure.services.conferencia_gateway import ConferenciaGateway
 from src.infrastructure.web.siggo_service import SiggoService
 
 # Importe o Use Case de core
+from src.core.usecases.baixa_diarias_usecase import BaixaDiariasUseCase
 from src.core.usecases.pagamento_diaria_usecase import PagamentoDiariaUseCase
 from src.core.usecases.emails_driss_usecase import EmailsDrissUseCase
 from src.core.usecases.extrair_dados_r2000_usecase import ExtrairDadosR2000UseCase
@@ -31,7 +32,7 @@ from src.core.gateways.i_preenchimento_gateway import IPreenchimentoGateway
 from src.core.gateways.i_siggo_service import ISiggoService
 
 
-from src.config import *
+from src.config import ANO_ATUAL
 
 
 class UseCaseFactory:
@@ -40,11 +41,16 @@ class UseCaseFactory:
     com todas as suas dependências.
     """
 
-    def create_pagamento_use_case(self, fundo: str) -> PagamentoUseCase:
+    def create_pagamento_use_case(self, fundo: str, win32=False) -> PagamentoUseCase:
         pathing_gw: IPathingGateway = PathingGateway()
 
         caminho_planilha_conferencia = pathing_gw.get_caminho_conferencia(fundo)
-        excel_svc: IExcelService = ExcelService(caminho_planilha_conferencia)
+        excel_svc: IExcelService
+        if win32:
+            excel_svc = ExcelService(caminho_planilha_conferencia)
+        else:
+            excel_svc = ExcelServiceWin32(caminho_planilha_conferencia)
+
         pdf_svc: IPdfService = PdfService(pathing_gw)
 
         conferencia_gw: IConferenciaGateway = ConferenciaGateway(
@@ -58,20 +64,24 @@ class UseCaseFactory:
 
     def create_gerar_conferencia_use_case(self, fundo: str) -> GerarConferenciaUseCase:
         """Cria o use case de Geração de Conferência pronto para usar."""
-
-        pagamento_uc: PagamentoUseCase = self.create_pagamento_use_case(fundo)
-        use_case = GerarConferenciaUseCase(pagamento_uc)
+        pathing_gw = PathingGateway()
+        pagamento_uc: PagamentoUseCase = self.create_pagamento_use_case(
+            fundo, win32=True
+        )
+        use_case = GerarConferenciaUseCase(pagamento_uc, pathing_gw)
         return use_case
 
     def create_preenchimento_folha_use_case(
         self, fundo: str
     ) -> PreenchimentoFolhaUseCase:
+        pathing_gw: IPathingGateway = PathingGateway()
+
         pagamento_uc: PagamentoUseCase = self.create_pagamento_use_case(fundo)
 
         siggo_service: ISiggoService = SiggoService()
         preenchedor_gw: IPreenchimentoGateway = PreenchimentoGateway(siggo_service)
 
-        use_case = PreenchimentoFolhaUseCase(pagamento_uc, preenchedor_gw)
+        use_case = PreenchimentoFolhaUseCase(pagamento_uc, preenchedor_gw, pathing_gw)
 
         return use_case
 
@@ -151,6 +161,20 @@ class UseCaseFactory:
         )
         excel_svc: IExcelService = ExcelService(caminho_planilha)
         use_case: CancelamentoRPUseCase = CancelamentoRPUseCase(
+            pathing_gw, excel_svc, preenchedor_gw
+        )
+        return use_case
+
+    def create_baixa_diarias_usecase(self) -> BaixaDiariasUseCase:
+        pathing_gw: IPathingGateway = PathingGateway()
+        siggo_service: ISiggoService = SiggoService()
+        preenchedor_gw: IPreenchimentoGateway = PreenchimentoGateway(siggo_service)
+        caminho_planilha = (
+            pathing_gw.get_caminho_raiz_secon()
+            + f"SECON - General\\ANO_ATUAL\\RELATORIOS_GERENCIAIS\\DADOS_BAIXA_DIARIAS.xlsx"
+        )
+        excel_svc: IExcelService = ExcelService(caminho_planilha)
+        use_case: BaixaDiariasUseCase = BaixaDiariasUseCase(
             pathing_gw, excel_svc, preenchedor_gw
         )
         return use_case
