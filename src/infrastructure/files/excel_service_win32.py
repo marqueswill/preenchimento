@@ -240,3 +240,53 @@ class ExcelServiceWin32(IExcelService):
         valor_alvo: Any = None,
         header_row: int = 1,
     ) -> None:...
+
+    def aplicar_formatacao_condicional_saldo(
+        self,
+        sheet_name: str,
+        coluna_saldo: str = "F",
+        linha_inicial: int = 2,
+        cor_positiva: str = "C6EFCE",  # Verde claro em Hex (BGR)
+        cor_negativa: str = "FFC7CE",  # Vermelho claro em Hex (BGR)
+    ) -> None:
+
+        sheet = self.workbook.Sheets(data)
+    
+        ultima_linha = sheet.UsedRange.Rows.Count
+        intervalo = sheet.Range(
+            f"{coluna_saldo}{linha_inicial}:{coluna_saldo}{ultima_linha}"
+        )
+
+        #Remove regras anteriores
+        intervalo.FormatConditions.Delete()
+
+        # Constantes Excel para formatação condicional
+        xlCellValue = 1
+        xlGreater = 6 
+        xlLess = 5
+
+        def hex_to_excel_color(hex_color: str) -> int:
+            """Converte cor Hex para o formato BGR do Excel."""
+            r = int(hex_color[0:2], 16)
+            g = int(hex_color[2:4], 16)
+            b = int(hex_color[4:6], 16)
+            return b * 65536 + g * 256 + r
+        
+        # Regra para valores positivos
+        regra_positiva = intervalo.FormatConditions.Add(
+            Type=xlCellValue,
+            Operator=xlGreater,
+            Formula1="0"
+        )
+        regra_positiva.Interior.Color = hex_to_excel_color(cor_positiva)
+
+        # Regra para valores negativos
+        regra_negativa = intervalo.FormatConditions.Add(
+            Type=xlCellValue,
+            Operator=xlLess,
+            Formula1="0"
+        )
+        regra_negativa.Interior.Color = hex_to_excel_color(cor_negativa)
+        regra_negativa.Font.Bold = True
+        
+    
