@@ -29,7 +29,7 @@ class GerarConferenciaUseCase:
         )
         nls_fundo = self._gerar_nls_folha(fundo, saldos)
         totais = self._calcular_totais(nls_fundo, proventos, descontos)
-        dados_510 = self._obter_valores_510(nls_fundo)
+        # dados_510 = self._obter_valores_510(nls_fundo)
 
         # self.pagamento_uc.conferencia_gw.salvar_dados_510(dados_510)
         self.pagamento_uc.conferencia_gw.salvar_dados_conferencia(
