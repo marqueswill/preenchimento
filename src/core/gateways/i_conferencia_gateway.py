@@ -21,3 +21,6 @@ class IConferenciaGateway(ABC):
 
     @abstractmethod
     def salvar_dados_relatorio(self, dados_relatorio: dict[str, DataFrame]): ...
+
+    @abstractmethod
+    def salvar_dados_510(self, dados_510: DataFrame): ...
