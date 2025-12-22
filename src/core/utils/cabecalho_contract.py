@@ -1,3 +1,6 @@
+
+# Contrato que define os campos esperados no cabeçalho do documento
+
 CAMPOS_CABECALHO = {
     "prioridade_pagamento": {
         "labels": ["prioridade de pagamento", "prioridade"],
