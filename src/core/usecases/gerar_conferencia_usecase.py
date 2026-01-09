@@ -36,7 +36,7 @@ class GerarConferenciaUseCase:
             proventos, descontos, totais
         )
         # self.pagamento_uc.conferencia_gw.salvar_dados_relatorio(dados_relatorio)
-        self.pagamento_uc.conferencia_gw.salvar_nls_conferencia(nls_fundo)
+        self.pagamento_uc.conferencia_gw.salvar_nls_conferencia(nls_fundo, fundo)
 
     def _calcular_totais(
         self,

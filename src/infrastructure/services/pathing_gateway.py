@@ -60,6 +60,13 @@ class PathingGateway(IPathingGateway):
 
         return caminho
 
+    def get_caminho_template_conferencia(self):
+        caminho = (
+            self.get_caminho_raiz_secon()
+            + f"SECON - General\\ANO_ATUAL\\FOLHA_DE_PAGAMENTO_{ANO_ATUAL}\\TEMPLATES\\TEMPLATE_CONFERÊNCIA.xlsx"
+        )        
+        return caminho
+
     def get_caminho_pasta_folha(self):
         return (
             self.get_caminho_raiz_secon()
@@ -225,3 +232,4 @@ class PathingGateway(IPathingGateway):
         caminhos = [os.path.join(dir_path, pdf) for pdf in arquivos]
 
         return caminhos
+

@@ -17,8 +17,8 @@ class ExcelServiceWin32(IExcelService):
         IExcelService (_type_): _description_
     """
 
-    excel: Optional[CDispatch] = None
-    workbook: Optional[CDispatch] = None
+    # excel: Optional[CDispatch] = None
+    # workbook: Optional[CDispatch] = None
 
     def __init__(self, caminho_arquivo: str):
         self.caminho_arquivo = caminho_arquivo
@@ -27,6 +27,9 @@ class ExcelServiceWin32(IExcelService):
     def __enter__(self):
         """Inicializa e abre o Excel e o Workbook."""
         try:
+            if self.excel:
+                return
+
             # 1. Abre a Aplicação Excel (invisível para o usuário)
             self.excel = win32.Dispatch("Excel.Application")
             self.excel.Visible = False  # Defina como True para ver a mágica
@@ -68,6 +71,7 @@ class ExcelServiceWin32(IExcelService):
         sheet_name: str,
         start_column="A",
         start_line="1",
+        title: str = "",
         clear=False,
         sum_numeric=False,
         fit_columns=True,
@@ -84,6 +88,16 @@ class ExcelServiceWin32(IExcelService):
                 f"A aba '{sheet_name}' não foi encontrada no arquivo Excel."
             )
 
+        current_row = int(start_line)
+
+        print(title)
+        if title != "":
+            title_cell = sheet.Range(f"{start_column}{current_row}")
+            title_cell.Value = title
+            title_cell.Font.Bold = True
+            title_cell.Font.Size = 14
+            current_row += 1
+
         if write_headers:
             data_to_write = [table.columns.tolist()] + table.values.tolist()
         else:
@@ -99,23 +113,37 @@ class ExcelServiceWin32(IExcelService):
         # 3. Define o intervalo de destino no Excel
         n_rows = len(data_to_write)
         n_cols = len(data_to_write[0])
-
         start_cell = f"{start_column}{start_line}"
-
         end_column_index = sheet.Range(start_column + "1").Column + n_cols - 1
         end_column = self.get_column_letter(end_column_index)
-        end_row = int(start_line) + n_rows - 1
+        end_row = current_row + n_rows - 1
         end_cell = f"{end_column}{end_row}"
-
         target_range = sheet.Range(f"{start_cell}:{end_cell}")
 
         if clear:
             sheet.Range("A1", sheet.UsedRange.SpecialCells(11)).ClearContents()
 
+        target_range.Value = data_to_write
+
         if fit_columns:
             target_range.EntireColumn.AutoFit()
 
-        target_range.Value = data_to_write
+    def exportar_para_celula(
+        self,
+        sheet_name: str,
+        value,
+        column: str = "A",
+        line: str = "1",
+    ):
+        """
+        Escreve um valor único em uma célula específica.
+        Ex: exportar_para_celula("R$ 500", "C", "10", "Resumo")
+        """
+
+        sheet = self.workbook.Sheets(sheet_name)
+        cell_address = f"{column}{line}"
+        sheet.Range(cell_address).Value = value
+        print(f"titulo: {value}")
 
     def get_column_letter(self, index):
         result = ""
@@ -157,7 +185,7 @@ class ExcelServiceWin32(IExcelService):
         except IndexError:
             return pd.DataFrame()
 
-        df = pd.DataFrame(rows, columns=headers)
+        df = pd.DataFrame(rows, columns=pd.Index(headers))
 
         return df
 
@@ -235,7 +263,7 @@ class ExcelServiceWin32(IExcelService):
         except Exception:
             raise ValueError(f"Aba '{sheet_name}' não encontrada ou erro ao mover.")
 
-    def _hex_to_excel_color(self, hex_color: str) -> int:
+    def _hex_to_excel_color(self, hex_color: str) -> int | None:
         """
         Converte uma cor Hex (#RRGGBB) para o formato inteiro RGB aceito pelo Excel via COM.
         O Excel usa a ordem BGR (Blue-Green-Red) na construção do inteiro.

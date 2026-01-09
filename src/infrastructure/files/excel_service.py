@@ -232,7 +232,9 @@ class ExcelService(IExcelService):
     ): ...
 
     @staticmethod
-    def copy_to(caminho_arquivo: str, pasta_destino: str):
+    def copy_to(
+        caminho_arquivo: str, pasta_destino: str, nome_arquivo: str | None = None
+    ):
         """
         Copia o arquivo Excel para a pasta de destino especificada.
         Este método é estático e pode ser chamado sem instanciar a classe.
@@ -248,7 +250,9 @@ class ExcelService(IExcelService):
             )
 
         # Constrói o caminho completo do novo arquivo na pasta de destino
-        nome_arquivo = os.path.basename(caminho_arquivo)
+        if not nome_arquivo:
+            nome_arquivo = os.path.basename(caminho_arquivo)
+
         caminho_destino = os.path.join(pasta_destino, nome_arquivo)
 
         # Usa shutil.copy para copiar o arquivo
@@ -273,3 +277,11 @@ class ExcelService(IExcelService):
 
         except Exception as e:
             print(f"Ocorreu um erro: {e}")
+
+    def exportar_para_celula(
+        self,
+        sheet_name: str,
+        value,
+        column: str = "A",
+        line: str = "1",
+    ): ...

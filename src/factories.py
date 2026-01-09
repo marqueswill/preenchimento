@@ -44,7 +44,14 @@ class UseCaseFactory:
     def create_pagamento_use_case(self, fundo: str, win32=False) -> PagamentoUseCase:
         pathing_gw: IPathingGateway = PathingGateway()
 
+        pasta_folha = pathing_gw.get_caminho_pasta_folha()
+        caminho_template_conferencia = pathing_gw.get_caminho_template_conferencia()
         caminho_planilha_conferencia = pathing_gw.get_caminho_conferencia(fundo)
+        ExcelService.copy_to(
+            caminho_template_conferencia,
+            pasta_folha,
+            f"CONFERÊNCIA_{fundo}".upper() + ".xlsx",
+        )
         excel_svc: IExcelService
         if win32:
             excel_svc = ExcelService(caminho_planilha_conferencia)

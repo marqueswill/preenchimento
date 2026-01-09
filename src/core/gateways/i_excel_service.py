@@ -32,12 +32,13 @@ class IExcelService(ABC):
         self,
         table: DataFrame,
         sheet_name: str,
-        start_column: str = "A",
-        start_line: str = "1",
-        clear: bool = False,
-        sum_numeric: bool = False,
-        fit_columns: bool = True,
-        write_headers: bool = True,
+        start_column="A",
+        start_line="1",
+        title = "",
+        clear=False,
+        sum_numeric=False,
+        fit_columns=True,
+        write_headers=True,
     ) -> None: ...
 
     @abstractmethod
@@ -49,8 +50,17 @@ class IExcelService(ABC):
         formula: str,
         target_range: str,
         sheet_name: str,
-        color: str = None,
-        filling: str = None,
+        color: str | None = None,
+        filling: str | None = None,
         bold: bool = False,
         underline: bool = False,
+    ): ...
+
+    @abstractmethod
+    def exportar_para_celula(
+        self,
+        sheet_name: str,
+        value,
+        column: str = "A",
+        line: str = "1",
     ): ...
