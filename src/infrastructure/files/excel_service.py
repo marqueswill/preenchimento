@@ -257,7 +257,7 @@ class ExcelService(IExcelService):
 
         # Usa shutil.copy para copiar o arquivo
         shutil.copy(caminho_arquivo, caminho_destino)
-        print(f"Arquivo copiado para: {caminho_destino}")
+        print(f'\nArquivo copiado para: "{pasta_destino.split('General')[1][1:]}"\n')
 
     @staticmethod
     def copy_data_with_pandas(caminho_origem: str, caminho_destino: str):

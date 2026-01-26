@@ -34,23 +34,19 @@ class ConferenciaGateway(IConferenciaGateway):
         return tabela_demofin
 
     def salvar_nls_conferencia(self, nls: list[NotaLancamento], fundo: str):
-        print("_" * 50, end="\n\n")
-        linha_atual = 1
         for nl in nls:
             if nl.esta_vazia():
                 print(f"A NL {nl.nome} não tem valor para liquidação.")
                 continue
 
-            titulo = f"{fundo} - {nl.nome}".upper()
             
             self.excel_svc.exportar_para_planilha(
                 table=nl.dados,
-                sheet_name="NLS",
-                start_line=str(linha_atual),
-                title=titulo,
+                sheet_name=nl.nome,
+                # start_line=str(linha_atual),
+                # title=titulo,
             )
 
-            linha_atual += len(nl.dados) + 2
 
     def salvar_dados_conferencia(
         self, proventos_folha: DataFrame, descontos_folha: DataFrame, totais: DataFrame

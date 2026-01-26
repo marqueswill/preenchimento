@@ -52,6 +52,7 @@ class UseCaseFactory:
             pasta_folha,
             f"CONFERÊNCIA_{fundo}".upper() + ".xlsx",
         )
+
         excel_svc: IExcelService
         if win32:
             excel_svc = ExcelService(caminho_planilha_conferencia)
@@ -83,7 +84,9 @@ class UseCaseFactory:
     ) -> PreenchimentoFolhaUseCase:
         pathing_gw: IPathingGateway = PathingGateway()
 
-        pagamento_uc: PagamentoUseCase = self.create_pagamento_use_case(fundo)
+        pagamento_uc: PagamentoUseCase = self.create_pagamento_use_case(
+            fundo, win32=True
+        )
 
         siggo_service: ISiggoService = SiggoService()
         preenchedor_gw: IPreenchimentoGateway = PreenchimentoGateway(siggo_service)

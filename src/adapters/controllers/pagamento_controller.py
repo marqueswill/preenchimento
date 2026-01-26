@@ -45,6 +45,7 @@ def FolhaPagamentoController(test=False, run=True):
                 folha = tipo_folha_selecionado[0]
                 use_case = factory.create_preenchimento_folha_use_case(folha)
                 nomes_templates = use_case.get_nomes_templates(folha)
+                
 
                 app_view.display_menu(
                     nomes_templates,
